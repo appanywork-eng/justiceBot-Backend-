@@ -1,0 +1,74 @@
+{
+  "police_abuse": [
+    {
+      "id": "pcrru",
+      "name": "Police Complaint Response Unit (PCRRU)",
+      "authorityTitle": "The Head, Complaint Response Unit",
+      "address": "Force Headquarters, Abuja",
+      "email": "npfcomplaints@npf.gov.ng",
+      "whatsapp": "08057000001"
+    },
+    {
+      "id": "psc",
+      "name": "Police Service Commission (PSC)",
+      "authorityTitle": "The Chairman, Police Service Commission",
+      "address": "PSC Headquarters, Abuja",
+      "email": "complaints@psc.gov.ng",
+      "whatsapp": "N/A"
+    },
+    {
+      "id": "nhrc",
+      "name": "National Human Rights Commission (NHRC)",
+      "authorityTitle": "The Executive Secretary, National Human Rights Commission",
+      "address": "NHRC Headquarters, Abuja",
+      "email": "info@nhrc.gov.ng",
+      "whatsapp": "N/A"
+    }
+  ],
+
+  "unpaid_salary": [
+    {
+      "id": "labour_fed",
+      "name": "Federal Ministry of Labour & Employment",
+      "authorityTitle": "The Honourable Minister of Labour & Employment",
+      "address": "Federal Secretariat Complex, Abuja",
+      "email": "info@labour.gov.ng",
+      "whatsapp": "N/A"
+    },
+    {
+      "id": "labour_state",
+      "name": "State Ministry of Labour (Your State)",
+      "authorityTitle": "The Honourable Commissioner for Labour",
+      "address": "[Your State Capital]",
+      "email": "N/A",
+      "whatsapp": "N/A"
+    },
+    {
+      "id": "industrial_court",
+      "name": "National Industrial Court of Nigeria",
+      "authorityTitle": "The President, National Industrial Court of Nigeria",
+      "address": "NICN Headquarters, Abuja",
+      "email": "N/A",
+      "whatsapp": "N/A"
+    }
+  ],
+
+  "general": [
+    {
+      "id": "pcc",
+      "name": "Public Complaints Commission (PCC)",
+      "authorityTitle": "The Honourable Chief Commissioner",
+      "address": "Head Office, Abuja & State Offices Nationwide",
+      "email": "info@pcc.gov.ng",
+      "whatsapp": "N/A"
+    },
+    {
+      "id": "nhrc_general",
+      "name": "National Human Rights Commission (NHRC)",
+      "authorityTitle": "The Executive Secretary, National Human Rights Commission",
+      "address": "NHRC Headquarters, Abuja",
+      "email": "info@nhrc.gov.ng",
+      "whatsapp": "N/A"
+    }
+  ]
+}
