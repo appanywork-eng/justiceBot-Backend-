@@ -1,55 +1,41 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// CORS FIX
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"]
-}));
-
+app.use(cors());
 app.use(express.json());
 
-// ✅ TEST ROUTE
+// ✅ TEST ROUTE (This fixes "Cannot GET /")
 app.get("/", (req, res) => {
   res.send("JusticeBot backend running ✅");
 });
 
-// ✅ MAIN ANALYZE ROUTE
-app.post("/analyze", (req, res) => {
-  const { text } = req.body;
+// ✅ ANALYZE ROUTE
+app.post("/analyze", async (req, res) => {
+  try {
+    const { complaint } = req.body;
 
-  if (!text || text.trim() === "") {
-    return res.status(400).json({ error: "Complaint text required" });
+    if (!complaint) {
+      return res.status(400).json({ error: "No complaint provided" });
+    }
+
+    let result = {
+      category: "Human Rights / Public Complaint",
+      advice:
+        "Your complaint falls under human rights or government misconduct. You may file a formal petition to the Public Complaints Commission or seek legal aid.",
+      recommendation:
+        "Write a detailed statement including date, location, officer names (if known), and evidence."
+    };
+
+    res.json(result);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
   }
-
-  const response = {
-    category: "Human Rights / Police Misconduct",
-    suggestion:
-      "You may submit a formal petition to the Public Complaints Commission (PCC), NHRC, or Police Service Commission.",
-    structuredPetition: `
-PETITION AGAINST POLICE MISCONDUCT
-
-I hereby submit a formal complaint that I was arrested by the Nigerian Police without any valid reason or explanation.
-
-This action is a violation of my constitutional rights as provided under the 1999 Constitution of the Federal Republic of Nigeria.
-
-I request an immediate investigation into this matter and appropriate disciplinary action.
-
-Thank you.
-
-Signed:
-Concerned Citizen
-`.trim(),
-  };
-
-  res.json(response);
 });
 
-// ✅ START SERVER
-app.listen(PORT, () => {
-  console.log("JusticeBot backend running on port " + PORT);
-});
+// ✅ Render provides PORT - we must use this
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
