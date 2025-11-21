@@ -1,83 +1,55 @@
-/**
- * JusticeBot Backend (Complete + CORS + Health Check)
- */
-
 const express = require("express");
 const cors = require("cors");
-const app = express();
 
-// MIDDLEWARE
-app.use(cors());
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// CORS FIX
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"]
+}));
+
 app.use(express.json());
 
-// --- CATEGORY DETECTION LOGIC ---
-function detectCategory(text) {
-  text = text.toLowerCase();
-
-  if (text.includes("police") || text.includes("officer") || text.includes("arrest"))
-    return "Police Misconduct";
-
-  if (text.includes("land") || text.includes("property") || text.includes("ownership"))
-    return "Land Dispute";
-
-  if (text.includes("employer") || text.includes("salary") || text.includes("workplace"))
-    return "Employment Issue";
-
-  if (text.includes("fraud") || text.includes("scam") || text.includes("419"))
-    return "Fraud";
-
-  return "General Complaint";
-}
-
-// --- INSTITUTION DATABASE ---
-const INSTITUTIONS = {
-  "Police Misconduct": {
-    name: "Police Service Commission (PSC)",
-    email: "info@psc.gov.ng",
-    phone: "+234-803-000-0000"
-  },
-  "Land Dispute": {
-    name: "Ministry of Lands & Survey",
-    email: "lands@fct.gov.ng",
-    phone: "+234-809-111-1111"
-  },
-  "Employment Issue": {
-    name: "National Industrial Court",
-    email: "nicn@nicn.gov.ng",
-    phone: "+234-807-222-2222"
-  },
-  "Fraud": {
-    name: "EFCC",
-    email: "info@efcc.gov.ng",
-    phone: "+234-809-333-3333"
-  },
-  "General Complaint": {
-    name: "Public Complaints Commission (PCC)",
-    email: "complaints@pcc.gov.ng",
-    phone: "+234-708-000-0000"
-  }
-};
-
-// --- MAIN ENDPOINT ---
-app.post("/", (req, res) => {
-  const text = req.body.text || "";
-  const category = detectCategory(text);
-  const institution = INSTITUTIONS[category];
-
-  return res.json({
-    success: true,
-    category,
-    institution
-  });
-});
-
-// --- TEST ROUTE (IMPORTANT FOR CHECKING IF BACKEND WORKS) ---
+// ✅ TEST ROUTE
 app.get("/", (req, res) => {
-  res.send("JusticeBot backend is running ✅");
+  res.send("JusticeBot backend running ✅");
 });
 
-// --- RENDER PORT ---
-const PORT = process.env.PORT || 10000;
+// ✅ MAIN ANALYZE ROUTE
+app.post("/analyze", (req, res) => {
+  const { text } = req.body;
+
+  if (!text || text.trim() === "") {
+    return res.status(400).json({ error: "Complaint text required" });
+  }
+
+  const response = {
+    category: "Human Rights / Police Misconduct",
+    suggestion:
+      "You may submit a formal petition to the Public Complaints Commission (PCC), NHRC, or Police Service Commission.",
+    structuredPetition: `
+PETITION AGAINST POLICE MISCONDUCT
+
+I hereby submit a formal complaint that I was arrested by the Nigerian Police without any valid reason or explanation.
+
+This action is a violation of my constitutional rights as provided under the 1999 Constitution of the Federal Republic of Nigeria.
+
+I request an immediate investigation into this matter and appropriate disciplinary action.
+
+Thank you.
+
+Signed:
+Concerned Citizen
+`.trim(),
+  };
+
+  res.json(response);
+});
+
+// ✅ START SERVER
 app.listen(PORT, () => {
-  console.log("🔥 JusticeBot backend running on port", PORT);
+  console.log("JusticeBot backend running on port " + PORT);
 });
