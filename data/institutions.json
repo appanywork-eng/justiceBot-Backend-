@@ -1,74 +1,105 @@
 {
-  "police_abuse": [
-    {
-      "id": "pcrru",
-      "name": "Police Complaint Response Unit (PCRRU)",
-      "authorityTitle": "The Head, Complaint Response Unit",
-      "address": "Force Headquarters, Abuja",
-      "email": "npfcomplaints@npf.gov.ng",
-      "whatsapp": "08057000001"
-    },
-    {
-      "id": "psc",
-      "name": "Police Service Commission (PSC)",
-      "authorityTitle": "The Chairman, Police Service Commission",
-      "address": "PSC Headquarters, Abuja",
-      "email": "complaints@psc.gov.ng",
-      "whatsapp": "N/A"
-    },
-    {
-      "id": "nhrc",
-      "name": "National Human Rights Commission (NHRC)",
-      "authorityTitle": "The Executive Secretary, National Human Rights Commission",
-      "address": "NHRC Headquarters, Abuja",
-      "email": "info@nhrc.gov.ng",
-      "whatsapp": "N/A"
-    }
+  "Law Enforcement": [
+    { "name": "Nigeria Police Force (NPF)", "body": "Police", "type": "Federal" },
+    { "name": "Economic and Financial Crimes Commission (EFCC)", "body": "Financial Crimes", "type": "Federal" },
+    { "name": "Independent Corrupt Practices Commission (ICPC)", "body": "Anti-Corruption", "type": "Federal" },
+    { "name": "National Drug Law Enforcement Agency (NDLEA)", "body": "Drugs & Narcotics", "type": "Federal" },
+    { "name": "Nigeria Security and Civil Defence Corps (NSCDC)", "body": "Civil Protection", "type": "Federal" }
   ],
 
-  "unpaid_salary": [
-    {
-      "id": "labour_fed",
-      "name": "Federal Ministry of Labour & Employment",
-      "authorityTitle": "The Honourable Minister of Labour & Employment",
-      "address": "Federal Secretariat Complex, Abuja",
-      "email": "info@labour.gov.ng",
-      "whatsapp": "N/A"
-    },
-    {
-      "id": "labour_state",
-      "name": "State Ministry of Labour (Your State)",
-      "authorityTitle": "The Honourable Commissioner for Labour",
-      "address": "[Your State Capital]",
-      "email": "N/A",
-      "whatsapp": "N/A"
-    },
-    {
-      "id": "industrial_court",
-      "name": "National Industrial Court of Nigeria",
-      "authorityTitle": "The President, National Industrial Court of Nigeria",
-      "address": "NICN Headquarters, Abuja",
-      "email": "N/A",
-      "whatsapp": "N/A"
-    }
+  "Judiciary": [
+    { "name": "Supreme Court of Nigeria", "body": "Judiciary", "type": "Federal" },
+    { "name": "Court of Appeal", "body": "Judiciary", "type": "Federal" },
+    { "name": "Federal High Court", "body": "Judiciary", "type": "Federal" },
+    { "name": "National Industrial Court", "body": "Judiciary", "type": "Federal" },
+    { "name": "Sharia Court of Appeal", "body": "Judiciary", "type": "State" },
+    { "name": "Customary Court of Appeal", "body": "Judiciary", "type": "State" }
   ],
 
-  "general": [
-    {
-      "id": "pcc",
-      "name": "Public Complaints Commission (PCC)",
-      "authorityTitle": "The Honourable Chief Commissioner",
-      "address": "Head Office, Abuja & State Offices Nationwide",
-      "email": "info@pcc.gov.ng",
-      "whatsapp": "N/A"
-    },
-    {
-      "id": "nhrc_general",
-      "name": "National Human Rights Commission (NHRC)",
-      "authorityTitle": "The Executive Secretary, National Human Rights Commission",
-      "address": "NHRC Headquarters, Abuja",
-      "email": "info@nhrc.gov.ng",
-      "whatsapp": "N/A"
-    }
+  "Armed Forces": [
+    { "name": "Nigerian Army", "body": "Military", "type": "Federal" },
+    { "name": "Nigerian Navy", "body": "Military", "type": "Federal" },
+    { "name": "Nigerian Air Force", "body": "Military", "type": "Federal" },
+    { "name": "Defence Intelligence Agency (DIA)", "body": "Military Intelligence", "type": "Federal" },
+    { "name": "Defence Headquarters (DHQ)", "body": "Military Command", "type": "Federal" }
+  ],
+
+  "Paramilitary": [
+    { "name": "Nigeria Immigration Service (NIS)", "body": "Borders", "type": "Federal" },
+    { "name": "Nigeria Customs Service (NCS)", "body": "Trade & Borders", "type": "Federal" },
+    { "name": "Federal Road Safety Corps (FRSC)", "body": "Road Safety", "type": "Federal" }
+  ],
+
+  "Correctional Services": [
+    { "name": "Nigerian Correctional Service (NCoS)", "body": "Prisons", "type": "Federal" },
+    { "name": "Borstal Institutions", "body": "Rehabilitation", "type": "Federal" }
+  ],
+
+  "Intelligence Agencies": [
+    { "name": "National Intelligence Agency (NIA)", "body": "Foreign Intelligence", "type": "Federal" },
+    { "name": "Department of State Services (DSS)", "body": "Internal Security", "type": "Federal" },
+    { "name": "Defence Intelligence Agency (DIA)", "body": "Military Intelligence", "type": "Federal" }
+  ],
+
+  "Aviation": [
+    { "name": "Federal Airports Authority of Nigeria (FAAN)", "body": "Airports", "type": "Federal" },
+    { "name": "Nigerian Civil Aviation Authority (NCAA)", "body": "Regulation", "type": "Federal" },
+    { "name": "Nigerian Airspace Management Agency (NAMA)", "body": "Airspace", "type": "Federal" },
+    { "name": "Accident Investigation Bureau (AIB)", "body": "Aviation Safety", "type": "Federal" }
+  ],
+
+  "Maritime & Ports": [
+    { "name": "Nigerian Ports Authority (NPA)", "body": "Ports", "type": "Federal" },
+    { "name": "Nigerian Maritime Administration and Safety Agency (NIMASA)", "body": "Shipping", "type": "Federal" },
+    { "name": "National Inland Waterways Authority (NIWA)", "body": "Water Transport", "type": "Federal" }
+  ],
+
+  "Federal Ministries": [
+    { "name": "Ministry of Finance", "body": "Finance", "type": "Federal" },
+    { "name": "Ministry of Defence", "body": "Security", "type": "Federal" },
+    { "name": "Ministry of Interior", "body": "Internal Affairs", "type": "Federal" },
+    { "name": "Ministry of Justice", "body": "Legal", "type": "Federal" },
+    { "name": "Ministry of Health", "body": "Health", "type": "Federal" },
+    { "name": "Ministry of Education", "body": "Education", "type": "Federal" },
+    { "name": "Ministry of Power", "body": "Electricity", "type": "Federal" },
+    { "name": "Ministry of Works & Housing", "body": "Infrastructure", "type": "Federal" },
+    { "name": "Ministry of Water Resources", "body": "Water", "type": "Federal" },
+    { "name": "Ministry of Aviation", "body": "Aviation", "type": "Federal" },
+    { "name": "Ministry of Transportation", "body": "Transport", "type": "Federal" },
+    { "name": "Ministry of Petroleum", "body": "Oil & Gas", "type": "Federal" },
+    { "name": "Ministry of Environment", "body": "Environment", "type": "Federal" },
+    { "name": "Ministry of Humanitarian Affairs", "body": "Social Welfare", "type": "Federal" }
+  ],
+
+  "Health Agencies": [
+    { "name": "National Health Insurance Authority (NHIA)", "body": "Health Insurance", "type": "Federal" },
+    { "name": "National Agency for Food and Drug Administration and Control (NAFDAC)", "body": "Food & Drugs", "type": "Federal" },
+    { "name": "Nigerian Centre for Disease Control (NCDC)", "body": "Disease Control", "type": "Federal" }
+  ],
+
+  "Education Agencies": [
+    { "name": "Joint Admissions and Matriculation Board (JAMB)", "body": "Admissions", "type": "Federal" },
+    { "name": "West African Examinations Council (WAEC)", "body": "Exams", "type": "International" },
+    { "name": "National Universities Commission (NUC)", "body": "Universities", "type": "Federal" },
+    { "name": "Tertiary Education Trust Fund (TETFund)", "body": "Education Funding", "type": "Federal" }
+  ],
+
+  "Power & Energy": [
+    { "name": "Nigerian National Petroleum Corporation Limited (NNPC)", "body": "Oil & Gas", "type": "Federal" },
+    { "name": "Nigerian Electricity Regulatory Commission (NERC)", "body": "Electricity Regulation", "type": "Federal" },
+    { "name": "Transmission Company of Nigeria (TCN)", "body": "Power Transmission", "type": "Federal" }
+  ],
+
+  "FCT & Abuja Bodies": [
+    { "name": "Federal Capital Development Authority (FCDA)", "body": "FCT Development", "type": "Federal" },
+    { "name": "Federal Capital Territory Administration (FCTA)", "body": "Governance", "type": "Federal" },
+    { "name": "Abuja Municipal Area Council (AMAC)", "body": "Local Govt", "type": "FCT" }
+  ],
+
+  "Embassies & Foreign Missions": [
+    { "name": "United States Embassy, Nigeria", "body": "Diplomatic", "type": "Foreign" },
+    { "name": "United Kingdom High Commission, Nigeria", "body": "Diplomatic", "type": "Foreign" },
+    { "name": "Canadian High Commission, Nigeria", "body": "Diplomatic", "type": "Foreign" },
+    { "name": "Chinese Embassy, Nigeria", "body": "Diplomatic", "type": "Foreign" }
   ]
 }
