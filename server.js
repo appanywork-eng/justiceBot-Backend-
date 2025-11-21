@@ -11,49 +11,85 @@ const institutions = JSON.parse(
   fs.readFileSync("./data/institutions.json", "utf8")
 );
 
-// Helper function for matching
+// -------- SMART CATEGORY + MATCHING ENGINE ----------
 function findMatchedInstitutions(text) {
   const lower = text.toLowerCase();
-  let result = [];
-  let category = "General Complaint";
 
-  // ---- KEYWORD RULES ----
-  if (lower.includes("air") || lower.includes("flight") || lower.includes("airport")) {
-    category = "Aviation";
-    if (institutions["Aviation"]) result = institutions["Aviation"];
-  }
-  else if (lower.includes("police") || lower.includes("arrest") || lower.includes("station")) {
-    category = "Law Enforcement";
-    if (institutions["Law Enforcement"]) result = institutions["Law Enforcement"];
-  }
-  else if (lower.includes("court") || lower.includes("judge") || lower.includes("lawyer")) {
-    category = "Judiciary";
-    if (institutions["Judiciary"]) result = institutions["Judiciary"];
-  }
-  else if (lower.includes("prison") || lower.includes("inmate") || lower.includes("custody")) {
-    category = "Prisons";
-    if (institutions["Prisons"]) result = institutions["Prisons"];
-  }
-  else if (lower.includes("ministry") || lower.includes("minister") || lower.includes("government")) {
-    category = "Government Ministries";
-    if (institutions["Ministries"]) result = institutions["Ministries"];
-  }
-  else if (lower.includes("school") || lower.includes("university") || lower.includes("student")) {
-    category = "Education";
-    if (institutions["Education"]) result = institutions["Education"];
-  }
-  else if (lower.includes("hospital") || lower.includes("doctor") || lower.includes("nurse")) {
-    category = "Health";
-    if (institutions["Health"]) result = institutions["Health"];
+  const categoryKeywords = {
+
+    "Law Enforcement": [
+      "police", "arrest", "assault", "brutality",
+      "extortion", "checkpoint", "harassment"
+    ],
+
+    "Land & Property": [
+      "land", "property", "house", "demolish",
+      "taken", "seized", "eviction", "landlord", "tenant"
+    ],
+
+    "Electricity / Power": [
+      "aedc", "nepa", "phcn", "disco",
+      "electric", "light", "over billed", "transformer", "blackout"
+    ],
+
+    "Government Abuse": [
+      "local government", "governor", "chairman",
+      "commissioner", "official", "ministry", "bribe"
+    ],
+
+    "Aviation": [
+      "airport", "flight", "airline", "delay",
+      "aviation", "plane", "air peace", "arik", "peace airline"
+    ],
+
+    "Judiciary": [
+      "court", "judge", "lawyer", "magistrate", "tribunal"
+    ],
+
+    "Education": [
+      "school", "teacher", "university", "student", "lecturer"
+    ],
+
+    "Health": [
+      "hospital", "doctor", "nurse", "clinic", "medical"
+    ],
+
+    "Prisons": [
+      "prison", "inmate", "jail", "custody", "cell"
+    ],
+
+    "Human Rights": [
+      "rights", "violation", "illegal", "torture",
+      "detention", "inhuman", "kidnap", "abuse"
+    ]
+  };
+
+  let category = "General Complaint";
+  let result = [];
+
+  for (const cat in categoryKeywords) {
+    for (const keyword of categoryKeywords[cat]) {
+      if (lower.includes(keyword)) {
+        category = cat;
+
+        if (institutions[cat]) {
+          result = institutions[cat];
+        }
+
+        return { category, institutions: result };
+      }
+    }
   }
 
   return { category, institutions: result };
 }
 
+// -------- HEALTH CHECK ----------
 app.get("/health", (req, res) => {
   res.json({ status: "JusticeBot backend is running ✅" });
 });
 
+// -------- MAIN ANALYZE ROUTE ----------
 app.post("/analyze", (req, res) => {
   const { complaint } = req.body;
 
@@ -67,12 +103,13 @@ app.post("/analyze", (req, res) => {
     received: complaint,
     classification: category,
     generated_petition: `This is a formal petition regarding the following issue: ${complaint}`,
-    recommended_institutions: institutions.map(i => i.name)
+    recommended_institutions: institutions.map(inst => inst.name)
   });
 });
 
-// Port
+// -------- SERVER LISTEN ----------
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`✅ JusticeBot backend running on port ${PORT}`);
 });
