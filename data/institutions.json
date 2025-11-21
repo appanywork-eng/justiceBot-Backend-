@@ -102,4 +102,36 @@
     { "name": "Canadian High Commission, Nigeria", "body": "Diplomatic", "type": "Foreign" },
     { "name": "Chinese Embassy, Nigeria", "body": "Diplomatic", "type": "Foreign" }
   ]
+,
+"Aviation": [
+  { "name": "Peace Airline", "body": "Aviation", "type": "Private" },
+  { "name": "Arik Air", "body": "Aviation", "type": "Private" },
+  { "name": "Air Peace", "body": "Aviation", "type": "Private" },
+  { "name": "Federal Airports Authority of Nigeria (FAAN)", "body": "Aviation", "type": "Federal" },
+  { "name": "Nigerian Civil Aviation Authority (NCAA)", "body": "Aviation", "type": "Federal" }
+],
+
+"Police Divisions": [
+  { "name": "Kubwa Police Division", "body": "Police", "type": "Federal" },
+  { "name": "Wuse Police Division", "body": "Police", "type": "Federal" },
+  { "name": "Garki Police Division", "body": "Police", "type": "Federal" }
+],
+
+"Embassies": [
+  { "name": "US Embassy Nigeria", "body": "Diplomatic", "type": "International" },
+  { "name": "UK High Commission Nigeria", "body": "Diplomatic", "type": "International" },
+  { "name": "Chinese Embassy Nigeria", "body": "Diplomatic", "type": "International" }
+],
+
+"Corrections and Prisons": [
+  { "name": "Nigerian Correctional Service", "body": "Prisons", "type": "Federal" },
+  { "name": "Kuje Prison", "body": "Prisons", "type": "Federal" }
+],
+
+"Government Ministries": [
+  { "name": "Ministry of Aviation", "body": "Ministry", "type": "Federal" },
+  { "name": "Ministry of Interior", "body": "Ministry", "type": "Federal" },
+  { "name": "Ministry of Justice", "body": "Ministry", "type": "Federal" },
+  { "name": "Federal Capital Development Authority (FCDA)", "body": "Government", "type": "Federal" }
+]
 }
