@@ -1,20 +1,20 @@
-# Use official Node.js LTS
-FROM node:18
+# Use official Node LTS
+FROM node:18-alpine
 
-# Create app directory
+# Create working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (for faster caching)
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm install --production
+# Install dependencies
+RUN npm install --only=production
 
-# Copy the entire project
+# Copy all project files
 COPY . .
 
-# Expose Cloud Run port
-ENV PORT=8080
+# Expose Render’s dynamic port
+EXPOSE 5000
 
-# Start server
-CMD ["node", "server.cjs"]
+# Start the server
+CMD [ "node", "server.cjs" ]
