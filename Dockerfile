@@ -1,21 +1,20 @@
-# Use official Node.js LTS image
-FROM node:18-alpine
+# Use official Node.js LTS
+FROM node:18
 
 # Create app directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install only production dependencies
+RUN npm install --production
 
-# Copy all backend files
+# Copy the entire project
 COPY . .
 
-# Expose backend port
-ENV PORT=5000
-EXPOSE 5000
+# Expose Cloud Run port
+ENV PORT=8080
 
-# Start the server
-CMD ["npm", "start"]
+# Start server
+CMD ["node", "server.cjs"]
