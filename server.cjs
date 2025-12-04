@@ -1,4 +1,4 @@
-/*
+/* 
  * JusticeBot Backend (A1 STANDARD)
  * Express + OpenAI + Institution detection
  */
@@ -10,9 +10,9 @@ const fs = require("fs");
 const path = require("path");
 const OpenAI = require("openai");
 
-// -------------------------------
+// ----------------------------------------
 // LOAD institutions.json
-// -------------------------------
+// ----------------------------------------
 let INSTITUTIONS_JSON = {};
 try {
   const filePath = path.join(__dirname, "data", "institutions.json");
@@ -24,9 +24,9 @@ try {
   INSTITUTIONS_JSON = {};
 }
 
-// -------------------------------
+// ----------------------------------------
 // OPENAI INIT
-// -------------------------------
+// ----------------------------------------
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
   openai = new OpenAI({
@@ -34,29 +34,32 @@ if (process.env.OPENAI_API_KEY) {
   });
 }
 
-// -------------------------------
+// ----------------------------------------
 // EXPRESS INIT
-// -------------------------------
+// ----------------------------------------
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// -------------------------------
-// GET ROUTES (Fix “Cannot GET /” errors)
-// -------------------------------
+// ----------------------------------------
+// ROOT ROUTE (Fix Cannot GET /)
+// ----------------------------------------
 app.get("/", (req, res) => {
   res.send("JusticeBot A1 Backend is running successfully.");
 });
 
+// ----------------------------------------
+// HEALTH CHECK (for Render)
+// ----------------------------------------
 app.get("/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// -------------------------------
-// RULE-BASED DETECTORS
-// -------------------------------
+// ----------------------------------------
+// HELPERS - TEXT DETECTORS
+// ----------------------------------------
 function textIncludesAny(text, keywords) {
   const t = text.toLowerCase();
   return keywords.some((kw) => t.includes(kw.toLowerCase()));
@@ -79,18 +82,19 @@ function detectElectricity(description) {
     return null;
   }
 
-  let primary = INSTITUTIONS_JSON.electricity?.find(
-    (i) => i.key === "aedc"
-  );
+  // AEDC PRIMARY
+  let primary =
+    INSTITUTIONS_JSON.electricity?.find((i) => i.key === "aedc") || null;
 
   if (!primary) {
     primary = {
       key: "generic_dis",
-      org: "The Managing Director,\n[Electricity Distribution Company]",
+      org: "The Managing Director,\nElectricity Distribution Company",
       email: "",
     };
   }
 
+  // NERC THROUGH
   const through = INSTITUTIONS_JSON.electricity?.find(
     (i) => i.key === "nerc"
   );
@@ -102,32 +106,32 @@ function detectElectricity(description) {
   return { primary, through, ccList };
 }
 
-// -------------------------------
-// POST: GENERATE PETITION
-// -------------------------------
-app.post("/generate-petition", async (req, res) => {
+// ----------------------------------------
+// POST: GENERATE PETITION (FINAL WORKING ROUTE)
+// ----------------------------------------
+app.post("/api/generate", async (req, res) => {
   try {
     const { description } = req.body;
+
     if (!description) {
-      return res.status(400).json({ error: "Description is required" });
+      return res.status(400).json({ error: "Description is required." });
     }
 
     let inst = detectElectricity(description);
     let petitionText = "";
 
+    // ---- AI GENERATION ----
     if (openai) {
       const ai = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: "You are an expert Nigerian petition-writing assistant.",
+            content: "You are an expert Nigerian petition writer.",
           },
           {
             role: "user",
-            content:
-              "Draft a formal Nigerian petition based on this description:\n" +
-              description,
+            content: `Draft a formal Nigerian petition based on this issue:\n\n${description}`,
           },
         ],
       });
@@ -139,6 +143,7 @@ app.post("/generate-petition", async (req, res) => {
       petitionText = `Petition Draft:\n\n${description}`;
     }
 
+    // ---- RESPONSE ----
     return res.json({
       petitionText,
       primaryInstitution: inst?.primary || null,
@@ -147,15 +152,15 @@ app.post("/generate-petition", async (req, res) => {
     });
   } catch (err) {
     console.error("Error:", err);
-    res.status(500).json({
+    return res.status(500).json({
       error: "Server error generating petition.",
     });
   }
 });
 
-// -------------------------------
+// ----------------------------------------
 // START SERVER
-// -------------------------------
+// ----------------------------------------
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`JusticeBot A1 Backend running on port ${PORT}`);
 });
