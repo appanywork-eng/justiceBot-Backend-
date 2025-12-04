@@ -1,17 +1,20 @@
-FROM python:3.10-slim
+# Use official Node LTS
+FROM node:18
 
-# Set working directory
+# Create working directory
 WORKDIR /app
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy package files
+COPY package.json package-lock.json ./
 
-# Copy all source code
+# Install dependencies
+RUN npm install --production
+
+# Copy the rest of the code
 COPY . .
 
-# Expose port
-EXPOSE 8080
+# Expose port 5000 (your backend port)
+EXPOSE 5000
 
 # Start the server
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "server:app"]
+CMD ["node", "server.cjs"]
