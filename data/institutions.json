@@ -1,134 +1,226 @@
 {
   "Law Enforcement": [
     {
+      "key": "npf",
       "name": "Nigeria Police Force",
       "title": "Inspector General of Police (IGP)",
-      "address": "Force Headquarters, Louis Edet House, Shehu Shagari Way, Abuja",
-      "pmb": "PMB 401, Garki, Abuja"
+      "address": "Force Headquarters, Abuja, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [],
+      "supervised_by": [
+        "psc",
+        "min_police_affairs"
+      ],
+      "always_cc": [
+        "pcc"
+      ],
+      "category": "Law Enforcement",
+      "keywords": [
+        "police",
+        "nigeria police",
+        "npf",
+        "igp",
+        "arrest",
+        "detention",
+        "police brutality"
+      ]
     },
     {
+      "key": "psc",
       "name": "Police Service Commission",
       "title": "Chairman",
-      "address": "Plot 64, Aminu Kano Crescent, Wuse II, Abuja"
-    },
-    {
-      "name": "National Human Rights Commission",
-      "title": "Executive Secretary",
-      "address": "NHRC Headquarters, Plot 19 Aguiyi Ironsi Street, Maitama, Abuja"
-    },
-    {
-      "name": "Public Complaints Commission",
-      "title": "Chief Commissioner",
-      "address": "PCC Headquarters, Plot 647 Ahmadu Bello Way, Garki, Abuja"
+      "address": "Plot 64, Aminu Kano Crescent, Wuse II, Abuja, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [
+        "npf"
+      ],
+      "supervised_by": [],
+      "always_cc": [
+        "pcc"
+      ],
+      "category": "Oversight",
+      "keywords": [
+        "police service commission",
+        "psc"
+      ]
     }
   ],
-
-  "Military": [
-    {
-      "name": "Nigerian Army",
-      "title": "Chief of Army Staff",
-      "address": "Army Headquarters, Area 7, Garki, Abuja",
-      "pmb": "PMB 2108, Abuja"
-    },
-    {
-      "name": "Nigerian Navy",
-      "title": "Chief of Naval Staff",
-      "address": "Naval Headquarters, Area 7, Abuja"
-    },
-    {
-      "name": "Nigerian Air Force",
-      "title": "Chief of Air Staff",
-      "address": "Air Force Headquarters, Abuja"
-    },
-    {
-      "name": "Ministry of Defence",
-      "title": "Honourable Minister of Defence",
-      "address": "Ship House, Central Business District, Abuja"
-    },
-    {
-      "name": "National Human Rights Commission",
-      "title": "Executive Secretary",
-      "address": "NHRC Headquarters, Maitama, Abuja"
-    },
-    {
-      "name": "Public Complaints Commission",
-      "title": "Chief Commissioner",
-      "address": "PCC Headquarters, Garki, Abuja"
-    }
-  ],
-
   "Banking": [
     {
+      "key": "cbn",
       "name": "Central Bank of Nigeria (CBN)",
       "title": "Governor",
-      "address": "CBN Headquarters, Tafawa Balewa Way, Abuja"
+      "address": "CBN Headquarters, Abuja, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [],
+      "supervised_by": [],
+      "always_cc": [
+        "pcc"
+      ],
+      "category": "Banking",
+      "keywords": [
+        "cbn",
+        "central bank",
+        "bank charges",
+        "fx",
+        "forex"
+      ]
     },
     {
-      "name": "Economic and Financial Crimes Commission (EFCC)",
-      "title": "Executive Chairman",
-      "address": "EFCC Headquarters, Jabi, Abuja"
-    },
-    {
+      "key": "ndic",
       "name": "Nigeria Deposit Insurance Corporation (NDIC)",
       "title": "Managing Director",
-      "address": "Plot 447/448 Constitutions Avenue, Abuja"
+      "address": "NDIC Headquarters, Abuja, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [],
+      "supervised_by": [],
+      "always_cc": [
+        "pcc"
+      ],
+      "category": "Banking",
+      "keywords": [
+        "ndic",
+        "deposit insurance"
+      ]
     }
   ],
-
-  "Education": [
-    {
-      "name": "Federal Ministry of Education",
-      "title": "Honourable Minister of Education",
-      "address": "Federal Secretariat, Phase III, Abuja"
-    },
-    {
-      "name": "National Universities Commission (NUC)",
-      "title": "Executive Secretary",
-      "address": "26 Aguiyi Ironsi St, Maitama, Abuja"
-    }
-  ],
-
-  "Health": [
-    {
-      "name": "Federal Ministry of Health",
-      "title": "Honourable Minister of Health",
-      "address": "Federal Secretariat, Phase III, Abuja"
-    },
-    {
-      "name": "Nigeria Centre for Disease Control (NCDC)",
-      "title": "Director General",
-      "address": "Plot 801, Ebitu Ukiwe Street, Jabi, Abuja"
-    }
-  ],
-
   "Embassy": [
     {
+      "key": "us_embassy",
       "name": "US Embassy Nigeria",
-      "title": "Ambassador",
-      "address": "Plot 1075 Diplomatic Drive, Central Area, Abuja"
-    },
-    {
-      "name": "British High Commission",
-      "title": "High Commissioner",
-      "address": "Plot 1133 Garki District, Abuja"
-    },
-    {
-      "name": "European Union Delegation",
-      "title": "Ambassador",
-      "address": "Plot 1113 Abubakar Tafawa Balewa Way, Abuja"
+      "title": "Consular Officer",
+      "address": "No. 2 Walter Carrington Crescent, Victoria Island, Lagos, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [],
+      "supervised_by": [],
+      "always_cc": [],
+      "category": "Embassy",
+      "keywords": [
+        "us embassy",
+        "american embassy",
+        "visa denial",
+        "visa"
+      ]
     }
   ],
-
   "General": [
     {
+      "key": "pcc",
       "name": "Public Complaints Commission",
       "title": "Chief Commissioner",
-      "address": "Garki, Abuja"
+      "address": "PCC Headquarters, Plot 647 Ahmadu Bello Way, Garki, Abuja, Nigeria",
+      "email": "complaints@pcc.gov.ng, info@pcc.gov.ng",
+      "phone": [],
+      "supervises": [],
+      "supervised_by": [],
+      "always_cc": [],
+      "category": "Ombudsman",
+      "keywords": [
+        "public complaints commission",
+        "pcc",
+        "ombudsman",
+        "administrative injustice"
+      ]
     },
     {
+      "key": "nhrc",
       "name": "National Human Rights Commission",
       "title": "Executive Secretary",
-      "address": "Maitama, Abuja"
+      "address": "NHRC Headquarters, Maitama, Abuja, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [],
+      "supervised_by": [],
+      "always_cc": [
+        "pcc"
+      ],
+      "category": "Human Rights",
+      "keywords": [
+        "nhrc",
+        "human rights commission"
+      ]
+    }
+  ],
+  "Military": [],
+  "Education": [],
+  "Health": [],
+  "electricity": [
+    {
+      "key": "aedc",
+      "name": "Abuja Electricity Distribution Company (AEDC)",
+      "title": "Managing Director",
+      "address": "AEDC Headquarters, Abuja, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [],
+      "supervised_by": [
+        "nerc",
+        "min_power"
+      ],
+      "always_cc": [
+        "pcc"
+      ],
+      "category": "Electricity",
+      "keywords": [
+        "aedc",
+        "abuja disco",
+        "abuja electricity",
+        "no light",
+        "overbilling",
+        "estimated billing",
+        "prepaid meter"
+      ]
+    },
+    {
+      "key": "nerc",
+      "name": "Nigerian Electricity Regulatory Commission (NERC)",
+      "title": "Chairman",
+      "address": "NERC Headquarters, Abuja, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [
+        "aedc"
+      ],
+      "supervised_by": [
+        "min_power"
+      ],
+      "always_cc": [
+        "pcc"
+      ],
+      "category": "Regulator",
+      "keywords": [
+        "nerc",
+        "regulator",
+        "electricity complaint",
+        "disco regulation"
+      ]
+    },
+    {
+      "key": "min_power",
+      "name": "Federal Ministry of Power",
+      "title": "Honourable Minister of Power",
+      "address": "Federal Secretariat, Abuja, Nigeria",
+      "email": "",
+      "phone": [],
+      "supervises": [
+        "nerc",
+        "aedc"
+      ],
+      "supervised_by": [],
+      "always_cc": [
+        "pcc"
+      ],
+      "category": "Ministry",
+      "keywords": [
+        "ministry of power",
+        "minister of power",
+        "power ministry"
+      ]
     }
   ]
 }
