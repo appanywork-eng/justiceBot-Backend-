@@ -1,6 +1,6 @@
 /**
- * JusticeBot Backend (A6 – HYBRID)
- * Express + OpenAI + AI category detection + JSON institutions + PCC/NHRC watchdogs
+ * JusticeBot Backend (A7 – World Brain Routing)
+ * Express + OpenAI + AI institution detection + PCC/NHRC watchdogs
  */
 
 const express = require("express");
@@ -11,23 +11,17 @@ const path = require("path");
 const OpenAI = require("openai");
 
 // ----------------------------------------------------
-// LOAD institutions.json
+// LOAD institutions.json (still used for electricity, etc.)
 // ----------------------------------------------------
 let INSTITUTIONS_JSON = {};
 try {
   const filePath = path.join(__dirname, "data", "institutions.json");
   const raw = fs.readFileSync(filePath, "utf8");
   INSTITUTIONS_JSON = JSON.parse(raw);
-  console.log("A6 institutions loaded successfully");
+  console.log("A7 institutions loaded successfully");
 } catch (err) {
   console.error("Failed to load institutions.json:", err);
   INSTITUTIONS_JSON = {};
-}
-
-// Build a map for case-insensitive category lookups
-const CATEGORY_KEY_MAP = {};
-for (const key of Object.keys(INSTITUTIONS_JSON || {})) {
-  CATEGORY_KEY_MAP[key.trim().toLowerCase()] = key;
 }
 
 // ----------------------------------------------------
@@ -61,7 +55,7 @@ app.use(express.json());
 // BASIC ROUTES
 // ----------------------------------------------------
 app.get("/", (req, res) => {
-  res.send("JusticeBot A6 Hybrid Backend is running successfully.");
+  res.send("JusticeBot A7 World Brain Backend is running successfully.");
 });
 
 app.get("/health", (req, res) => {
@@ -135,14 +129,15 @@ function applyGlobalWatchdogs(description, inst) {
 
   const addCc = (orgObj) => {
     if (!orgObj || !orgObj.org) return;
-
     const exists = result.ccList.some(
       (c) =>
         c &&
         typeof c.org === "string" &&
         c.org.toLowerCase() === orgObj.org.toLowerCase()
     );
-    if (!exists) result.ccList.push(orgObj);
+    if (!exists) {
+      result.ccList.push(orgObj);
+    }
   };
 
   // 1. PCC – ALWAYS CC (administrative injustice watchdog)
@@ -151,7 +146,7 @@ function applyGlobalWatchdogs(description, inst) {
     email: "complaints@pcc.gov.ng, info@pcc.gov.ng",
   });
 
-  // 2. NHRC – only for human-rights issues
+  // 2. NHRC – ONLY for human-rights related complaints
   const d = (description || "").toLowerCase();
   const humanRightsKeywords = [
     "human right",
@@ -189,133 +184,109 @@ function applyGlobalWatchdogs(description, inst) {
   return result;
 }
 
-// ---------- AI CATEGORY CLASSIFIER ----------
-async function classifyComplaintCategory(description) {
-  if (!openai) return null;
-
-  const categoryKeys = Object.keys(INSTITUTIONS_JSON || {});
-  if (!categoryKeys.length) return null;
-
-  const categoriesList = categoryKeys.join(", ");
+// ---------- AI INSTITUTION DETECTION (WORLD-WIDE) ----------
+async function aiDetectInstitutions(description) {
+  if (!openai) {
+    return { primary: null, through: null, ccList: [] };
+  }
 
   try {
     const resp = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0,
+      temperature: 0.3,
       messages: [
         {
           role: "system",
           content:
-            "You are a Nigerian legal routing assistant. " +
-            "Your ONLY job is to classify complaints into institution categories. " +
-            "Valid categories are:\n" +
-            categoriesList +
-            "\nRespond ONLY with JSON, no markdown, no explanation.",
+            "You are an expert global complaints-routing assistant. " +
+            "Read a complaint and determine:\n" +
+            "1) The most appropriate PRIMARY institution to address the petition to (the letter's addressee).\n" +
+            "2) Any SUPERVISING or oversight institutions (regulators, ministries, higher authorities).\n" +
+            "3) Any additional bodies that should be CCed (ombuds, rights bodies, etc.).\n\n" +
+            "Return ONLY valid JSON. No markdown, no comments. Shape:\n" +
+            "{\n" +
+            '  "primary": { "org": string, "title": string, "email": string | "" },\n' +
+            '  "supervising": [ { "org": string, "title": string, "email": string | "" } ],\n' +
+            '  "cc": [ { "org": string, "title": string, "email": string | "" } ]\n' +
+            "}\n\n" +
+            "If you are unsure of an email, set it to an empty string. " +
+            "For Nigerian complaints, lean towards the correct Nigerian regulators / ministries / agencies. " +
+            "For foreign complaints, choose the correct local institutions in that country (e.g. police chief, mayor, ministries, ombudsmen).",
         },
         {
           role: "user",
           content:
             "Complaint text:\n" +
             description +
-            "\n\nReturn JSON like:\n" +
-            '{ "category": "<one of the categories>", "cc_categories": ["<optional other categories to copy>"] }',
+            "\n\nReturn ONLY the JSON object with primary, supervising, and cc as described.",
         },
       ],
     });
 
     const text = resp.choices?.[0]?.message?.content || "";
-    let parsed = null;
-
+    let data = null;
     try {
-      parsed = JSON.parse(text);
+      data = JSON.parse(text);
     } catch (err) {
-      console.error("Failed to parse category JSON:", text);
-      return null;
+      console.error("Failed to parse AI institutions JSON:", text);
+      return { primary: null, through: null, ccList: [] };
     }
 
-    if (!parsed || typeof parsed.category !== "string") {
-      return null;
+    const normalizeOrg = (o) => {
+      if (!o || typeof o.org !== "string" || !o.org.trim()) return null;
+      return {
+        org: o.org.trim(),
+        title: typeof o.title === "string" ? o.title.trim() : "",
+        email: typeof o.email === "string" ? o.email.trim() : "",
+      };
+    };
+
+    const primary = normalizeOrg(data.primary);
+    let through = null;
+    const ccList = [];
+
+    if (Array.isArray(data.supervising) && data.supervising.length > 0) {
+      const firstSuper = normalizeOrg(data.supervising[0]);
+      if (firstSuper) through = firstSuper;
+
+      for (let i = 1; i < data.supervising.length; i++) {
+        const s = normalizeOrg(data.supervising[i]);
+        if (s) ccList.push(s);
+      }
     }
 
-    if (!Array.isArray(parsed.cc_categories)) {
-      parsed.cc_categories = [];
+    if (Array.isArray(data.cc)) {
+      for (const c of data.cc) {
+        const norm = normalizeOrg(c);
+        if (!norm) continue;
+
+        const exists = ccList.some(
+          (x) => x.org.toLowerCase() === norm.org.toLowerCase()
+        );
+        if (!exists) ccList.push(norm);
+      }
     }
 
-    console.log("AI category classification:", parsed);
-    return parsed;
+    return { primary, through, ccList };
   } catch (err) {
-    console.error("Error during AI category classification:", err);
-    return null;
+    console.error("Error during AI institution detection:", err);
+    return { primary: null, through: null, ccList: [] };
   }
 }
 
-// ---------- BUILD INSTITUTIONS FROM CATEGORY ----------
-function buildInstitutionsFromCategories(mainCategoryName, ccCategoryNames) {
-  const norm = (s) => (s || "").trim().toLowerCase();
-
-  let primary = null;
-  let through = null;
-  let ccList = [];
-
-  // Main category
-  const mainKey = CATEGORY_KEY_MAP[norm(mainCategoryName)];
-  if (mainKey && Array.isArray(INSTITUTIONS_JSON[mainKey])) {
-    const list = INSTITUTIONS_JSON[mainKey];
-    if (list.length > 0) {
-      primary = list[0]; // first = primary
-      if (list.length > 1) {
-        // others in that category become CC
-        ccList = ccList.concat(list.slice(1));
-      }
-    }
-  }
-
-  // Additional categories to CC (supervising / oversight)
-  if (Array.isArray(ccCategoryNames)) {
-    for (const rawCat of ccCategoryNames) {
-      const key = CATEGORY_KEY_MAP[norm(rawCat)];
-      if (!key || !Array.isArray(INSTITUTIONS_JSON[key])) continue;
-
-      for (const inst of INSTITUTIONS_JSON[key]) {
-        if (
-          !ccList.some(
-            (c) =>
-              c &&
-              typeof c.org === "string" &&
-              c.org.toLowerCase() === String(inst.org).toLowerCase()
-          )
-        ) {
-          ccList.push(inst);
-        }
-      }
-    }
-  }
-
-  return { primary, through, ccList };
-}
-
-// ---------- HYBRID INSTITUTION DETECTION ----------
+// ---------- HYBRID DETECTION: ELECTRICITY FIRST, THEN AI ----------
 async function detectInstitutionsHybrid(description) {
-  // 1. Electricity manual rule first (fast & precise)
+  // 1. Hard-coded electricity rule (AEDC / NERC etc.)
   const elec = detectElectricity(description);
   if (elec) {
-    console.log("Detected electricity category via rule-based logic");
+    console.log("Detected electricity complaint via rule-based logic");
     return elec;
   }
 
-  // 2. AI category + JSON
-  const cls = await classifyComplaintCategory(description);
-  if (!cls) {
-    console.log("No AI classification; returning empty institution set");
-    return { primary: null, through: null, ccList: [] };
-  }
-
-  const inst = buildInstitutionsFromCategories(
-    cls.category,
-    cls.cc_categories || []
-  );
-  console.log("Institutions from AI+JSON:", inst);
-  return inst;
+  // 2. Generic AI routing for everything else
+  const aiInst = await aiDetectInstitutions(description);
+  console.log("AI institution routing result:", aiInst);
+  return aiInst;
 }
 
 // ----------------------------------------------------
@@ -359,7 +330,7 @@ app.post("/generate-petition", async (req, res) => {
     console.error("Error reading extra fields from body:", err);
   }
 
-  // 2 – detect institutions (hybrid) and apply watchdogs
+  // 2 – detect institutions (hybrid AI + electricity) and apply watchdogs
   let inst = { primary: null, through: null, ccList: [] };
   try {
     inst = await detectInstitutionsHybrid(description);
@@ -369,6 +340,12 @@ app.post("/generate-petition", async (req, res) => {
   }
 
   inst = applyGlobalWatchdogs(description, inst);
+
+  // Ensure ccList has no null/empty entries (avoid empty bullet in UI)
+  if (!Array.isArray(inst.ccList)) inst.ccList = [];
+  inst.ccList = inst.ccList.filter(
+    (c) => c && typeof c.org === "string" && c.org.trim()
+  );
 
   // 3 – generate petition (OpenAI or fallback)
   let petitionText = "";
@@ -406,7 +383,7 @@ app.post("/generate-petition", async (req, res) => {
           {
             role: "system",
             content:
-              "You are an expert Nigerian petition-drafting lawyer. " +
+              "You are an expert Nigerian petition-drafting lawyer working globally. " +
               "Write very formal petitions suitable for professional institutions and courts. " +
               "ALWAYS use the REAL complainant details (name, address, email, phone, date) at the top. " +
               "Do NOT use placeholders like [Your Name] or [Your Address]. " +
@@ -462,5 +439,5 @@ app.post("/generate-petition", async (req, res) => {
 // START SERVER
 // ----------------------------------------------------
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`JusticeBot A6 Hybrid Backend running on port ${PORT}`);
+  console.log(`JusticeBot A7 World Brain Backend running on port ${PORT}`);
 });
