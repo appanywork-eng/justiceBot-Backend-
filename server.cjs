@@ -1,5 +1,5 @@
 /**
- * JusticeBot Backend (A4)
+ * JusticeBot Backend (A5)
  * Express + OpenAI + Institution detection + PCC/NHRC watchdog CC
  */
 
@@ -18,7 +18,7 @@ try {
   const filePath = path.join(__dirname, "data", "institutions.json");
   const raw = fs.readFileSync(filePath, "utf8");
   INSTITUTIONS_JSON = JSON.parse(raw);
-  console.log("A1 institutions loaded successfully");
+  console.log("A5 institutions loaded successfully");
 } catch (err) {
   console.error("Failed to load institutions.json:", err);
   INSTITUTIONS_JSON = {};
@@ -55,7 +55,7 @@ app.use(express.json());
 // BASIC ROUTES
 // ----------------------------------------------------
 app.get("/", (req, res) => {
-  res.send("JusticeBot A4 Backend is running successfully.");
+  res.send("JusticeBot A5 Backend is running successfully.");
 });
 
 app.get("/health", (req, res) => {
@@ -79,12 +79,57 @@ function textIncludesAny(text, keywords) {
   return keywords.some((kw) => t.includes(kw.toLowerCase()));
 }
 
-// ----------------------------------------------------
-// RULE-BASED DETECTORS (fall-back logic)
-// ----------------------------------------------------
+// Normalize an institution object from JSON
+function normalizeInstitution(raw, category) {
+  if (!raw || typeof raw !== "object") return null;
 
-// Electricity-specific institution detection (AEDC / NERC / etc.)
-function detectElectricity(description) {
+  const org =
+    raw.org ||
+    raw.name ||
+    raw.title ||
+    raw.label ||
+    "";
+
+  const email =
+    raw.email ||
+    raw.emails ||
+    "";
+
+  const address = raw.address || "";
+  const title = raw.title || "";
+  const key = raw.key || null;
+
+  if (!org) return null;
+
+  return {
+    org,
+    email,
+    address,
+    title,
+    category: category || "",
+    key,
+  };
+}
+
+// Flatten all institutions into a list with indices
+function flattenInstitutions() {
+  const flat = [];
+  const json = INSTITUTIONS_JSON || {};
+
+  Object.keys(json).forEach((category) => {
+    const arr = json[category];
+    if (!Array.isArray(arr)) return;
+    arr.forEach((item) => {
+      const norm = normalizeInstitution(item, category);
+      if (norm) flat.push(norm);
+    });
+  });
+
+  return flat;
+}
+
+// Electricity-specific fallback institution detection (AEDC / NERC / etc.)
+function detectElectricityFallback(description) {
   const d = (description || "").toLowerCase();
 
   if (
@@ -97,96 +142,45 @@ function detectElectricity(description) {
       "overbilling",
       "power",
       "light",
-      "light bill",
-      "power supply",
     ])
   ) {
     return null;
   }
 
-  // Primary – try AEDC or generic DISCO
   let primary =
     INSTITUTIONS_JSON.electricity?.find((i) => i.key === "aedc") || null;
 
   if (!primary) {
     primary = {
-      key: "generic_dis",
-      org:
-        "The Managing Director,\n" +
-        "[Electricity Distribution Company],\n" +
-        "Nigeria.",
+      org: "The Managing Director,\n[Electricity Distribution Company]",
       email: "",
     };
+  } else {
+    primary = normalizeInstitution(primary, "electricity");
   }
 
-  // Through – NERC (regulator)
-  const through =
+  const throughRaw =
     INSTITUTIONS_JSON.electricity?.find((i) => i.key === "nerc") || null;
+  const through = normalizeInstitution(throughRaw, "electricity");
 
-  // CC list – any others configured in electricity category (e.g. power ministry)
-  const powerMin =
-    INSTITUTIONS_JSON.electricity?.find((i) => i.key === "power_ministry") ||
-    null;
-
-  const ccList = [powerMin].filter(Boolean);
-
-  return { primary, through, ccList };
-}
-
-// Education / school complaints (very simple generic fall-back)
-function detectEducation(description) {
-  const d = (description || "").toLowerCase();
-
-  const hasEdu = textIncludesAny(d, [
-    "school",
-    "teacher",
-    "student",
-    "pupil",
-    "principal",
-    "headmaster",
-    "headmistress",
-    "college",
-    "secondary",
-    "primary",
-    "ubec",
-    "subeb",
-    "education board",
-    "ubeb",
-    "university",
-    "polytechnic",
-  ]);
-
-  if (!hasEdu) return null;
-
-  const primary =
-    INSTITUTIONS_JSON.education?.find((i) => i.key === "school_authority") || {
-      key: "school_authority",
-      org:
-        "The Head of School / Principal / Provost,\n" +
-        "[Name of School / Institution],\n" +
-        "[City / State], Nigeria.",
-      email: "",
-    };
-
-  // Try FCT UBEB or generic education ministry from JSON if present
-  const through =
-    INSTITUTIONS_JSON.education?.find((i) => i.key === "fct_ubeb") ||
-    INSTITUTIONS_JSON.education?.find((i) => i.key === "education_ministry") ||
-    null;
-
+  const ccRaw = INSTITUTIONS_JSON.electricity?.find(
+    (i) => i.key === "power_ministry"
+  );
   const ccList = [];
+  const normCc = normalizeInstitution(ccRaw, "electricity");
+  if (normCc) ccList.push(normCc);
+
   return { primary, through, ccList };
 }
 
-// ----------------------------------------------------
-// GLOBAL WATCHDOGS (PCC + NHRC)
-// ----------------------------------------------------
+// Global watchdogs: PCC always, NHRC for human-rights cases
 function applyGlobalWatchdogs(description, inst) {
   const result = inst || {};
   if (!Array.isArray(result.ccList)) result.ccList = [];
 
   const addCc = (orgObj) => {
-    if (!orgObj || !orgObj.org) return;
+    if (!orgObj) return;
+    if (!orgObj.org) return;
 
     const exists = result.ccList.some(
       (c) =>
@@ -194,18 +188,23 @@ function applyGlobalWatchdogs(description, inst) {
         typeof c.org === "string" &&
         c.org.toLowerCase() === orgObj.org.toLowerCase()
     );
-    if (!exists) result.ccList.push(orgObj);
+    if (!exists) {
+      result.ccList.push(orgObj);
+    }
   };
 
-  // 1. ALWAYS CC PCC HQ (administrative injustice watchdog)
-  addCc({
-    org:
-      "Honourable Chief Commissioner,\n" +
-      "Public Complaints Commission,\n" +
-      "No. 25 Aguiyi Ironsi Street,\n" +
-      "Maitama, Abuja, Nigeria.",
-    email: "complaints@pcc.gov.ng, info@pcc.gov.ng",
-  });
+  // 1. PCC – ALWAYS CC (administrative injustice watchdog)
+  addCc(
+    normalizeInstitution(
+      {
+        org: "Public Complaints Commission",
+        email: "complaints@pcc.gov.ng, info@pcc.gov.ng",
+        address: "PCC Headquarters, 25 Aguiyi Ironsi Street, Maitama, Abuja",
+        title: "Honourable Chief Commissioner",
+      },
+      "General"
+    )
+  );
 
   // 2. NHRC – ONLY for human-rights related complaints
   const d = (description || "").toLowerCase();
@@ -233,118 +232,140 @@ function applyGlobalWatchdogs(description, inst) {
     "oppression",
   ];
 
-  const keywordHR = humanRightsKeywords.some((kw) => d.includes(kw));
   const isHR =
-    result.isHumanRightsViolation === true ||
-    keywordHR ||
+    humanRightsKeywords.some((kw) => d.includes(kw)) ||
     d.includes("human rights");
 
   if (isHR) {
-    addCc({
-      org:
-        "The Executive Secretary,\n" +
-        "National Human Rights Commission,\n" +
-        "Abuja, Nigeria.",
-      email: "info@nhrc.gov.ng",
-    });
+    addCc(
+      normalizeInstitution(
+        {
+          org: "National Human Rights Commission",
+          email: "info@nhrc.gov.ng",
+          address: "NHRC Headquarters, Maitama, Abuja",
+          title: "Executive Secretary",
+        },
+        "HumanRights"
+      )
+    );
   }
 
   return result;
 }
 
 // ----------------------------------------------------
-// AI INSTITUTION ANALYZER (OpenAI)
+// OPENAI-BASED INSTITUTION DETECTION
 // ----------------------------------------------------
-async function analyzeInstitutionsWithOpenAI(description) {
+async function detectInstitutionsWithOpenAI(description) {
   if (!openai) return null;
-  const text = (description || "").trim();
-  if (!text) return null;
+
+  const flat = flattenInstitutions();
+  if (!flat.length) return null;
+
+  // Build a compact list for the model
+  const lines = flat.map((inst, idx) => {
+    const n = inst.org || "Unknown";
+    const cat = inst.category || "Uncategorised";
+    const title = inst.title || "";
+    return `${idx + 1}. [${cat}] ${n}${title ? " (" + title + ")" : ""}`;
+  });
+
+  const institutionsList = lines.join("\n");
+
+  const prompt =
+    `You are a Nigerian legal/institutional expert.\n` +
+    `A citizen has written a complaint. You are given a numbered list of Nigerian institutions.\n` +
+    `Your job is to choose:\n` +
+    `- ONE primary institution that should receive the petition (or null if none).\n` +
+    `- ZERO OR ONE supervising/through institution (e.g. regulator, supervising ministry).\n` +
+    `- ZERO OR MORE additional institutions to copy (cc).\n` +
+    `Also decide:\n` +
+    `- isAdministrativeInjustice: true if this is about administrative injustice in any institution.\n` +
+    `- isHumanRightsCase: true if this involves human rights violations.\n\n` +
+    `Complaint text:\n"""${description}"""\n\n` +
+    `Institutions list:\n${institutionsList}\n\n` +
+    `Return ONLY valid JSON with this exact structure:\n` +
+    `{\n` +
+    `  "primaryIndex": number | null,\n` +
+    `  "throughIndices": number[],\n` +
+    `  "ccIndices": number[],\n` +
+    `  "isAdministrativeInjustice": boolean,\n` +
+    `  "isHumanRightsCase": boolean\n` +
+    `}\n` +
+    `Use 1-based indices as in the list. Do NOT include any extra text before or after the JSON.`;
 
   try {
     const ai = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.2,
       messages: [
         {
           role: "system",
           content:
-            "You are an expert Nigerian administrative justice analyst. " +
-            "Given a complaint, identify the correct institution(s) responsible. " +
-            "Return JSON only in this strict structure:\n" +
-            "{ \"primary\": {\"org\": \"\", \"email\": \"\"}, " +
-            "\"through\": {\"org\": \"\", \"email\": \"\"}, " +
-            "\"cc\": [{\"org\": \"\", \"email\": \"\"}], " +
-            "\"isHumanRightsViolation\": true/false }\n" +
-            "If any field is unknown, return empty strings or null. " +
-            "Use real Nigerian institutions: regulators, ministries, agencies, state authorities, etc. " +
-            "Do NOT invent email addresses; if unknown, use empty string.",
+            "You are a precise JSON-only assistant. You MUST respond with valid JSON only.",
         },
         {
           role: "user",
-          content:
-            "Analyze this complaint and extract institutions:\n\n" +
-            text +
-            "\n\nReturn ONLY valid JSON, no explanations.",
+          content: prompt,
         },
       ],
+      temperature: 0.1,
     });
 
-    let raw = ai.choices?.[0]?.message?.content?.trim() || "";
-
-    // If model wraps in ```json, strip it
-    if (raw.startsWith("```")) {
-      const firstBrace = raw.indexOf("{");
-      const lastBrace = raw.lastIndexOf("}");
-      if (firstBrace !== -1 && lastBrace !== -1) {
-        raw = raw.slice(firstBrace, lastBrace + 1);
-      }
+    const content = ai.choices?.[0]?.message?.content || "";
+    let parsed = null;
+    try {
+      parsed = JSON.parse(content);
+    } catch (err) {
+      console.error("Error parsing OpenAI institution JSON:", err, content);
+      return null;
     }
 
-    const parsed = JSON.parse(raw);
-    return parsed;
+    if (!parsed || typeof parsed !== "object") return null;
+
+    const primaryIndex =
+      typeof parsed.primaryIndex === "number" ? parsed.primaryIndex : null;
+    const throughIndices = Array.isArray(parsed.throughIndices)
+      ? parsed.throughIndices
+      : [];
+    const ccIndices = Array.isArray(parsed.ccIndices) ? parsed.ccIndices : [];
+
+    const getByIndex = (idx) => {
+      if (!idx || typeof idx !== "number") return null;
+      const zero = idx - 1;
+      if (zero < 0 || zero >= flat.length) return null;
+      return flat[zero];
+    };
+
+    const primary = getByIndex(primaryIndex);
+    const through = getByIndex(throughIndices[0] || null);
+
+    const ccList = [];
+    ccIndices.forEach((idx) => {
+      const inst = getByIndex(idx);
+      if (!inst) return;
+      const exists = ccList.some(
+        (c) => c.org.toLowerCase() === inst.org.toLowerCase()
+      );
+      if (!exists) ccList.push(inst);
+    });
+
+    const result = {
+      primary: primary || null,
+      through: through || null,
+      ccList,
+      isAdministrativeInjustice: !!parsed.isAdministrativeInjustice,
+      isHumanRightsCase: !!parsed.isHumanRightsCase,
+    };
+
+    return result;
   } catch (err) {
-    console.error("AI institution analysis failed:", err);
+    console.error("OpenAI detection error:", err);
     return null;
   }
 }
 
-// Normalise AI JSON to internal structure
-function normaliseInstitutionsFromAI(aiResult) {
-  if (!aiResult || typeof aiResult !== "object") return {};
-
-  const primary = aiResult.primary && aiResult.primary.org
-    ? {
-        org: aiResult.primary.org,
-        email: aiResult.primary.email || "",
-      }
-    : null;
-
-  const through = aiResult.through && aiResult.through.org
-    ? {
-        org: aiResult.through.org,
-        email: aiResult.through.email || "",
-      }
-    : null;
-
-  const ccList = Array.isArray(aiResult.cc)
-    ? aiResult.cc
-        .filter((c) => c && c.org)
-        .map((c) => ({
-          org: c.org,
-          email: c.email || "",
-        }))
-    : [];
-
-  return {
-    primary,
-    through,
-    ccList,
-    isHumanRightsViolation: aiResult.isHumanRightsViolation === true,
-  };
-}
-
 // ----------------------------------------------------
-// POST: GENERATE PETITION (A4)
+// POST: GENERATE PETITION (A5)
 // ----------------------------------------------------
 app.post("/generate-petition", async (req, res) => {
   console.log("Incoming /generate-petition:", req.body);
@@ -384,28 +405,23 @@ app.post("/generate-petition", async (req, res) => {
     console.error("Error reading extra fields from body:", err);
   }
 
-  // 2 – Institution detection: AI FIRST, then fall-back rules
+  // 2 – detect institutions
   let inst = {};
-
   try {
-    const aiRaw = await analyzeInstitutionsWithOpenAI(description);
-    if (aiRaw) {
-      inst = normaliseInstitutionsFromAI(aiRaw);
-    } else {
-      inst =
-        detectElectricity(description) ||
-        detectEducation(description) ||
-        {};
+    // First try OpenAI global detection
+    inst = (await detectInstitutionsWithOpenAI(description)) || {};
+
+    // If that fails and it's electricity-related, fall back
+    if (!inst.primary && !inst.through && (!inst.ccList || !inst.ccList.length)) {
+      const fallback = detectElectricityFallback(description);
+      if (fallback) inst = fallback;
     }
   } catch (err) {
-    console.error("Error during institution detection:", err);
-    inst =
-      detectElectricity(description) ||
-      detectEducation(description) ||
-      {};
+    console.error("Error detecting institutions:", err);
+    inst = {};
   }
 
-  // 2b – Always apply PCC + NHRC global rules
+  // Apply PCC + NHRC global rules
   inst = applyGlobalWatchdogs(description, inst);
 
   // 3 – generate petition (OpenAI or fallback)
@@ -462,6 +478,7 @@ app.post("/generate-petition", async (req, res) => {
               "Use plain text paragraphs, suitable for printing or saving as PDF.",
           },
         ],
+        temperature: 0.3,
       });
 
       petitionText =
@@ -472,7 +489,7 @@ app.post("/generate-petition", async (req, res) => {
       petitionText = `Petition Draft:\n\n${description}`;
     }
   } catch (err) {
-    console.error("OpenAI error while drafting petition:", err);
+    console.error("OpenAI error (petition drafting):", err);
     petitionText = `Petition Draft:\n\n${description}`;
   }
 
@@ -499,5 +516,5 @@ app.post("/generate-petition", async (req, res) => {
 // START SERVER
 // ----------------------------------------------------
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`JusticeBot A4 Backend running on port ${PORT}`);
+  console.log(`JusticeBot A5 Backend running on port ${PORT}`);
 });
