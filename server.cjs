@@ -10,202 +10,252 @@ const fs = require("fs");
 const path = require("path");
 const OpenAI = require("openai");
 
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 // LOAD institutions.json
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 let INSTITUTIONS_JSON = {};
 try {
-    const filePath = path.join(__dirname, "data", "institutions.json");
-    const raw = fs.readFileSync(filePath, "utf8");
-    INSTITUTIONS_JSON = JSON.parse(raw);
-    console.log("A1 institutions loaded successfully");
+  const filePath = path.join(__dirname, "data", "institutions.json");
+  const raw = fs.readFileSync(filePath, "utf8");
+  INSTITUTIONS_JSON = JSON.parse(raw);
+  console.log("A1 institutions loaded successfully");
 } catch (err) {
-    console.error("Failed to load institutions.json:", err);
-    INSTITUTIONS_JSON = {};
+  console.error("Failed to load institutions.json:", err);
+  INSTITUTIONS_JSON = {};
 }
 
-// -------------------------------------------------------------------
-// OPENAI INIT
-// -------------------------------------------------------------------
+// ------------------------------------------------------
+// OPENAI INIT (optional)
+// ------------------------------------------------------
 let openai = null;
-
 if (process.env.OPENAI_API_KEY) {
-    try {
-        openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
-        });
-        console.log("OpenAI client initialised");
-    } catch (err) {
-        console.error("Error initialising OpenAI:", err);
-        openai = null;
-    }
+  try {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    console.log("OpenAI client initialised");
+  } catch (err) {
+    console.error("Error initialising OpenAI client:", err);
+    openai = null;
+  }
 } else {
-    console.log("OPENAI_API_KEY not set; using fallback petition text");
+  console.log("OPENAI_API_KEY not set; using fallback petition text");
 }
 
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 // EXPRESS INIT
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 // BASIC ROUTES
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 app.get("/", (req, res) => {
-    res.send("JusticeBot A1 Backend is running successfully.");
+  res.send("JusticeBot A1 Backend is running successfully.");
 });
 
 app.get("/health", (req, res) => {
-    res.json({ status: "ok", time: new Date().toISOString() });
+  res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// NEW TEST ROUTE
+// Simple test route to confirm OpenAI status from browser
 app.get("/test", (req, res) => {
-    res.json({
-        status: "ok",
-        message: "Test endpoint working",
-        openai_status: openai ? "ready" : "not_initialized",
-    });
+  res.json({
+    status: "ok",
+    message: "Test endpoint working",
+    openai_status: openai ? "ready" : "not_initialized",
+  });
 });
 
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 // HELPERS
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 function textIncludesAny(text, keywords) {
-    const t = (text || "").toLowerCase();
-    return keywords.some((kw) => t.includes(kw.toLowerCase()));
+  const t = (text || "").toLowerCase();
+  return keywords.some((kw) => t.includes(kw.toLowerCase()));
 }
 
 function detectElectricity(description) {
-    const d = (description || "").toLowerCase();
+  const d = (description || "").toLowerCase();
 
-    if (
-        !textIncludesAny(d, [
-            "electricity",
-            "disco",
-            "meter",
-            "prepaid",
-            "over billing",
-            "overbilling",
-            "power",
-            "light",
-        ])
-    ) {
-        return null;
-    }
+  // If it doesn't look like an electricity complaint, return null
+  if (
+    !textIncludesAny(d, [
+      "electricity",
+      "disco",
+      "meter",
+      "prepaid",
+      "over billing",
+      "overbilling",
+      "power",
+      "light",
+    ])
+  ) {
+    return null;
+  }
 
-    let primary =
-        INSTITUTIONS_JSON.electricity?.find((i) => i.key === "generic_dis") ||
-        null;
+  // Primary - AEDC or generic DISCO
+  let primary =
+    INSTITUTIONS_JSON.electricity?.find((i) => i.key === "aedc") || null;
 
-    if (!primary) {
-        primary = {
-            key: "generic_dis",
-            org: "The Managing Director,\n[Electricity Distribution Company]",
-            email: "",
-        };
-    }
+  if (!primary) {
+    primary = {
+      key: "generic_dis",
+      org: "The Managing Director,\n[Electricity Distribution Company]",
+      email: "",
+    };
+  }
 
-    const through = INSTITUTIONS_JSON.electricity?.find((i) => i.key === "nerc");
+  // Through - NERC (regulator)
+  const through = INSTITUTIONS_JSON.electricity?.find(
+    (i) => i.key === "nerc"
+  );
 
-    const ccList = [
-        INSTITUTIONS_JSON.electricity?.find((i) => i.key === "tcn"),
-        INSTITUTIONS_JSON.electricity?.find((i) => i.key === "min_power"),
-    ].filter(Boolean);
+  // CC list - any others configured
+  const ccList = [
+    INSTITUTIONS_JSON.electricity?.find((i) => i.key === "pcc"),
+    INSTITUTIONS_JSON.electricity?.find((i) => i.key === "fm_power"),
+  ].filter(Boolean);
 
-    return { primary, through, ccList };
+  return { primary, through, ccList };
 }
 
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 // POST: GENERATE PETITION (STABLE)
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 app.post("/generate-petition", async (req, res) => {
-    console.log("Incoming /generate-petition:", req.body);
+  console.log("Incoming /generate-petition:", req.body);
 
-    // 1 — Clean description
-    let description = "";
-    try {
-        if (req.body?.description) description = req.body.description;
-    } catch (err) {
-        console.error("Error reading description:", err);
+  // 1 — safely read description
+  let description = "";
+  try {
+    if (req.body && typeof req.body.description === "string") {
+      description = req.body.description;
     }
+  } catch (err) {
+    console.error("Error reading description from body:", err);
+  }
 
-    if (!description.trim()) {
-        return res.status(200).json({
-            petitionText: "Please enter your complaint description.",
-            primaryInstitution: null,
-            throughInstitution: null,
-            ccList: [],
-            error: "Description is required.",
-        });
+  if (!description.trim()) {
+    return res.status(200).json({
+      petitionText: "Please enter your complaint description.",
+      primaryInstitution: null,
+      throughInstitution: null,
+      ccList: [],
+      error: "Description is required.",
+    });
+  }
+
+  // 1b — read user details (for REAL data, not placeholders)
+  let fullName = "";
+  let email = "";
+  let phone = "";
+  let address = ""; // optional – add address field on frontend to fully use this
+
+  try {
+    if (typeof req.body.fullName === "string") fullName = req.body.fullName;
+    if (typeof req.body.email === "string") email = req.body.email;
+    if (typeof req.body.phone === "string") phone = req.body.phone;
+    if (typeof req.body.address === "string") address = req.body.address;
+  } catch (err) {
+    console.error("Error reading extra fields from body:", err);
+  }
+
+  // 2 — detect institution (never throw)
+  let inst = {};
+  try {
+    inst = detectElectricity(description) || {};
+  } catch (err) {
+    console.error("Error detecting institutions:", err);
+    inst = {};
+  }
+
+  // 3 — generate petition (OpenAI or fallback)
+  let petitionText = "";
+
+  try {
+    if (openai) {
+      const detailsLines = [];
+      if (fullName) detailsLines.push(`Name: ${fullName}`);
+      if (address) detailsLines.push(`Address: ${address}`);
+      if (email) detailsLines.push(`Email: ${email}`);
+      if (phone) detailsLines.push(`Phone: ${phone}`);
+
+      const complainantBlock =
+        detailsLines.length > 0
+          ? detailsLines.join("\n")
+          : "Use the complainant’s real details as provided in the petition app.";
+
+      const primaryOrg = inst.primary?.org || "";
+      const throughOrg = inst.through?.org || "";
+      const ccOrgList = Array.isArray(inst.ccList)
+        ? inst.ccList.map((c) => c.org).join("; ")
+        : "";
+
+      const ai = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert Nigerian petition-drafting lawyer. " +
+              "Write very formal petitions suitable for printing and sending directly. " +
+              "ALWAYS use the REAL complainant details (name, address, email, phone) passed to you. " +
+              "Do NOT use placeholders like [Your Name] or [Your Address].",
+          },
+          {
+            role: "user",
+            content:
+              `Complainant details:\n${complainantBlock}\n\n` +
+              (primaryOrg ? `Primary institution:\n${primaryOrg}\n\n` : "") +
+              (throughOrg ? `Through institution:\n${throughOrg}\n\n` : "") +
+              (ccOrgList ? `CC institutions:\n${ccOrgList}\n\n` : "") +
+              `Petition description:\n${description}\n\n` +
+              "Write the full petition letter with proper heading, address block, salutation, " +
+              "introduction, body paragraphs, prayer/relief requested, and closing. " +
+              "Make it ready for the complainant to sign and submit.",
+          },
+        ],
+      });
+
+      petitionText =
+        ai.choices?.[0]?.message?.content ||
+        `Petition Draft:\n\n${description}`;
+    } else {
+      // No OpenAI – simple fallback draft
+      petitionText = `Petition Draft:\n\n${description}`;
     }
+  } catch (err) {
+    console.error("OpenAI error:", err);
+    petitionText = `Petition Draft:\n\n${description}`;
+  }
 
-    // 2 — detect institution
-    let inst = {};
-    try {
-        inst = detectElectricity(description) || {};
-    } catch (err) {
-        console.error("Error detecting institutions:", err);
-        inst = {};
-    }
-
-    // 3 — generate petition (OpenAI or fallback)
-    let petitionText = "";
-
-    try {
-        if (openai) {
-            const ai = await openai.chat.completions.create({
-                model: "gpt-4o-mini",
-                messages: [
-                    {
-                        role: "system",
-                        content:
-                            "You are an expert Nigerian petition-drafting assistant. Produce very formal and official petitions.",
-                    },
-                    {
-                        role: "user",
-                        content: `Draft a very formal Nigerian petition based on this complaint:\n\n${description}`,
-                    },
-                ],
-            });
-
-            petitionText =
-                ai.choices?.[0]?.message?.content ||
-                `Petition Draft:\n\n${description}`;
-        } else {
-            petitionText = `Petition Draft:\n\n${description}`;
-        }
-    } catch (err) {
-        console.error("OpenAI error:", err);
-        petitionText = `Petition Draft:\n\n${description}`;
-    }
-
-    // 4 — always respond safely
-    try {
-        return res.status(200).json({
-            petitionText,
-            primaryInstitution: inst.primary || null,
-            throughInstitution: inst.through || null,
-            ccList: Array.isArray(inst.ccList) ? inst.ccList : [],
-        });
-    } catch (err) {
-        console.error("Error sending final JSON:", err);
-        return res.status(200).json({
-            petitionText,
-            primaryInstitution: null,
-            throughInstitution: null,
-            ccList: [],
-        });
-    }
+  // 4 — always respond safely
+  try {
+    return res.status(200).json({
+      petitionText,
+      primaryInstitution: inst.primary || null,
+      throughInstitution: inst.through || null,
+      ccList: Array.isArray(inst.ccList) ? inst.ccList : [],
+    });
+  } catch (err) {
+    console.error("Error sending final JSON:", err);
+    return res.status(200).json({
+      petitionText,
+      primaryInstitution: null,
+      throughInstitution: null,
+      ccList: [],
+    });
+  }
 });
 
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 // START SERVER
-// -------------------------------------------------------------------
+// ------------------------------------------------------
 app.listen(PORT, "0.0.0.0", () => {
-    console.log(`JusticeBot A1 Backend running on port ${PORT}`);
+  console.log(`JusticeBot A1 Backend running on port ${PORT}`);
 });
