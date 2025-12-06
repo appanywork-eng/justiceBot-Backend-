@@ -1,6 +1,6 @@
 /**
- * JusticeBot Backend (A7 – World Brain Routing)
- * Express + OpenAI + AI institution detection + PCC/NHRC watchdogs
+ * JusticeBot / PetitionDesk Backend (A7 – World Brain Routing)
+ * Express + OpenAI + AI institution detection + PCC/NHRC
  */
 
 const express = require("express");
@@ -10,9 +10,9 @@ const fs = require("fs");
 const path = require("path");
 const OpenAI = require("openai");
 
-// ----------------------------------------------------
+// --------------------------------------------------------------
 // LOAD institutions.json (still used for electricity, etc.)
-// ----------------------------------------------------
+// --------------------------------------------------------------
 let INSTITUTIONS_JSON = {};
 try {
   const filePath = path.join(__dirname, "data", "institutions.json");
@@ -24,9 +24,9 @@ try {
   INSTITUTIONS_JSON = {};
 }
 
-// ----------------------------------------------------
+// --------------------------------------------------------------
 // OPENAI INIT (optional)
-// ----------------------------------------------------
+// --------------------------------------------------------------
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
   try {
@@ -39,23 +39,23 @@ if (process.env.OPENAI_API_KEY) {
     openai = null;
   }
 } else {
-  console.log("OPENAI_API_KEY not set; using fallback petition text only");
+  console.log("OPENAI_API_KEY not set; using fallback petitions only");
 }
 
-// ----------------------------------------------------
+// --------------------------------------------------------------
 // EXPRESS INIT
-// ----------------------------------------------------
+// --------------------------------------------------------------
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// ----------------------------------------------------
+// --------------------------------------------------------------
 // BASIC ROUTES
-// ----------------------------------------------------
+// --------------------------------------------------------------
 app.get("/", (req, res) => {
-  res.send("JusticeBot A7 World Brain Backend is running successfully.");
+  res.send("JusticeBot A7 World Brain Backend is running");
 });
 
 app.get("/health", (req, res) => {
@@ -70,15 +70,17 @@ app.get("/test", (req, res) => {
   });
 });
 
-// ----------------------------------------------------
+// --------------------------------------------------------------
 // HELPERS
-// ----------------------------------------------------
+// --------------------------------------------------------------
 function textIncludesAny(text, keywords) {
   const t = (text || "").toLowerCase();
   return keywords.some((kw) => t.includes(kw.toLowerCase()));
 }
 
-// ---------- ELECTRICITY SPECIAL CASE (AEDC / NERC etc.) ----------
+// --------------------------------------------------------------
+// ELECTRICITY SPECIAL CASE (AEDC / NERC etc.)
+// --------------------------------------------------------------
 function detectElectricity(description) {
   const d = (description || "").toLowerCase();
 
@@ -105,7 +107,7 @@ function detectElectricity(description) {
   if (!primary) {
     primary = {
       key: "generic_dis",
-      org: "The Managing Director,\n[Electricity Distribution Company]",
+      org: "The Managing Director,\nElectricity Distribution Company",
       email: "",
     };
   }
@@ -116,13 +118,16 @@ function detectElectricity(description) {
 
   // Extra CCs – e.g., Power Ministry if configured
   const ccList = [
-    INSTITUTIONS_JSON.electricity?.find((i) => i.key === "power_ministry"),
+    INSTITUTIONS_JSON.electricity?.find((i) => i.key === "power_ministry") ||
+      null,
   ].filter(Boolean);
 
   return { primary, through, ccList };
 }
 
-// ---------- GLOBAL WATCHDOGS (PCC + NHRC) ----------
+// --------------------------------------------------------------
+// GLOBAL WATCHDOGS (PCC + NHRC)
+// --------------------------------------------------------------
 function applyGlobalWatchdogs(description, inst) {
   const result = inst || {};
   if (!Array.isArray(result.ccList)) result.ccList = [];
@@ -171,9 +176,7 @@ function applyGlobalWatchdogs(description, inst) {
     "degrading treatment",
     "oppression",
   ];
-
-  const isHR = humanRightsKeywords.some((kw) => d.includes(kw));
-
+  const isHR = humanRightsKeywords.some((kw) => d.includes(kw.toLowerCase()));
   if (isHR) {
     addCc({
       org: "National Human Rights Commission",
@@ -184,7 +187,9 @@ function applyGlobalWatchdogs(description, inst) {
   return result;
 }
 
-// ---------- AI INSTITUTION DETECTION (WORLD-WIDE) ----------
+// --------------------------------------------------------------
+// AI INSTITUTION DETECTION (WORLD-WIDE)
+// --------------------------------------------------------------
 async function aiDetectInstitutions(description) {
   if (!openai) {
     return { primary: null, through: null, ccList: [] };
@@ -198,27 +203,27 @@ async function aiDetectInstitutions(description) {
         {
           role: "system",
           content:
-            "You are an expert global complaints-routing assistant. " +
+            "You are an expert global complaints-routing assistant.\n" +
             "Read a complaint and determine:\n" +
-            "1) The most appropriate PRIMARY institution to address the petition to (the letter's addressee).\n" +
-            "2) Any SUPERVISING or oversight institutions (regulators, ministries, higher authorities).\n" +
-            "3) Any additional bodies that should be CCed (ombuds, rights bodies, etc.).\n\n" +
-            "Return ONLY valid JSON. No markdown, no comments. Shape:\n" +
+            "1) The most appropriate PRIMARY institution to receive the complaint.\n" +
+            "2) Any SUPERVISING or oversight institutions (e.g. regulators).\n" +
+            "3) Any additional bodies that should be CCed.\n" +
+            "Return ONLY valid JSON. No markdown, no comments.\n" +
+            "Schema:\n" +
             "{\n" +
-            '  "primary": { "org": string, "title": string, "email": string | "" },\n' +
-            '  "supervising": [ { "org": string, "title": string, "email": string | "" } ],\n' +
-            '  "cc": [ { "org": string, "title": string, "email": string | "" } ]\n' +
-            "}\n\n" +
-            "If you are unsure of an email, set it to an empty string. " +
-            "For Nigerian complaints, lean towards the correct Nigerian regulators / ministries / agencies. " +
-            "For foreign complaints, choose the correct local institutions in that country (e.g. police chief, mayor, ministries, ombudsmen).",
+            '  "primary": { "org": string, "title": string, "email": string, "address": string },\n' +
+            '  "supervising": [ { "org": string, "title": string, "email": string, "address": string } ],\n' +
+            '  "cc": [ { "org": string, "title": string, "email": string, "address": string } ]\n' +
+            "}\n" +
+            "If you are unsure of an email or address, set it to an empty string.\n" +
+            "For Nigerian complaints, choose the correct Nigerian institutions.\n",
         },
         {
           role: "user",
           content:
             "Complaint text:\n" +
             description +
-            "\n\nReturn ONLY the JSON object with primary, supervising, and cc as described.",
+            "\n\nReturn ONLY the JSON object with primary, supervising, and cc.",
         },
       ],
     });
@@ -228,7 +233,7 @@ async function aiDetectInstitutions(description) {
     try {
       data = JSON.parse(text);
     } catch (err) {
-      console.error("Failed to parse AI institutions JSON:", text);
+      console.error("Failed to parse AI institutions JSON:", err, text);
       return { primary: null, through: null, ccList: [] };
     }
 
@@ -238,6 +243,7 @@ async function aiDetectInstitutions(description) {
         org: o.org.trim(),
         title: typeof o.title === "string" ? o.title.trim() : "",
         email: typeof o.email === "string" ? o.email.trim() : "",
+        address: typeof o.address === "string" ? o.address.trim() : "",
       };
     };
 
@@ -245,13 +251,13 @@ async function aiDetectInstitutions(description) {
     let through = null;
     const ccList = [];
 
-    if (Array.isArray(data.supervising) && data.supervising.length > 0) {
-      const firstSuper = normalizeOrg(data.supervising[0]);
-      if (firstSuper) through = firstSuper;
-
-      for (let i = 1; i < data.supervising.length; i++) {
-        const s = normalizeOrg(data.supervising[i]);
-        if (s) ccList.push(s);
+    if (Array.isArray(data.supervising)) {
+      if (data.supervising.length > 0) {
+        through = normalizeOrg(data.supervising[0]);
+        for (let i = 1; i < data.supervising.length; i++) {
+          const s = normalizeOrg(data.supervising[i]);
+          if (s) ccList.push(s);
+        }
       }
     }
 
@@ -259,7 +265,6 @@ async function aiDetectInstitutions(description) {
       for (const c of data.cc) {
         const norm = normalizeOrg(c);
         if (!norm) continue;
-
         const exists = ccList.some(
           (x) => x.org.toLowerCase() === norm.org.toLowerCase()
         );
@@ -274,12 +279,14 @@ async function aiDetectInstitutions(description) {
   }
 }
 
-// ---------- HYBRID DETECTION: ELECTRICITY FIRST, THEN AI ----------
+// --------------------------------------------------------------
+// HYBRID DETECTION: ELECTRICITY FIRST, THEN AI
+// --------------------------------------------------------------
 async function detectInstitutionsHybrid(description) {
   // 1. Hard-coded electricity rule (AEDC / NERC etc.)
   const elec = detectElectricity(description);
   if (elec) {
-    console.log("Detected electricity complaint via rule-based logic");
+    console.log("Detected electricity complaint via rule-based routing");
     return elec;
   }
 
@@ -289,9 +296,9 @@ async function detectInstitutionsHybrid(description) {
   return aiInst;
 }
 
-// ----------------------------------------------------
+// --------------------------------------------------------------
 // POST: GENERATE PETITION (HYBRID)
-// ----------------------------------------------------
+// --------------------------------------------------------------
 app.post("/generate-petition", async (req, res) => {
   console.log("Incoming /generate-petition:", req.body);
 
@@ -330,7 +337,7 @@ app.post("/generate-petition", async (req, res) => {
     console.error("Error reading extra fields from body:", err);
   }
 
-  // 2 – detect institutions (hybrid AI + electricity) and apply watchdogs
+  // 2 – detect institutions (hybrid AI + electricity) and add PCC/NHRC
   let inst = { primary: null, through: null, ccList: [] };
   try {
     inst = await detectInstitutionsHybrid(description);
@@ -341,7 +348,7 @@ app.post("/generate-petition", async (req, res) => {
 
   inst = applyGlobalWatchdogs(description, inst);
 
-  // Ensure ccList has no null/empty entries (avoid empty bullet in UI)
+  // Ensure ccList has no null/empty entries
   if (!Array.isArray(inst.ccList)) inst.ccList = [];
   inst.ccList = inst.ccList.filter(
     (c) => c && typeof c.org === "string" && c.org.trim()
@@ -368,13 +375,16 @@ app.post("/generate-petition", async (req, res) => {
       const complainantBlock =
         detailsLines.length > 0
           ? detailsLines.join("\n")
-          : "Use the complainant's real details as provided.";
+          : "Use the complainant's real details as provided above.";
 
       const primaryOrg = inst.primary?.org || "";
       const throughOrg = inst.through?.org || "";
       const ccOrgList = Array.isArray(inst.ccList)
-        ? inst.ccList.map((c) => c.org).join("; ")
+        ? inst.ccList.map((c) => c.org).join(", ")
         : "";
+
+      const primaryAddress = inst.primary?.address || "";
+      const throughAddress = inst.through?.address || "";
 
       const ai = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -383,23 +393,39 @@ app.post("/generate-petition", async (req, res) => {
           {
             role: "system",
             content:
-              "You are an expert Nigerian petition-drafting lawyer working globally. " +
-              "Write very formal petitions suitable for professional institutions and courts. " +
-              "ALWAYS use the REAL complainant details (name, address, email, phone, date) at the top. " +
-              "Do NOT use placeholders like [Your Name] or [Your Address]. " +
-              "Write in clean plain-text paragraphs only – no markdown, no asterisks, no bullet points. " +
-              "Make the letter ready for the complainant to sign and submit physically or by email.",
+              "You are an expert Nigerian petition-drafting lawyer.\n" +
+              "Write very formal petitions suitable for real use in Nigeria.\n" +
+              "Use ONLY the real complainant details and institution details given to you.\n" +
+              "If any field (address, email, phone) is missing, simply leave it out.\n" +
+              "NEVER invent addresses or emails.\n" +
+              "NEVER use placeholders like [Your Name], [Your Address], [Bank Address], [City, State, Zip Code], or anything inside square brackets.\n" +
+              "If an institution address is not provided, write only its name and title.\n" +
+              "Write in clean plain-text paragraphs only, suitable for copy-paste into email or Word.\n" +
+              "Make the letter fully ready to send, starting with the complainant's details and date, then the institution block, then 'Dear Sir/Madam', then the body, then closing and signature.\n",
           },
           {
             role: "user",
             content:
-              `Complainant details:\n${complainantBlock}\n\n` +
-              (primaryOrg ? `Primary institution:\n${primaryOrg}\n\n` : "") +
-              (throughOrg ? `Through institution:\n${throughOrg}\n\n` : "") +
-              (ccOrgList ? `CC institutions:\n${ccOrgList}\n\n` : "") +
-              `Petition description (complainant's story):\n${description}\n\n` +
-              "Write the full petition letter with proper introduction, body paragraphs, reliefs/prayers and closing. " +
-              "Use plain text paragraphs only, suitable for printing on A4 or saving as PDF.",
+              "Complainant details:\n" +
+              complainantBlock +
+              "\n\n" +
+              (primaryOrg
+                ? "Primary institution:\n" +
+                  primaryOrg +
+                  (primaryAddress ? "\n" + primaryAddress : "") +
+                  "\n\n"
+                : "") +
+              (throughOrg
+                ? "Through institution:\n" +
+                  throughOrg +
+                  (throughAddress ? "\n" + throughAddress : "") +
+                  "\n\n"
+                : "") +
+              (ccOrgList ? "CC institutions:\n" + ccOrgList + "\n\n" : "") +
+              "Petition description (complainant's story):\n" +
+              description +
+              "\n\n" +
+              "Write the full petition letter with proper legal formatting as described.",
           },
         ],
       });
@@ -435,9 +461,9 @@ app.post("/generate-petition", async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
+// --------------------------------------------------------------
 // START SERVER
-// ----------------------------------------------------
+// --------------------------------------------------------------
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`JusticeBot A7 World Brain Backend running on port ${PORT}`);
 });
