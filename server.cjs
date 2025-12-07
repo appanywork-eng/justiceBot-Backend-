@@ -612,4 +612,3 @@ app.listen(PORT, "0.0.0.0", () => {
     `JusticeBot A7 World Brain Backend running on port ${PORT} (PetitionDesk mode)`
   );
 });
-EOF
