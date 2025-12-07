@@ -1,6 +1,7 @@
 /**
- * PetitionDesk / JusticeBot Backend (A8 – World Brain Routing)
- * Express + OpenAI + AI institution detection + PCC/NHRC watchdogs + INTERNATIONAL ROUTING
+ * PetitionDesk / JusticeBot Backend (A9 – World Brain + UN/ICC/Media)
+ * Express + OpenAI + AI institution detection + PCC/NHRC watchdogs +
+ * INTERNATIONAL ROUTING (US/UK/EU/AU/ECOWAS/UN/ICC) + Petition ID
  */
 
 const express = require("express");
@@ -17,7 +18,7 @@ let INSTITUTIONS_JSON = {};
 try {
   const filePath = path.join(__dirname, "data", "institutions.json");
   INSTITUTIONS_JSON = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  console.log("A8 institutions loaded successfully");
+  console.log("A9 institutions loaded successfully");
 } catch (err) {
   console.error("Failed to load institutions.json:", err);
   INSTITUTIONS_JSON = {};
@@ -33,6 +34,7 @@ if (process.env.OPENAI_API_KEY) {
     console.log("OpenAI client initialised");
   } catch (err) {
     console.error("Error initialising OpenAI client:", err);
+    openai = null;
   }
 } else {
   console.log("OPENAI_API_KEY not set; fallback mode active.");
@@ -50,16 +52,19 @@ app.use(express.json());
 // --------------------------------------------------------------
 // BASIC ROUTES
 // --------------------------------------------------------------
-app.get("/", (req, res) => res.send("JusticeBot A8 Backend is running 💡"));
+app.get("/", (req, res) =>
+  res.send("JusticeBot A9 Backend (World Brain + UN/ICC/Media) is running 💡")
+);
 
 app.get("/health", (req, res) =>
-  res.json({ status: "ok", time: new Date().toISOString() })
+  res.json({ status: "ok", version: "A9", time: new Date().toISOString() })
 );
 
 app.get("/test", (req, res) =>
   res.json({
     status: "ok",
     message: "Test endpoint working",
+    version: "A9",
     openai_status: openai ? "ready" : "not_initialized",
   })
 );
@@ -72,15 +77,16 @@ function textIncludesAny(t, arr) {
   return arr.some((x) => t.includes(x.toLowerCase()));
 }
 
-function safeLower(text) {
-  return (text || "").toLowerCase();
+function createPetitionId() {
+  // Simple unique-ish petition ID e.g. PD-1733612345678-421
+  return `PD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
 
 // --------------------------------------------------------------
 // ELECTRICITY DETECTION (AEDC / NERC)
 // --------------------------------------------------------------
 function detectElectricity(description) {
-  const d = safeLower(description);
+  const d = (description || "").toLowerCase();
   const k = [
     "electricity",
     "aedc",
@@ -99,14 +105,10 @@ function detectElectricity(description) {
   if (d.includes("abuja") || d.includes("gwarinpa") || d.includes("kubwa")) {
     primary = list.find((i) => i.key === "aedc") || null;
   }
-  if (!primary) {
+  if (!primary)
     primary =
       list.find((i) => i.key === "generic_dis") ||
-      list[0] || {
-        org: "Electricity Distribution Company",
-        email: "",
-      };
-  }
+      list[0] || { org: "Electricity Distribution Company", email: "" };
 
   const through =
     list.find((i) => i.key === "nerc") || {
@@ -115,7 +117,7 @@ function detectElectricity(description) {
     };
 
   const ccList = list
-    .filter((i) => i && !["aedc", "generic_dis", "nerc"].includes(i.key))
+    .filter((i) => !["aedc", "generic_dis", "nerc"].includes(i.key))
     .map((i) => ({
       org: i.org,
       email: i.email || "",
@@ -127,6 +129,90 @@ function detectElectricity(description) {
 }
 
 // --------------------------------------------------------------
+// INTERNATIONAL ROUTING  (US/UK/EU/AU/ECOWAS/UN/ICC/MEDIA)
+// --------------------------------------------------------------
+function detectInternational(description) {
+  const d = (description || "").toLowerCase();
+
+  // Only fire when it's clearly a big international / atrocity issue
+  const triggers = [
+    "genocide",
+    "ethnic cleansing",
+    "war crime",
+    "crimes against humanity",
+    "massacre",
+    "faith-based killing",
+    "religious persecution",
+    "minority persecution",
+    "international intervention",
+    "foreign intervention",
+    "world attention",
+    "united states congress",
+    "us congress",
+    "uk parliament",
+    "european parliament",
+    "african union",
+    "ecowas",
+    "united nations",
+    "un human rights",
+    "ohchr",
+    "unhcr",
+    "icc",
+    "international criminal court",
+  ];
+
+  if (!textIncludesAny(d, triggers)) return null;
+
+  const intl = INSTITUTIONS_JSON.international || {};
+  const unBodies = INSTITUTIONS_JSON.un_bodies || {};
+  const media = INSTITUTIONS_JSON.media || {};
+
+  // Primary – US House Foreign Affairs Committee by default
+  const primarySource = intl.us_congress_house || {};
+  const primary = {
+    org: primarySource.name || "US House Foreign Affairs Committee",
+    email: primarySource.email || "",
+    address: primarySource.address || "Washington, D.C., USA",
+    title: "",
+  };
+
+  const through = {
+    org: "Federal Ministry of Justice",
+    email: "info@justice.gov.ng",
+    address: "Federal Secretariat, Abuja, Nigeria.",
+    title: "Attorney General of the Federation",
+  };
+
+  const ccList = [];
+
+  function pushFromObjectMap(objMap) {
+    Object.values(objMap || {}).forEach((i) => {
+      if (!i || !i.name) return;
+      ccList.push({
+        org: i.name,
+        email: i.email || "",
+        address: i.address || "",
+        title: i.title || "",
+      });
+    });
+  }
+
+  // Add all other international institutions, UN bodies & media
+  pushFromObjectMap(intl);
+  pushFromObjectMap(unBodies);
+  pushFromObjectMap(media);
+
+  // Remove duplicate of primary from cc
+  const filteredCc = ccList.filter(
+    (c) =>
+      c.org &&
+      c.org.toLowerCase() !== primary.org.toLowerCase()
+  );
+
+  return { primary, through, ccList: filteredCc };
+}
+
+// --------------------------------------------------------------
 // GLOBAL WATCHDOGS (PCC + NHRC)
 // --------------------------------------------------------------
 function applyWatchdogs(description, inst) {
@@ -135,13 +221,16 @@ function applyWatchdogs(description, inst) {
 
   function add(obj) {
     if (!obj || !obj.org) return;
-    const exists = out.ccList.some(
-      (c) => c && c.org && c.org.toLowerCase() === obj.org.toLowerCase()
-    );
-    if (!exists) out.ccList.push(obj);
+    if (
+      !out.ccList.some(
+        (c) => c.org && c.org.toLowerCase() === obj.org.toLowerCase()
+      )
+    ) {
+      out.ccList.push(obj);
+    }
   }
 
-  // ALWAYS CC PCC
+  // PCC – ALWAYS
   add({
     org: "Public Complaints Commission",
     email: "complaints@pcc.gov.ng,info@pcc.gov.ng",
@@ -149,22 +238,26 @@ function applyWatchdogs(description, inst) {
     title: "The Honourable Chief Commissioner",
   });
 
-  // NHRC if rights-related
-  const d = safeLower(description);
+  // NHRC – only if human-rights style complaint
+  const d = (description || "").toLowerCase();
   const rights = [
     "human right",
+    "right to life",
+    "police brutality",
     "brutality",
     "torture",
     "unlawful",
+    "illegal detention",
     "detention",
     "violence",
     "abuse",
     "oppression",
     "rape",
+    "sexual assault",
     "killing",
-    "genocide",
     "extrajudicial",
-    "extra judicial",
+    "extra-judicial",
+    "genocide",
   ];
   if (rights.some((x) => d.includes(x))) {
     add({
@@ -179,88 +272,7 @@ function applyWatchdogs(description, inst) {
 }
 
 // --------------------------------------------------------------
-// INTERNATIONAL ROUTING (OPTION A – US CONGRESS AS PRIMARY)
-// --------------------------------------------------------------
-function detectInternational(description) {
-  const d = safeLower(description);
-  const triggers = [
-    "genocide",
-    "ethnic cleansing",
-    "international",
-    "foreign intervention",
-    "foreign pressure",
-    "united states congress",
-    "us congress",
-    "u.s. congress",
-    "uk parliament",
-    "british parliament",
-    "european parliament",
-    "african union",
-    "ecowas",
-    "international community",
-  ];
-  if (!textIncludesAny(d, triggers)) return null;
-
-  // Support two possible JSON shapes:
-  // 1) { "international": { us_congress_house: {...}, ... } }
-  // 2) { "us_congress_house": {...}, "uk_parliament_petitions": {...}, ... }
-  const intlBlock =
-    (INSTITUTIONS_JSON.international &&
-      typeof INSTITUTIONS_JSON.international === "object")
-      ? INSTITUTIONS_JSON.international
-      : null;
-
-  const getIntlEntry = (key) => {
-    if (intlBlock && intlBlock[key]) return intlBlock[key];
-    if (INSTITUTIONS_JSON[key]) return INSTITUTIONS_JSON[key];
-    return null;
-  };
-
-  const intlKeys = [
-    "us_congress_house",
-    "us_congress_hr",
-    "us_congress_senate",
-    "uk_parliament_petitions",
-    "uk_parliament_fac",
-    "eu_parliament_droi",
-    "eu_eeas_hr",
-    "au_paps",
-    "achpr",
-    "ecowas_pps",
-    "ecowas_info",
-  ];
-
-  const intlEntries = intlKeys
-    .map((k) => getIntlEntry(k))
-    .filter((v) => v && typeof v === "object");
-
-  const ccList = intlEntries.map((i) => ({
-    org: i.name || i.org || "",
-    email: i.email || "",
-    address: i.address || "",
-    title: i.title || "",
-  }));
-
-  const usHouse = getIntlEntry("us_congress_house") || {};
-  const primary = {
-    org: usHouse.name || "United States Congress",
-    email: usHouse.email || "",
-    address: usHouse.address || "Washington, D.C., USA",
-    title: "",
-  };
-
-  const through = {
-    org: "Federal Ministry of Justice",
-    email: "info@justice.gov.ng",
-    address: "Federal Secretariat, Abuja, Nigeria.",
-    title: "Attorney General of the Federation",
-  };
-
-  return { primary, through, ccList };
-}
-
-// --------------------------------------------------------------
-// AI DETECTION (fallback for normal routing)
+// AI DETECTION (for non-electricity, non-explicit-international)
 // --------------------------------------------------------------
 async function aiDetect(description) {
   if (!openai) return { primary: null, through: null, ccList: [] };
@@ -272,8 +284,7 @@ async function aiDetect(description) {
       messages: [
         {
           role: "system",
-          content:
-            `You are a global institutions routing engine. RETURN ONLY JSON:
+          content: `You are a global institutions routing engine. RETURN ONLY JSON:
 
 {
  "primary": {"org":"", "title":"", "email":"", "address":""},
@@ -282,17 +293,17 @@ async function aiDetect(description) {
 }
 
 Rules:
-- Prefer real, official institutions (CBN, NCC, NERC, NHRC, PCC, EFCC, NDLEA, US Congress, UK Parliament, etc.).
-- Use ONLY verified-style emails (.gov, .gov.ng, .org, .int, or clear institutional domains).
-- If unsure of an email, leave it as an empty string "".
-- NO placeholders, NO fake domains, NO markdown.`,
+- Use ONLY emails you are reasonably confident are official (.gov, .gov.ng, .org, .int, .europa.eu, .senate.gov, .house.gov, etc.).
+- If unsure about an email, leave the email field empty.
+- No placeholders, no invented fake domains.
+- No markdown, no comments – JSON only.`,
         },
         {
           role: "user",
           content:
             "Complaint:\n" +
             description +
-            "\nReturn ONLY the JSON object, no markdown, no explanation.",
+            "\nReturn ONLY JSON, no markdown.",
         },
       ],
     });
@@ -303,7 +314,7 @@ Rules:
     function clean(o) {
       if (!o || !o.org) return null;
       return {
-        org: o.org.trim(),
+        org: String(o.org).trim(),
         title: (o.title || "").trim(),
         email: (o.email || "").trim(),
         address: (o.address || "").trim(),
@@ -328,9 +339,7 @@ Rules:
     if (Array.isArray(data.cc)) {
       data.cc.forEach((x) => {
         const c = clean(x);
-        if (c && !ccList.some((e) => e.org === c.org)) {
-          ccList.push(c);
-        }
+        if (c && !ccList.some((e) => e.org === c.org)) ccList.push(c);
       });
     }
 
@@ -348,29 +357,29 @@ async function detectHybrid(description) {
   // 1. Electricity rule
   const e = detectElectricity(description);
   if (e) {
-    console.log("Routing: electricity rule triggered.");
+    console.log("Hybrid routing: electricity rule fired.");
     return e;
   }
 
-  // 2. International escalation rule (OPTION A)
+  // 2. International escalation rule
   const intl = detectInternational(description);
   if (intl) {
-    console.log("Routing: INTERNATIONAL escalation triggered.");
+    console.log("Hybrid routing: international/atrocity rule fired.");
     return intl;
   }
 
-  // 3. AI detection
+  // 3. AI detection for everything else
   const ai = await aiDetect(description);
-  console.log("Routing: AI detection result:", ai);
+  console.log("Hybrid routing: AI routing result:", ai);
   return ai;
 }
 
 // --------------------------------------------------------------
 // PETITION BUILDERS
 // --------------------------------------------------------------
-async function buildPetition(complainant, inst) {
+async function buildPetition(complainant, inst, petitionId) {
   const { fullName, email, phone, address, description } = complainant;
-  if (!openai) return fallbackPetition(complainant, inst);
+  if (!openai) return fallbackPetition(complainant, inst, petitionId);
 
   const today = new Date().toLocaleDateString("en-NG", {
     day: "numeric",
@@ -383,25 +392,24 @@ async function buildPetition(complainant, inst) {
     address,
     email ? `Email: ${email}` : "",
     phone ? `Phone: ${phone}` : "",
+    `Petition ID: ${petitionId}`,
     today,
   ]
     .filter(Boolean)
     .join("\n");
 
   const ccText =
-    Array.isArray(inst.ccList) && inst.ccList.length
-      ? inst.ccList
-          .map((c) => `${c.org}${c.address ? "\n" + c.address : ""}`)
-          .join("\n\n")
-      : "None";
+    inst.ccList
+      ?.map((c) => `${c.org}\n${c.address || ""}`)
+      .join("\n\n") || "None";
 
   const systemPrompt = `
-You are an expert Nigerian petition drafting lawyer.
+You are an expert Nigerian and international human-rights petition drafting lawyer.
 Write a VERY STRONG, highly formal petition.
-- No placeholders.
-- Use only provided details.
-- Tone: firm, legal, respectful, authoritative.
-- End with "Yours faithfully," then the complainant's name, phone and email.
+No placeholders.
+Use only provided details.
+Tone: firm, legal, respectful, authoritative.
+Include the Petition ID in the subject or near the top so it can be tracked.
 `;
 
   const userPrompt = `
@@ -411,24 +419,20 @@ ${inst.primary?.title || ""}
 ${inst.primary?.org || ""}
 ${inst.primary?.address || ""}
 
-${
-  inst.through?.org
-    ? "Through:\n" +
-      (inst.through?.title ? inst.through.title + "\n" : "") +
-      inst.through.org +
-      (inst.through?.address ? "\n" + inst.through.address : "")
-    : ""
-}
+${inst.through?.org ? "Through:\n" + inst.through.org : ""}
+${inst.through?.address || ""}
 
 CC:
 ${ccText}
 
-SUBJECT: Autogenerate a strong, precise subject line based on the description.
+SUBJECT: Autogenerate a strong subject that reflects the complaint and mention Petition ID ${petitionId} in it.
 
-Complaint description:
+Description:
 ${description}
 
-Write a FULL petition with clear narrative and numbered reliefs. Do not invent facts. Do not use placeholders.`;
+Write a FULL petition with numbered reliefs and a clear closing.
+Ensure it is suitable to be sent by email or printed as PDF.
+`;
 
   try {
     const r = await openai.chat.completions.create({
@@ -442,34 +446,30 @@ Write a FULL petition with clear narrative and numbered reliefs. Do not invent f
 
     return (
       r.choices?.[0]?.message?.content ||
-      fallbackPetition(complainant, inst)
+      fallbackPetition(complainant, inst, petitionId)
     );
   } catch (err) {
     console.error("AI petition error:", err);
-    return fallbackPetition(complainant, inst);
+    return fallbackPetition(complainant, inst, petitionId);
   }
 }
 
 // --------------------------------------------------------------
 // FALLBACK PETITION
 // --------------------------------------------------------------
-function fallbackPetition(c, inst) {
+function fallbackPetition(c, inst, petitionId) {
   const today = new Date().toLocaleDateString("en-NG", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
-  const ccNames =
-    Array.isArray(inst.ccList) && inst.ccList.length
-      ? inst.ccList.map((x) => x.org).join("\n")
-      : "";
-
   return `
 ${c.fullName}
 ${c.address || ""}
 Email: ${c.email || ""}
 Phone: ${c.phone || ""}
+Petition ID: ${petitionId}
 ${today}
 
 ${inst.primary?.org || "The Appropriate Authority"}
@@ -479,11 +479,11 @@ Through:
 ${inst.through?.org || ""}
 
 CC:
-${ccNames}
+${inst.ccList?.map((x) => x.org).join("\n")}
 
 Dear Sir/Madam,
 
-RE: FORMAL COMPLAINT / PETITION
+RE: FORMAL COMPLAINT / PETITION (Petition ID: ${petitionId})
 
 ${c.description}
 
@@ -502,16 +502,15 @@ ${c.email || ""}
 app.post("/generate-petition", async (req, res) => {
   console.log("Incoming request:", req.body);
 
-  const description =
-    typeof req.body.description === "string" ? req.body.description : "";
-  if (!description.trim()) {
+  const description = req.body.description || "";
+  if (!description.trim())
     return res.status(200).json({
+      petitionId: null,
       petitionText: "Please enter your complaint description.",
       primaryInstitution: null,
       throughInstitution: null,
       ccList: [],
     });
-  }
 
   const complainant = {
     fullName: req.body.fullName || "",
@@ -521,20 +520,20 @@ app.post("/generate-petition", async (req, res) => {
     description,
   };
 
+  // Generate Petition ID
+  const petitionId = createPetitionId();
+
   let inst = await detectHybrid(description);
   inst = applyWatchdogs(description, inst);
+  inst.ccList = inst.ccList?.filter((c) => c && c.org) || [];
 
-  if (!Array.isArray(inst.ccList)) inst.ccList = [];
-  inst.ccList = inst.ccList.filter(
-    (c) => c && typeof c.org === "string" && c.org.trim()
-  );
+  const petitionText = await buildPetition(complainant, inst, petitionId);
 
-  const petitionText = await buildPetition(complainant, inst);
-
-  return res.status(200).json({
+  res.status(200).json({
+    petitionId,
     petitionText,
-    primaryInstitution: inst.primary || null,
-    throughInstitution: inst.through || null,
+    primaryInstitution: inst.primary,
+    throughInstitution: inst.through,
     ccList: inst.ccList,
   });
 });
@@ -543,5 +542,5 @@ app.post("/generate-petition", async (req, res) => {
 // START SERVER
 // --------------------------------------------------------------
 app.listen(PORT, "0.0.0.0", () =>
-  console.log(`JusticeBot A8 Backend running on ${PORT}`)
+  console.log(`JusticeBot A9 Backend running on ${PORT}`)
 );

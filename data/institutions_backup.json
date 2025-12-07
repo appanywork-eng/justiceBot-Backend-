@@ -1,0 +1,57 @@
+{
+  "us_congress_house": {
+    "name": "US House Foreign Affairs Committee",
+    "email": "hfac@mail.house.gov",
+    "address": "House Committee on Foreign Affairs, Washington, D.C., USA"
+  },
+  "us_congress_hr": {
+    "name": "US Human Rights Subcommittee",
+    "email": "globalHR@mail.house.gov",
+    "address": "Subcommittee on Global Human Rights, Washington, D.C., USA"
+  },
+  "us_congress_senate": {
+    "name": "US Senate Foreign Relations Committee",
+    "email": "foreign_relations@foreign.senate.gov",
+    "address": "Senate Foreign Relations Committee, Washington, D.C., USA"
+  },
+  "uk_parliament_petitions": {
+    "name": "UK Parliament Petitions Committee",
+    "email": "petitionscommittee@parliament.uk",
+    "address": "UK Parliament, London, UK"
+  },
+  "uk_parliament_fac": {
+    "name": "UK Foreign Affairs Committee",
+    "email": "faccom@parliament.uk",
+    "address": "UK Parliament, London, UK"
+  },
+  "eu_parliament_droi": {
+    "name": "EU Parliament Subcommittee on Human Rights (DROI)",
+    "email": "droi-secretariat@europarl.europa.eu",
+    "address": "European Parliament, Brussels, Belgium"
+  },
+  "eu_eeas_hr": {
+    "name": "European External Action Service – Human Rights",
+    "email": "humanrights@eeas.europa.eu",
+    "address": "EEAS Headquarters, Brussels, Belgium"
+  },
+  "au_paps": {
+    "name": "African Union – Peace & Security Department",
+    "email": "pa@africa-union.org",
+    "address": "African Union Commission, Addis Ababa, Ethiopia"
+  },
+  "achpr": {
+    "name": "African Commission on Human & Peoples’ Rights",
+    "email": "achpr@achpr.org",
+    "address": "31 Bijilo Annex Layout, Banjul, The Gambia"
+  },
+  "ecowas_pps": {
+    "name": "ECOWAS Political Affairs, Peace & Security",
+    "email": "ppsd@ecowas.int",
+    "address": "ECOWAS Commission, Abuja, Nigeria"
+  },
+  "ecowas_info": {
+    "name": "ECOWAS Commission",
+    "email": "info@ecowas.int",
+    "address": "ECOWAS Headquarters, Abuja, Nigeria"
+  }
+}
