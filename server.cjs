@@ -1,4 +1,3 @@
-cat > server.cjs << 'EOF'
 /**
  * PetitionDesk / JusticeBot Backend (A7 – World Brain Routing)
  * Express + OpenAI + AI institution detection + PCC/NHRC watchdogs
