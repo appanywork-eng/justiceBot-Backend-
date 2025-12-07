@@ -1,6 +1,6 @@
 /**
- * PetitionDesk / JusticeBot Backend (A7 – World Brain Routing)
- * Express + OpenAI + AI institution detection + PCC/NHRC watchdogs
+ * PetitionDesk / JusticeBot Backend (A8 – World Brain Routing)
+ * Express + OpenAI + AI institution detection + PCC/NHRC watchdogs + INTERNATIONAL ROUTING
  */
 
 const express = require("express");
@@ -11,35 +11,31 @@ const path = require("path");
 const OpenAI = require("openai");
 
 // --------------------------------------------------------------
-// LOAD institutions.json (still used for electricity, etc.)
+// LOAD institutions.json
 // --------------------------------------------------------------
 let INSTITUTIONS_JSON = {};
 try {
   const filePath = path.join(__dirname, "data", "institutions.json");
-  const raw = fs.readFileSync(filePath, "utf8");
-  INSTITUTIONS_JSON = JSON.parse(raw);
-  console.log("A7 institutions loaded successfully");
+  INSTITUTIONS_JSON = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  console.log("A8 institutions loaded successfully");
 } catch (err) {
   console.error("Failed to load institutions.json:", err);
   INSTITUTIONS_JSON = {};
 }
 
 // --------------------------------------------------------------
-// OPENAI INIT (optional – app must still work without it)
+// OPENAI INIT
 // --------------------------------------------------------------
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
   try {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     console.log("OpenAI client initialised");
   } catch (err) {
     console.error("Error initialising OpenAI client:", err);
-    openai = null;
   }
 } else {
-  console.log("OPENAI_API_KEY not set; using fallback petition builder only.");
+  console.log("OPENAI_API_KEY not set; fallback mode active.");
 }
 
 // --------------------------------------------------------------
@@ -54,170 +50,171 @@ app.use(express.json());
 // --------------------------------------------------------------
 // BASIC ROUTES
 // --------------------------------------------------------------
-app.get("/", (req, res) => {
-  res.send("JusticeBot A7 World Brain Backend is running 💡");
-});
-
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", time: new Date().toISOString() });
-});
-
-app.get("/test", (req, res) => {
+app.get("/", (req, res) => res.send("JusticeBot A8 Backend is running 💡"));
+app.get("/health", (req, res) =>
+  res.json({ status: "ok", time: new Date().toISOString() })
+);
+app.get("/test", (req, res) =>
   res.json({
     status: "ok",
     message: "Test endpoint working",
     openai_status: openai ? "ready" : "not_initialized",
-  });
-});
+  })
+);
 
 // --------------------------------------------------------------
 // HELPERS
 // --------------------------------------------------------------
-function textIncludesAny(text, keywords) {
-  const t = (text || "").toLowerCase();
-  return keywords.some((kw) => t.includes(kw.toLowerCase()));
+function textIncludesAny(t, arr) {
+  t = (t || "").toLowerCase();
+  return arr.some((x) => t.includes(x.toLowerCase()));
 }
 
-// -------- ELECTRICITY SPECIAL CASE (AEDC / NERC etc.) --------
+// --------------------------------------------------------------
+// ELECTRICITY DETECTION (AEDC / NERC)
+// --------------------------------------------------------------
 function detectElectricity(description) {
   const d = (description || "").toLowerCase();
-  const electricityKeywords = [
+  const k = [
     "electricity",
-    "disco",
     "aedc",
+    "disco",
     "meter",
-    "prepaid",
-    "over billing",
-    "overbilling",
-    "power",
-    "light",
     "billing",
     "token",
+    "power",
+    "light",
   ];
+  if (!textIncludesAny(d, k)) return null;
 
-  if (!textIncludesAny(d, electricityKeywords)) {
-    return null;
-  }
-
-  const list = Array.isArray(INSTITUTIONS_JSON.electricity)
-    ? INSTITUTIONS_JSON.electricity
-    : [];
-
-  // Primary – try to pick AEDC if Abuja is mentioned, else generic_dis or first
+  const list = INSTITUTIONS_JSON.electricity || [];
   let primary = null;
 
   if (d.includes("abuja") || d.includes("gwarinpa") || d.includes("kubwa")) {
     primary = list.find((i) => i.key === "aedc") || null;
   }
-
-  if (!primary) {
+  if (!primary)
     primary =
       list.find((i) => i.key === "generic_dis") ||
-      list[0] || {
-        key: "generic_dis",
-        org: "The Managing Director,\nElectricity Distribution Company",
-        email: "",
-      };
-  }
+      list[0] || { org: "Electricity Distribution Company", email: "" };
 
-  // Through – NERC (if present in JSON)
   const through =
     list.find((i) => i.key === "nerc") || {
-      key: "nerc",
-      org: "The Chairman,\nNigerian Electricity Regulatory Commission (NERC)",
+      org: "Nigerian Electricity Regulatory Commission (NERC)",
       email: "",
     };
 
-  // Extra CCs – e.g. Power Ministry, etc. if configured
   const ccList = list
-    .filter(
-      (i) =>
-        i &&
-        typeof i.org === "string" &&
-        i.key &&
-        !["aedc", "generic_dis", "nerc"].includes(i.key)
-    )
+    .filter((i) => !["aedc", "generic_dis", "nerc"].includes(i.key))
     .map((i) => ({
       org: i.org,
-      email: typeof i.email === "string" ? i.email : "",
-      title: typeof i.title === "string" ? i.title : "",
-      address: typeof i.address === "string" ? i.address : "",
+      email: i.email || "",
+      address: i.address || "",
+      title: i.title || "",
     }));
 
   return { primary, through, ccList };
 }
 
-// -------- GLOBAL WATCHDOGS (PCC + NHRC) -----------------------
-function applyGlobalWatchdogs(description, inst) {
-  const result = inst || {};
-  if (!Array.isArray(result.ccList)) result.ccList = [];
+// --------------------------------------------------------------
+// GLOBAL WATCHDOGS
+// --------------------------------------------------------------
+function applyWatchdogs(description, inst) {
+  const out = inst || {};
+  if (!Array.isArray(out.ccList)) out.ccList = [];
 
-  const addCc = (orgObj) => {
-    if (!orgObj || !orgObj.org) return;
-    const exists = result.ccList.some(
-      (c) =>
-        c &&
-        typeof c.org === "string" &&
-        c.org.toLowerCase() === orgObj.org.toLowerCase()
-    );
-    if (!exists) result.ccList.push(orgObj);
-  };
+  function add(obj) {
+    if (!obj || !obj.org) return;
+    if (!out.ccList.some((c) => c.org?.toLowerCase() === obj.org.toLowerCase()))
+      out.ccList.push(obj);
+  }
 
-  // 1. PCC – ALWAYS CC for administrative injustice
-  addCc({
+  // PCC ALWAYS
+  add({
     org: "Public Complaints Commission",
     email: "complaints@pcc.gov.ng,info@pcc.gov.ng",
+    address: "25 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria.",
     title: "The Honourable Chief Commissioner",
-    address:
-      "Public Complaints Commission,\n25 Aguiyi Ironsi Street,\nMaitama, Abuja, Nigeria.",
   });
 
-  // 2. NHRC – ONLY for human-rights-related complaints
-  const d = (description || "").toLowerCase();
-  const humanRightsKeywords = [
+  // NHRC if rights-related
+  const d = description.toLowerCase();
+  const rights = [
     "human right",
-    "human-right",
-    "human rights",
-    "police brutality",
     "brutality",
     "torture",
-    "discrimination",
-    "unlawful detention",
-    "illegal detention",
-    "extra judicial",
-    "extrajudicial",
-    "killing",
-    "threat to life",
-    "harassment",
-    "sexual assault",
-    "rape",
-    "domestic violence",
+    "unlawful",
+    "detention",
     "violence",
-    "child abuse",
-    "degrading treatment",
+    "abuse",
     "oppression",
+    "rape",
+    "killing",
+    "genocide",
   ];
-  const isHR = humanRightsKeywords.some((kw) => d.includes(kw));
-  if (isHR) {
-    addCc({
+  if (rights.some((x) => d.includes(x))) {
+    add({
       org: "National Human Rights Commission",
       email: "info@nhrc.gov.ng",
+      address: "19 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria.",
       title: "The Executive Secretary",
-      address:
-        "National Human Rights Commission,\n19 Aguiyi Ironsi Street,\nMaitama, Abuja, Nigeria.",
     });
   }
 
-  return result;
+  return out;
 }
 
 // --------------------------------------------------------------
-// AI INSTITUTION DETECTION (WORLD-WIDE)
+// INTERNATIONAL ROUTING
 // --------------------------------------------------------------
-async function aiDetectInstitutions(description) {
-  if (!openai) {
-    return { primary: null, through: null, ccList: [] };
-  }
+function detectInternational(description) {
+  const d = description.toLowerCase();
+  const triggers = [
+    "genocide",
+    "ethnic cleansing",
+    "international",
+    "foreign intervention",
+    "united states",
+    "us congress",
+    "uk parliament",
+    "african union",
+    "ecowas",
+    "european parliament",
+    "icc",
+  ];
+  if (!textIncludesAny(d, triggers)) return null;
+
+  const intl = INSTITUTIONS_JSON.international || {};
+
+  const ccList = Object.values(intl).map((i) => ({
+    org: i.name,
+    email: i.email || "",
+    address: i.address || "",
+    title: "",
+  }));
+
+  return {
+    primary: {
+      org: "United States Congress",
+      email: intl.us_congress_house?.email || "",
+      address: intl.us_congress_house?.address || "",
+      title: "",
+    },
+    through: {
+      org: "Federal Ministry of Justice",
+      email: "info@justice.gov.ng",
+      address: "Federal Secretariat, Abuja, Nigeria.",
+      title: "Attorney General of the Federation",
+    },
+    ccList,
+  };
+}
+
+// --------------------------------------------------------------
+// AI DETECTION
+// --------------------------------------------------------------
+async function aiDetect(description) {
+  if (!openai) return { primary: null, through: null, ccList: [] };
 
   try {
     const resp = await openai.chat.completions.create({
@@ -227,123 +224,91 @@ async function aiDetectInstitutions(description) {
         {
           role: "system",
           content:
-            "You are an expert global complaints-routing and consumer-protection analyst.\n" +
-            "Read a complaint and determine:\n" +
-            "1) The most appropriate PRIMARY institution to address the main issue.\n" +
-            "2) Any SUPERVISING or oversight institutions that the complaint should go THROUGH (for example CBN supervising banks, NCC supervising telecoms, NERC supervising electricity discos, etc.).\n" +
-            "3) Any additional bodies that should be copied (CC), such as ombudsman, consumer council, parliament committees, anti-corruption agencies, etc.\n" +
-            "Return ONLY valid JSON. No markdown, no comments.\n" +
-            "{\n" +
-            '  "primary": { "org": string, "title": string, "email": string, "address": string },\n' +
-            '  "supervising": [ { "org": string, "title": string, "email": string, "address": string } ],\n' +
-            '  "cc": [ { "org": string, "title": string, "email": string, "address": string } ]\n' +
-            "}\n\n" +
-            "EMAIL SELECTION RULES:\n" +
-            "- Use only email addresses that are realistically used by the institution, based on your training on official websites, verified social-media pages, and other trustworthy public sources.\n" +
-            '- Prefer official domains such as \".gov\", \".gov.ng\", \".org\", \".int\" or clearly branded company domains (for example cbn.gov.ng, nerc.gov.ng, ncc.gov.ng, pcc.gov.ng, nhrc.gov.ng, etc. for Nigerian regulators) when you are confident.\n' +
-            "- Avoid generic free email providers (gmail, yahoo, outlook, etc.) for institutions unless you are confident that the organisation actually uses that address.\n" +
-            "- If you are not at least 80% sure of an email address, leave the email field as an empty string.\n" +
-            "- NEVER invent strange subdomains or random inbox names, and NEVER use placeholders like [Email Address] or [Commission Address].\n\n" +
-            "GENERAL RULES:\n" +
-            "For Nigerian complaints, lean towards the correct Nigerian regulators and institutions.\n" +
-            "For bank complaints in Nigeria, consider CBN Consumer Protection Department and other relevant bodies.\n",
+            `You are a global institutions routing engine. RETURN ONLY JSON:
+
+{
+ "primary": {"org":"", "title":"", "email":"", "address":""},
+ "supervising":[...],
+ "cc":[...]
+}
+
+Rules:
+- Use ONLY verified emails (.gov, .gov.ng, .org, .int).
+- If unsure, leave email empty.
+- No placeholders, no invented fake domains.`,
         },
         {
           role: "user",
           content:
-            "Complaint text:\n" +
+            "Complaint:\n" +
             description +
-            "\n\nReturn ONLY the JSON object with primary, supervising and cc. No backticks, no extra text.",
+            "\nReturn ONLY JSON, no markdown.",
         },
       ],
     });
 
-    const text = resp.choices?.[0]?.message?.content || "";
-    let data = null;
-    try {
-      data = JSON.parse(text);
-    } catch (err) {
-      console.error("Failed to parse AI institutions JSON:", text, err);
-      return { primary: null, through: null, ccList: [] };
-    }
+    const txt = resp.choices?.[0]?.message?.content || "{}";
+    const data = JSON.parse(txt);
 
-    const normalizeOrg = (o) => {
-      if (!o || typeof o.org !== "string" || !o.org.trim()) {
-        return null;
-      }
+    function clean(o) {
+      if (!o || !o.org) return null;
       return {
         org: o.org.trim(),
-        title:
-          typeof o.title === "string" && o.title.trim() ? o.title.trim() : "",
-        email:
-          typeof o.email === "string" && o.email.trim() ? o.email.trim() : "",
-        address:
-          typeof o.address === "string" && o.address.trim()
-            ? o.address.trim()
-            : "",
+        title: o.title || "",
+        email: o.email || "",
+        address: o.address || "",
       };
-    };
-
-    const primary = normalizeOrg(data.primary);
-    let through = null;
-
-    if (Array.isArray(data.supervising) && data.supervising.length > 0) {
-      through = normalizeOrg(data.supervising[0]);
     }
 
+    const primary = clean(data.primary);
+    const through =
+      Array.isArray(data.supervising) && data.supervising.length
+        ? clean(data.supervising[0])
+        : null;
     const ccList = [];
-    if (Array.isArray(data.supervising)) {
-      for (let i = 1; i < data.supervising.length; i++) {
-        const s = normalizeOrg(data.supervising[i]);
-        if (s) ccList.push(s);
-      }
-    }
 
-    if (Array.isArray(data.cc)) {
-      for (const c of data.cc) {
-        const norm = normalizeOrg(c);
-        if (!norm) continue;
-        const exists = ccList.some(
-          (x) => x.org.toLowerCase() === norm.org.toLowerCase()
-        );
-        if (exists) continue;
-        ccList.push(norm);
-      }
-    }
+    if (Array.isArray(data.supervising))
+      data.supervising.slice(1).forEach((x) => {
+        const c = clean(x);
+        if (c) ccList.push(c);
+      });
+
+    if (Array.isArray(data.cc))
+      data.cc.forEach((x) => {
+        const c = clean(x);
+        if (c && !ccList.some((e) => e.org === c.org)) ccList.push(c);
+      });
 
     return { primary, through, ccList };
   } catch (err) {
-    console.error("Error in AI institution detection:", err);
+    console.error("AI routing error:", err);
     return { primary: null, through: null, ccList: [] };
   }
 }
 
-// -------- HYBRID DETECTION: ELECTRICITY FIRST, THEN AI --------
-async function detectInstitutionsHybrid(description) {
-  // 1. Hard-coded electricity rule (AEDC / NERC etc.)
-  const elec = detectElectricity(description);
-  if (elec) {
-    console.log("Detected electricity complaint via rule-based logic.");
-    return elec;
-  }
+// --------------------------------------------------------------
+// HYBRID INSTITUTION DETECTION
+// --------------------------------------------------------------
+async function detectHybrid(description) {
+  // 1. Electricity rule
+  const e = detectElectricity(description);
+  if (e) return e;
 
-  // 2. Generic AI routing for everything else
-  const aiInst = await aiDetectInstitutions(description);
-  console.log("AI institution routing result:", aiInst);
-  return aiInst;
+  // 2. International escalation rule
+  const intl = detectInternational(description);
+  if (intl) return intl;
+
+  // 3. AI detection
+  const ai = await aiDetect(description);
+  return ai;
 }
 
 // --------------------------------------------------------------
 // PETITION BUILDERS
 // --------------------------------------------------------------
-
-// Strong AI petition writer (OpenAI)
-async function buildPetitionWithOpenAI(complainant, inst) {
+async function buildPetition(complainant, inst) {
   const { fullName, email, phone, address, description } = complainant;
-
-  if (!openai) {
-    return buildFallbackPetition(complainant, inst);
-  }
+  if (!openai) return fallbackPetition(complainant, inst);
 
   const today = new Date().toLocaleDateString("en-NG", {
     day: "numeric",
@@ -351,263 +316,147 @@ async function buildPetitionWithOpenAI(complainant, inst) {
     year: "numeric",
   });
 
-  const detailsLines = [];
-  if (fullName) detailsLines.push(fullName);
-  if (address) detailsLines.push(address);
-  if (email) detailsLines.push(`Email: ${email}`);
-  if (phone) detailsLines.push(`Phone: ${phone}`);
-  detailsLines.push(today);
-
-  const complainantBlock =
-    detailsLines.length > 0
-      ? detailsLines.join("\n")
-      : "Use the complainant's real details as provided above.";
-
-  const primaryOrg = inst.primary?.org || "";
-  const primaryTitle = inst.primary?.title || "";
-  const primaryAddress = inst.primary?.address || "";
-
-  const throughOrg = inst.through?.org || "";
-  const throughTitle = inst.through?.title || "";
-  const throughAddress = inst.through?.address || "";
-
-  const ccOrgList =
-    Array.isArray(inst.ccList) && inst.ccList.length > 0
-      ? inst.ccList.map((c) => c.org).join("; ")
-      : "";
-
-  const ccBlock =
-    Array.isArray(inst.ccList) && inst.ccList.length > 0
-      ? inst.ccList
-          .map((c) => {
-            const parts = [c.org];
-            if (c.address) parts.push(c.address);
-            return parts.join("\n");
-          })
-          .join("\n\n")
-      : "";
-
-  const routingSummary = [
-    primaryOrg ? `Primary institution: ${primaryOrg}` : "",
-    throughOrg ? `Through institution: ${throughOrg}` : "",
-    ccOrgList ? `CC institutions: ${ccOrgList}` : "",
+  const header = [
+    fullName,
+    address,
+    email ? `Email: ${email}` : "",
+    phone ? `Phone: ${phone}` : "",
+    today,
   ]
     .filter(Boolean)
     .join("\n");
 
+  const ccText =
+    inst.ccList
+      ?.map((c) => `${c.org}\n${c.address || ""}`)
+      .join("\n\n") || "None";
+
   const systemPrompt = `
-You are an expert Nigerian petition-drafting lawyer.
-Write very strong, formal petitions suitable for regulators, banks, telecoms, electricity discos, law-enforcement, and government agencies.
-
-Obey these STRICT rules:
-
-1. Use only the REAL complainant details and institutions provided.
-2. NEVER use placeholder text like [Your Name], [Your Address], [Bank Address], [Commission Address], etc.
-   If you don't know an address, simply omit that address line instead of using placeholders.
-3. At the top, write the complainant's details (name, address if available, email, phone, date).
-4. Then write the full address and title of the PRIMARY institution, and if applicable, a "Through:" line for the supervising institution.
-5. After that, add a "CC:" section listing other institutions.
-6. Then write the petition body:
-   - Opening: clearly state the subject (e.g. "RE: COMPLAINT ABOUT ...")
-   - First paragraph: who the complainant is and the purpose of the petition.
-   - Middle paragraphs: clear narrative of events, dates, amounts, account numbers, what has been done so far, and impact on the complainant.
-   - Next paragraph: legal or regulatory basis (for example, CBN Consumer Protection Framework, NCC regulations, NERC rules, NDPC Act, etc.) ONLY when relevant.
-   - Reliefs: a numbered list of what the complainant wants (refunds, investigation, cessation of abuse, sanctions, etc.).
-   - Closing: firm but respectful closing paragraph.
-7. End with "Yours faithfully," then the complainant's name, phone and email.
-8. The tone must be firm, respectful, professional and precise. Avoid slang or emotional outbursts.
-9. Output MUST be single plain text that can be printed or saved as PDF. Use clean paragraph spacing and numbered reliefs.
+You are an expert Nigerian petition drafting lawyer.
+Write a VERY STRONG, highly formal petition.
+No placeholders.
+Use only provided details.
+Tone: firm, legal, respectful, authoritative.
 `;
 
   const userPrompt = `
-Complainant details (to appear at the top of the letter exactly as provided):
+${header}
 
-${complainantBlock}
+${inst.primary?.title || ""}
+${inst.primary?.org || ""}
+${inst.primary?.address || ""}
 
-Primary institution block:
-${primaryTitle ? primaryTitle + "\n" : ""}${primaryOrg}
-${primaryAddress || ""}
+${inst.through?.org ? "Through:\n" + inst.through.org : ""}
+${inst.through?.address || ""}
 
-Through institution block (if any):
-${throughOrg ? (throughTitle ? throughTitle + "\n" : "") + throughOrg : ""}
-${throughAddress || ""}
+CC:
+${ccText}
 
-CC institutions block (if any):
-${ccBlock || "None"}
+SUBJECT: AUTOGENERATE BASED ON DESCRIPTION
 
-ROUTING SUMMARY (for your understanding only – do not copy this text directly):
-${routingSummary || "N/A"}
-
-Complaint description (complainant's story – summarise but keep facts accurate):
+Description:
 ${description}
 
-Write a full, formal petition letter following all the rules above. Do NOT add any placeholders in square brackets. Use only information you have been given or you can reasonably infer. Do not invent new facts.`;
+Write a FULL petition with numbered reliefs.`;
 
   try {
-    const ai = await openai.chat.completions.create({
+    const r = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.3,
+      temperature: 0.25,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
     });
 
-    const petitionText =
-      ai.choices?.[0]?.message?.content ||
-      `Petition Draft:\n\n${description}`;
-
-    return petitionText;
+    return r.choices?.[0]?.message?.content || fallbackPetition(complainant, inst);
   } catch (err) {
-    console.error("OpenAI error while building petition:", err);
-    // Fallback to simple builder if AI fails
-    return buildFallbackPetition(complainant, inst);
+    console.error("AI petition error:", err);
+    return fallbackPetition(complainant, inst);
   }
 }
 
-// Simple fallback if OpenAI fails or key is missing
-function buildFallbackPetition(complainant, inst) {
-  const { fullName, email, phone, address, description } = complainant;
-
+// --------------------------------------------------------------
+// FALLBACK PETITION
+// --------------------------------------------------------------
+function fallbackPetition(c, inst) {
   const today = new Date().toLocaleDateString("en-NG", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
-  const primaryOrg = inst.primary?.org || "The Appropriate Authority,\nNigeria.";
-  const throughOrg = inst.through?.org || "";
-  const ccLines =
-    Array.isArray(inst.ccList) && inst.ccList.length
-      ? inst.ccList.map((c) => c.org).join("\n")
-      : "";
+  return `
+${c.fullName}
+${c.address || ""}
+Email: ${c.email || ""}
+Phone: ${c.phone || ""}
+${today}
 
-  const headerLines = [];
-  if (fullName) headerLines.push(fullName);
-  if (address) headerLines.push(address);
-  if (email) headerLines.push(`Email: ${email}`);
-  if (phone) headerLines.push(`Phone: ${phone}`);
-  headerLines.push(today);
+${inst.primary?.org || "The Appropriate Authority"}
+${inst.primary?.address || ""}
 
-  let text = "";
-  text += headerLines.join("\n") + "\n\n";
-  text += primaryOrg + "\n\n";
-  if (throughOrg) {
-    text += "Through:\n" + throughOrg + "\n\n";
-  }
-  if (ccLines) {
-    text += "CC:\n" + ccLines + "\n\n";
-  }
+Through:
+${inst.through?.org || ""}
 
-  text += "Dear Sir/Madam,\n\n";
-  text += "RE: FORMAL COMPLAINT / PETITION\n\n";
-  text +=
-    "I am writing to formally lodge a complaint regarding the matter described below:\n\n";
-  text += description + "\n\n";
-  text +=
-    "I respectfully request that your good office investigate this complaint, stop any ongoing unfair treatment, and take appropriate steps to remedy the situation.\n\n";
-  text +=
-    "Yours faithfully,\n\n" +
-    (fullName || "The Complainant") +
-    (phone ? `\n${phone}` : "") +
-    (email ? `\n${email}` : "") +
-    "\n";
+CC:
+${inst.ccList?.map((x) => x.org).join("\n")}
 
-  return text;
+Dear Sir/Madam,
+
+RE: FORMAL COMPLAINT / PETITION
+
+${c.description}
+
+I request immediate investigation.
+
+Yours faithfully,
+${c.fullName}
+${c.phone}
+${c.email}
+`;
 }
 
 // --------------------------------------------------------------
-// POST: GENERATE PETITION (HYBRID)
+// POST: GENERATE PETITION
 // --------------------------------------------------------------
 app.post("/generate-petition", async (req, res) => {
-  console.log("Incoming /generate-petition:", req.body);
+  console.log("Incoming request:", req.body);
 
-  // 1 – safely read description
-  let description = "";
-  try {
-    if (req.body && typeof req.body.description === "string") {
-      description = req.body.description;
-    }
-  } catch (err) {
-    console.error("Error reading description from body:", err);
-  }
-
-  if (!description.trim()) {
+  const description = req.body.description || "";
+  if (!description.trim())
     return res.status(200).json({
-      petitionText: "Please enter your complaint description in detail.",
-      primaryInstitution: null,
-      throughInstitution: null,
-      ccList: [],
-      error: "Description is required.",
-    });
-  }
-
-  // 1b – read user details (REAL data)
-  let fullName = "";
-  let email = "";
-  let phone = "";
-  let address = "";
-  try {
-    if (typeof req.body.fullName === "string") fullName = req.body.fullName;
-    if (typeof req.body.email === "string") email = req.body.email;
-    if (typeof req.body.phone === "string") phone = req.body.phone;
-    if (typeof req.body.address === "string") address = req.body.address;
-  } catch (err) {
-    console.error("Error reading extra fields from body:", err);
-  }
-
-  // 2 – detect institutions (hybrid AI + electricity) and apply watchdogs
-  let inst = { primary: null, through: null, ccList: [] };
-  try {
-    inst = await detectInstitutionsHybrid(description);
-  } catch (err) {
-    console.error("Error in hybrid institution detection:", err);
-    inst = { primary: null, through: null, ccList: [] };
-  }
-
-  inst = applyGlobalWatchdogs(description, inst);
-
-  // Ensure ccList has no null/empty entries (avoid empty cc objects)
-  if (!Array.isArray(inst.ccList)) inst.ccList = [];
-  inst.ccList = inst.ccList.filter(
-    (c) => c && typeof c.org === "string" && c.org.trim()
-  );
-
-  // 3 – generate petition (OpenAI or fallback)
-  const complainant = { fullName, email, phone, address, description };
-  let petitionText = "";
-
-  try {
-    petitionText = await buildPetitionWithOpenAI(complainant, inst);
-  } catch (err) {
-    console.error("Error during AI petition building:", err);
-    petitionText = buildFallbackPetition(complainant, inst);
-  }
-
-  // 4 – always respond safely
-  try {
-    return res.status(200).json({
-      petitionText,
-      primaryInstitution: inst.primary || null,
-      throughInstitution: inst.through || null,
-      ccList: Array.isArray(inst.ccList) ? inst.ccList : [],
-    });
-  } catch (err) {
-    console.error("Error sending final JSON:", err);
-    return res.status(200).json({
-      petitionText,
+      petitionText: "Please enter your complaint description.",
       primaryInstitution: null,
       throughInstitution: null,
       ccList: [],
     });
-  }
+
+  const complainant = {
+    fullName: req.body.fullName || "",
+    email: req.body.email || "",
+    phone: req.body.phone || "",
+    address: req.body.address || "",
+    description,
+  };
+
+  let inst = await detectHybrid(description);
+  inst = applyWatchdogs(description, inst);
+  inst.ccList = inst.ccList?.filter((c) => c?.org) || [];
+
+  const petitionText = await buildPetition(complainant, inst);
+
+  res.status(200).json({
+    petitionText,
+    primaryInstitution: inst.primary,
+    throughInstitution: inst.through,
+    ccList: inst.ccList,
+  });
 });
 
 // --------------------------------------------------------------
 // START SERVER
 // --------------------------------------------------------------
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(
-    `JusticeBot A7 World Brain Backend running on port ${PORT} (PetitionDesk mode)`
-  );
-});
+app.listen(PORT, "0.0.0.0", () =>
+  console.log(`JusticeBot A8 Backend running on ${PORT}`)
+);
