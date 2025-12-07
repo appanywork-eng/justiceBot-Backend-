@@ -17,7 +17,7 @@
     "CBN_CPD": {
       "org": "Central Bank of Nigeria – Consumer Protection Department",
       "title": "Director, Consumer Protection Department",
-      "address": "Central Bank of Nigeria Headquarters, Central Business District, Abuja, Nigeria.",
+      "address": "Central Business District, Abuja, Nigeria.",
       "email": "cpd@cbn.gov.ng",
       "phone": ""
     },
@@ -31,21 +31,21 @@
     "NERC": {
       "org": "Nigerian Electricity Regulatory Commission",
       "title": "Chairman",
-      "address": "Adamawa Plaza, Plot 1099, First Avenue, Central Business District, Abuja, Nigeria.",
+      "address": "Adamawa Plaza, Plot 1099, First Avenue, Central Business District, Abuja.",
       "email": "customerservice@nerc.gov.ng",
       "phone": ""
     },
     "NCC": {
       "org": "Nigerian Communications Commission",
       "title": "Executive Vice Chairman",
-      "address": "Plot 423 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria.",
+      "address": "Plot 423 Aguiyi Ironsi Street, Maitama, Abuja.",
       "email": "consumerportal@ncc.gov.ng",
       "phone": "622"
     },
     "POLICE_IGP": {
       "org": "Nigeria Police Force – Inspector General of Police",
       "title": "Inspector General of Police",
-      "address": "Louis Edet House, Garki II, Abuja, Nigeria.",
+      "address": "Louis Edet House, Garki II, Abuja.",
       "email": "",
       "phone": ""
     },
@@ -57,14 +57,14 @@
       "phone": ""
     },
     "PENCOM": {
-      "org": "National Pension Commission (PenCom)",
+      "org": "National Pension Commission",
       "title": "Director General",
-      "address": "Plot 174 Adetokunbo Ademola Crescent, Wuse II, Abuja, Nigeria.",
+      "address": "Plot 174 Adetokunbo Ademola Crescent, Wuse II, Abuja.",
       "email": "",
       "phone": ""
     },
     "PTAD": {
-      "org": "Pension Transitional Arrangement Directorate (PTAD)",
+      "org": "Pension Transitional Arrangement Directorate",
       "title": "Executive Secretary",
       "address": "Abuja, Nigeria.",
       "email": "",
@@ -72,496 +72,1542 @@
     },
     "MOJ_FEDERAL": {
       "org": "Federal Ministry of Justice",
-      "title": "Honourable Attorney-General of the Federation and Minister of Justice",
-      "address": "Federal Ministry of Justice, Abuja, Nigeria.",
+      "title": "Attorney-General of the Federation",
+      "address": "Federal Ministry of Justice, Abuja.",
       "email": "",
       "phone": ""
     }
   },
-
   "states": {
     "abia": {
-      "meta": { "name": "Abia State", "capital": "Umuahia" },
+      "meta": {
+        "name": "Abia State",
+        "capital": "Umuahia"
+      },
       "police_command": {
         "org": "Abia State Police Command",
         "title": "Commissioner of Police, Abia State",
-        "address": "Umuahia, Abia State, Nigeria.",
+        "address": "Umuahia.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Abia State Office",
+        "org": "Public Complaints Commission – Abia State",
         "title": "Resident Commissioner",
-        "address": "Umuahia, Abia State, Nigeria.",
+        "address": "Umuahia.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Abia State Office",
+        "org": "National Human Rights Commission – Abia State",
         "title": "State Coordinator",
-        "address": "Umuahia, Abia State, Nigeria.",
+        "address": "Umuahia.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Abia State",
-        "title": "Executive Governor of Abia State",
-        "address": "Government House, Umuahia, Abia State, Nigeria.",
+        "org": "Abia State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Umuahia.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Abia State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Abia State",
-        "address": "Umuahia, Abia State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Umuahia.",
         "email": "",
         "phone": ""
       }
     },
     "adamawa": {
-      "meta": { "name": "Adamawa State", "capital": "Yola" },
+      "meta": {
+        "name": "Adamawa State",
+        "capital": "Yola"
+      },
       "police_command": {
         "org": "Adamawa State Police Command",
         "title": "Commissioner of Police, Adamawa State",
-        "address": "Yola, Adamawa State, Nigeria.",
+        "address": "Yola.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Adamawa State Office",
+        "org": "Public Complaints Commission – Adamawa State",
         "title": "Resident Commissioner",
-        "address": "Yola, Adamawa State, Nigeria.",
+        "address": "Yola.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Adamawa State Office",
+        "org": "National Human Rights Commission – Adamawa State",
         "title": "State Coordinator",
-        "address": "Yola, Adamawa State, Nigeria.",
+        "address": "Yola.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Adamawa State",
-        "title": "Executive Governor of Adamawa State",
-        "address": "Government House, Yola, Adamawa State, Nigeria.",
+        "org": "Adamawa State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Yola.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Adamawa State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Adamawa State",
-        "address": "Yola, Adamawa State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Yola.",
         "email": "",
         "phone": ""
       }
     },
     "akwa_ibom": {
-      "meta": { "name": "Akwa Ibom State", "capital": "Uyo" },
+      "meta": {
+        "name": "Akwa Ibom State",
+        "capital": "Uyo"
+      },
       "police_command": {
         "org": "Akwa Ibom State Police Command",
         "title": "Commissioner of Police, Akwa Ibom State",
-        "address": "Uyo, Akwa Ibom State, Nigeria.",
+        "address": "Uyo.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Akwa Ibom State Office",
+        "org": "Public Complaints Commission – Akwa Ibom State",
         "title": "Resident Commissioner",
-        "address": "Uyo, Akwa Ibom State, Nigeria.",
+        "address": "Uyo.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Akwa Ibom State Office",
+        "org": "National Human Rights Commission – Akwa Ibom State",
         "title": "State Coordinator",
-        "address": "Uyo, Akwa Ibom State, Nigeria.",
+        "address": "Uyo.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Akwa Ibom State",
-        "title": "Executive Governor of Akwa Ibom State",
-        "address": "Government House, Uyo, Akwa Ibom State, Nigeria.",
+        "org": "Akwa Ibom State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Uyo.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Akwa Ibom State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Akwa Ibom State",
-        "address": "Uyo, Akwa Ibom State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Uyo.",
         "email": "",
         "phone": ""
       }
     },
     "anambra": {
-      "meta": { "name": "Anambra State", "capital": "Awka" },
+      "meta": {
+        "name": "Anambra State",
+        "capital": "Awka"
+      },
       "police_command": {
         "org": "Anambra State Police Command",
         "title": "Commissioner of Police, Anambra State",
-        "address": "Awka, Anambra State, Nigeria.",
+        "address": "Awka.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Anambra State Office",
+        "org": "Public Complaints Commission – Anambra State",
         "title": "Resident Commissioner",
-        "address": "Awka, Anambra State, Nigeria.",
+        "address": "Awka.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Anambra State Office",
+        "org": "National Human Rights Commission – Anambra State",
         "title": "State Coordinator",
-        "address": "Awka, Anambra State, Nigeria.",
+        "address": "Awka.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Anambra State",
-        "title": "Executive Governor of Anambra State",
-        "address": "Government House, Awka, Anambra State, Nigeria.",
+        "org": "Anambra State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Awka.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Anambra State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Anambra State",
-        "address": "Awka, Anambra State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Awka.",
         "email": "",
         "phone": ""
       }
     },
     "bauchi": {
-      "meta": { "name": "Bauchi State", "capital": "Bauchi" },
+      "meta": {
+        "name": "Bauchi State",
+        "capital": "Bauchi"
+      },
       "police_command": {
         "org": "Bauchi State Police Command",
         "title": "Commissioner of Police, Bauchi State",
-        "address": "Bauchi, Bauchi State, Nigeria.",
+        "address": "Bauchi.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Bauchi State Office",
+        "org": "Public Complaints Commission – Bauchi State",
         "title": "Resident Commissioner",
-        "address": "Bauchi, Bauchi State, Nigeria.",
+        "address": "Bauchi.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Bauchi State Office",
+        "org": "National Human Rights Commission – Bauchi State",
         "title": "State Coordinator",
-        "address": "Bauchi, Bauchi State, Nigeria.",
+        "address": "Bauchi.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Bauchi State",
-        "title": "Executive Governor of Bauchi State",
-        "address": "Government House, Bauchi, Bauchi State, Nigeria.",
+        "org": "Bauchi State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Bauchi.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Bauchi State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Bauchi State",
-        "address": "Bauchi, Bauchi State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Bauchi.",
         "email": "",
         "phone": ""
       }
     },
     "bayelsa": {
-      "meta": { "name": "Bayelsa State", "capital": "Yenagoa" },
+      "meta": {
+        "name": "Bayelsa State",
+        "capital": "Yenagoa"
+      },
       "police_command": {
         "org": "Bayelsa State Police Command",
         "title": "Commissioner of Police, Bayelsa State",
-        "address": "Yenagoa, Bayelsa State, Nigeria.",
+        "address": "Yenagoa.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Bayelsa State Office",
+        "org": "Public Complaints Commission – Bayelsa State",
         "title": "Resident Commissioner",
-        "address": "Yenagoa, Bayelsa State, Nigeria.",
+        "address": "Yenagoa.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Bayelsa State Office",
+        "org": "National Human Rights Commission – Bayelsa State",
         "title": "State Coordinator",
-        "address": "Yenagoa, Bayelsa State, Nigeria.",
+        "address": "Yenagoa.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Bayelsa State",
-        "title": "Executive Governor of Bayelsa State",
-        "address": "Government House, Yenagoa, Bayelsa State, Nigeria.",
+        "org": "Bayelsa State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Yenagoa.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Bayelsa State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Bayelsa State",
-        "address": "Yenagoa, Bayelsa State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Yenagoa.",
         "email": "",
         "phone": ""
       }
     },
     "benue": {
-      "meta": { "name": "Benue State", "capital": "Makurdi" },
+      "meta": {
+        "name": "Benue State",
+        "capital": "Makurdi"
+      },
       "police_command": {
         "org": "Benue State Police Command",
         "title": "Commissioner of Police, Benue State",
-        "address": "Makurdi, Benue State, Nigeria.",
+        "address": "Makurdi.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Benue State Office",
+        "org": "Public Complaints Commission – Benue State",
         "title": "Resident Commissioner",
-        "address": "Makurdi, Benue State, Nigeria.",
+        "address": "Makurdi.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Benue State Office",
+        "org": "National Human Rights Commission – Benue State",
         "title": "State Coordinator",
-        "address": "Makurdi, Benue State, Nigeria.",
+        "address": "Makurdi.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Benue State",
-        "title": "Executive Governor of Benue State",
-        "address": "Government House, Makurdi, Benue State, Nigeria.",
+        "org": "Benue State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Makurdi.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Benue State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Benue State",
-        "address": "Makurdi, Benue State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Makurdi.",
         "email": "",
         "phone": ""
       }
     },
     "borno": {
-      "meta": { "name": "Borno State", "capital": "Maiduguri" },
+      "meta": {
+        "name": "Borno State",
+        "capital": "Maiduguri"
+      },
       "police_command": {
         "org": "Borno State Police Command",
         "title": "Commissioner of Police, Borno State",
-        "address": "Maiduguri, Borno State, Nigeria.",
+        "address": "Maiduguri.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Borno State Office",
+        "org": "Public Complaints Commission – Borno State",
         "title": "Resident Commissioner",
-        "address": "Maiduguri, Borno State, Nigeria.",
+        "address": "Maiduguri.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Borno State Office",
+        "org": "National Human Rights Commission – Borno State",
         "title": "State Coordinator",
-        "address": "Maiduguri, Borno State, Nigeria.",
+        "address": "Maiduguri.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Borno State",
-        "title": "Executive Governor of Borno State",
-        "address": "Government House, Maiduguri, Borno State, Nigeria.",
+        "org": "Borno State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Maiduguri.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Borno State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Borno State",
-        "address": "Maiduguri, Borno State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Maiduguri.",
         "email": "",
         "phone": ""
       }
     },
     "cross_river": {
-      "meta": { "name": "Cross River State", "capital": "Calabar" },
+      "meta": {
+        "name": "Cross River State",
+        "capital": "Calabar"
+      },
       "police_command": {
         "org": "Cross River State Police Command",
         "title": "Commissioner of Police, Cross River State",
-        "address": "Calabar, Cross River State, Nigeria.",
+        "address": "Calabar.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Cross River State Office",
+        "org": "Public Complaints Commission – Cross River State",
         "title": "Resident Commissioner",
-        "address": "Calabar, Cross River State, Nigeria.",
+        "address": "Calabar.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Cross River State Office",
+        "org": "National Human Rights Commission – Cross River State",
         "title": "State Coordinator",
-        "address": "Calabar, Cross River State, Nigeria.",
+        "address": "Calabar.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Cross River State",
-        "title": "Executive Governor of Cross River State",
-        "address": "Government House, Calabar, Cross River State, Nigeria.",
+        "org": "Cross River State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Calabar.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Cross River State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Cross River State",
-        "address": "Calabar, Cross River State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Calabar.",
         "email": "",
         "phone": ""
       }
     },
-
     "delta": {
-      "meta": { "name": "Delta State", "capital": "Asaba" },
+      "meta": {
+        "name": "Delta State",
+        "capital": "Asaba"
+      },
       "police_command": {
         "org": "Delta State Police Command",
         "title": "Commissioner of Police, Delta State",
-        "address": "Asaba, Delta State, Nigeria.",
+        "address": "Asaba.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Delta State Office",
+        "org": "Public Complaints Commission – Delta State",
         "title": "Resident Commissioner",
-        "address": "Asaba, Delta State, Nigeria.",
+        "address": "Asaba.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Delta State Office",
+        "org": "National Human Rights Commission – Delta State",
         "title": "State Coordinator",
-        "address": "Asaba, Delta State, Nigeria.",
+        "address": "Asaba.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Delta State",
-        "title": "Executive Governor of Delta State",
-        "address": "Government House, Asaba, Delta State, Nigeria.",
+        "org": "Delta State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Asaba.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Delta State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Delta State",
-        "address": "Asaba, Delta State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Asaba.",
         "email": "",
         "phone": ""
       }
     },
-
     "ebonyi": {
-      "meta": { "name": "Ebonyi State", "capital": "Abakaliki" },
+      "meta": {
+        "name": "Ebonyi State",
+        "capital": "Abakaliki"
+      },
       "police_command": {
         "org": "Ebonyi State Police Command",
         "title": "Commissioner of Police, Ebonyi State",
-        "address": "Abakaliki, Ebonyi State, Nigeria.",
+        "address": "Abakaliki.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Ebonyi State Office",
+        "org": "Public Complaints Commission – Ebonyi State",
         "title": "Resident Commissioner",
-        "address": "Abakaliki, Ebonyi State, Nigeria.",
+        "address": "Abakaliki.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Ebonyi State Office",
+        "org": "National Human Rights Commission – Ebonyi State",
         "title": "State Coordinator",
-        "address": "Abakaliki, Ebonyi State, Nigeria.",
+        "address": "Abakaliki.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Ebonyi State",
-        "title": "Executive Governor of Ebonyi State",
-        "address": "Government House, Abakaliki, Ebonyi State, Nigeria.",
+        "org": "Ebonyi State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Abakaliki.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Ebonyi State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Ebonyi State",
-        "address": "Abakaliki, Ebonyi State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Abakaliki.",
         "email": "",
         "phone": ""
       }
     },
-
     "edo": {
-      "meta": { "name": "Edo State", "capital": "Benin City" },
+      "meta": {
+        "name": "Edo State",
+        "capital": "Benin City"
+      },
       "police_command": {
         "org": "Edo State Police Command",
         "title": "Commissioner of Police, Edo State",
-        "address": "Benin City, Edo State, Nigeria.",
+        "address": "Benin City.",
         "email": "",
         "phone": ""
       },
       "pcc": {
-        "org": "Public Complaints Commission – Edo State Office",
+        "org": "Public Complaints Commission – Edo State",
         "title": "Resident Commissioner",
-        "address": "Benin City, Edo State, Nigeria.",
+        "address": "Benin City.",
         "email": "",
         "phone": ""
       },
       "nhrc": {
-        "org": "National Human Rights Commission – Edo State Office",
+        "org": "National Human Rights Commission – Edo State",
         "title": "State Coordinator",
-        "address": "Benin City, Edo State, Nigeria.",
+        "address": "Benin City.",
         "email": "",
         "phone": ""
       },
       "governor": {
-        "org": "Office of the Governor, Edo State",
-        "title": "Executive Governor of Edo State",
-        "address": "Government House, Benin City, Edo State, Nigeria.",
+        "org": "Edo State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Benin City.",
         "email": "",
         "phone": ""
       },
       "attorney_general": {
         "org": "Edo State Ministry of Justice",
-        "title": "Honourable Attorney-General and Commissioner for Justice, Edo State",
-        "address": "Benin City, Edo State, Nigeria.",
+        "title": "Attorney-General",
+        "address": "Benin City.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "ekiti": {
+      "meta": {
+        "name": "Ekiti State",
+        "capital": "Ado-Ekiti"
+      },
+      "police_command": {
+        "org": "Ekiti State Police Command",
+        "title": "Commissioner of Police, Ekiti State",
+        "address": "Ado-Ekiti.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Ekiti State",
+        "title": "Resident Commissioner",
+        "address": "Ado-Ekiti.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Ekiti State",
+        "title": "State Coordinator",
+        "address": "Ado-Ekiti.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Ekiti State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Ado-Ekiti.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Ekiti State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Ado-Ekiti.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "enugu": {
+      "meta": {
+        "name": "Enugu State",
+        "capital": "Enugu"
+      },
+      "police_command": {
+        "org": "Enugu State Police Command",
+        "title": "Commissioner of Police, Enugu State",
+        "address": "Enugu.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Enugu State",
+        "title": "Resident Commissioner",
+        "address": "Enugu.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Enugu State",
+        "title": "State Coordinator",
+        "address": "Enugu.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Enugu State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Enugu.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Enugu State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Enugu.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "gombe": {
+      "meta": {
+        "name": "Gombe State",
+        "capital": "Gombe"
+      },
+      "police_command": {
+        "org": "Gombe State Police Command",
+        "title": "Commissioner of Police, Gombe State",
+        "address": "Gombe.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Gombe State",
+        "title": "Resident Commissioner",
+        "address": "Gombe.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Gombe State",
+        "title": "State Coordinator",
+        "address": "Gombe.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Gombe State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Gombe.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Gombe State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Gombe.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "imo": {
+      "meta": {
+        "name": "Imo State",
+        "capital": "Owerri"
+      },
+      "police_command": {
+        "org": "Imo State Police Command",
+        "title": "Commissioner of Police, Imo State",
+        "address": "Owerri.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Imo State",
+        "title": "Resident Commissioner",
+        "address": "Owerri.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Imo State",
+        "title": "State Coordinator",
+        "address": "Owerri.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Imo State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Owerri.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Imo State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Owerri.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "jigawa": {
+      "meta": {
+        "name": "Jigawa State",
+        "capital": "Dutse"
+      },
+      "police_command": {
+        "org": "Jigawa State Police Command",
+        "title": "Commissioner of Police, Jigawa State",
+        "address": "Dutse.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Jigawa State",
+        "title": "Resident Commissioner",
+        "address": "Dutse.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Jigawa State",
+        "title": "State Coordinator",
+        "address": "Dutse.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Jigawa State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Dutse.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Jigawa State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Dutse.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "kaduna": {
+      "meta": {
+        "name": "Kaduna State",
+        "capital": "Kaduna"
+      },
+      "police_command": {
+        "org": "Kaduna State Police Command",
+        "title": "Commissioner of Police, Kaduna State",
+        "address": "Kaduna.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Kaduna State",
+        "title": "Resident Commissioner",
+        "address": "Kaduna.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Kaduna State",
+        "title": "State Coordinator",
+        "address": "Kaduna.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Kaduna State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Kaduna.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Kaduna State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Kaduna.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "kano": {
+      "meta": {
+        "name": "Kano State",
+        "capital": "Kano"
+      },
+      "police_command": {
+        "org": "Kano State Police Command",
+        "title": "Commissioner of Police, Kano State",
+        "address": "Kano.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Kano State",
+        "title": "Resident Commissioner",
+        "address": "Kano.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Kano State",
+        "title": "State Coordinator",
+        "address": "Kano.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Kano State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Kano.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Kano State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Kano.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "katsina": {
+      "meta": {
+        "name": "Katsina State",
+        "capital": "Katsina"
+      },
+      "police_command": {
+        "org": "Katsina State Police Command",
+        "title": "Commissioner of Police, Katsina State",
+        "address": "Katsina.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Katsina State",
+        "title": "Resident Commissioner",
+        "address": "Katsina.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Katsina State",
+        "title": "State Coordinator",
+        "address": "Katsina.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Katsina State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Katsina.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Katsina State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Katsina.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "kebbi": {
+      "meta": {
+        "name": "Kebbi State",
+        "capital": "Birnin Kebbi"
+      },
+      "police_command": {
+        "org": "Kebbi State Police Command",
+        "title": "Commissioner of Police, Kebbi State",
+        "address": "Birnin Kebbi.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Kebbi State",
+        "title": "Resident Commissioner",
+        "address": "Birnin Kebbi.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Kebbi State",
+        "title": "State Coordinator",
+        "address": "Birnin Kebbi.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Kebbi State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Birnin Kebbi.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Kebbi State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Birnin Kebbi.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "kogi": {
+      "meta": {
+        "name": "Kogi State",
+        "capital": "Lokoja"
+      },
+      "police_command": {
+        "org": "Kogi State Police Command",
+        "title": "Commissioner of Police, Kogi State",
+        "address": "Lokoja.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Kogi State",
+        "title": "Resident Commissioner",
+        "address": "Lokoja.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Kogi State",
+        "title": "State Coordinator",
+        "address": "Lokoja.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Kogi State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Lokoja.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Kogi State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Lokoja.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "kwara": {
+      "meta": {
+        "name": "Kwara State",
+        "capital": "Ilorin"
+      },
+      "police_command": {
+        "org": "Kwara State Police Command",
+        "title": "Commissioner of Police, Kwara State",
+        "address": "Ilorin.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Kwara State",
+        "title": "Resident Commissioner",
+        "address": "Ilorin.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Kwara State",
+        "title": "State Coordinator",
+        "address": "Ilorin.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Kwara State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Ilorin.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Kwara State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Ilorin.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "lagos": {
+      "meta": {
+        "name": "Lagos State",
+        "capital": "Ikeja"
+      },
+      "police_command": {
+        "org": "Lagos State Police Command",
+        "title": "Commissioner of Police, Lagos State",
+        "address": "Ikeja.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Lagos State",
+        "title": "Resident Commissioner",
+        "address": "Ikeja.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Lagos State",
+        "title": "State Coordinator",
+        "address": "Ikeja.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Lagos State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Ikeja.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Lagos State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Ikeja.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "nasarawa": {
+      "meta": {
+        "name": "Nasarawa State",
+        "capital": "Lafia"
+      },
+      "police_command": {
+        "org": "Nasarawa State Police Command",
+        "title": "Commissioner of Police, Nasarawa State",
+        "address": "Lafia.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Nasarawa State",
+        "title": "Resident Commissioner",
+        "address": "Lafia.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Nasarawa State",
+        "title": "State Coordinator",
+        "address": "Lafia.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Nasarawa State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Lafia.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Nasarawa State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Lafia.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "niger": {
+      "meta": {
+        "name": "Niger State",
+        "capital": "Minna"
+      },
+      "police_command": {
+        "org": "Niger State Police Command",
+        "title": "Commissioner of Police, Niger State",
+        "address": "Minna.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Niger State",
+        "title": "Resident Commissioner",
+        "address": "Minna.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Niger State",
+        "title": "State Coordinator",
+        "address": "Minna.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Niger State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Minna.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Niger State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Minna.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "ogun": {
+      "meta": {
+        "name": "Ogun State",
+        "capital": "Abeokuta"
+      },
+      "police_command": {
+        "org": "Ogun State Police Command",
+        "title": "Commissioner of Police, Ogun State",
+        "address": "Abeokuta.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Ogun State",
+        "title": "Resident Commissioner",
+        "address": "Abeokuta.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Ogun State",
+        "title": "State Coordinator",
+        "address": "Abeokuta.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Ogun State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Abeokuta.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Ogun State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Abeokuta.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "ondo": {
+      "meta": {
+        "name": "Ondo State",
+        "capital": "Akure"
+      },
+      "police_command": {
+        "org": "Ondo State Police Command",
+        "title": "Commissioner of Police, Ondo State",
+        "address": "Akure.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Ondo State",
+        "title": "Resident Commissioner",
+        "address": "Akure.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Ondo State",
+        "title": "State Coordinator",
+        "address": "Akure.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Ondo State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Akure.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Ondo State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Akure.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "osun": {
+      "meta": {
+        "name": "Osun State",
+        "capital": "Oshogbo"
+      },
+      "police_command": {
+        "org": "Osun State Police Command",
+        "title": "Commissioner of Police, Osun State",
+        "address": "Oshogbo.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Osun State",
+        "title": "Resident Commissioner",
+        "address": "Oshogbo.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Osun State",
+        "title": "State Coordinator",
+        "address": "Oshogbo.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Osun State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Oshogbo.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Osun State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Oshogbo.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "oyo": {
+      "meta": {
+        "name": "Oyo State",
+        "capital": "Ibadan"
+      },
+      "police_command": {
+        "org": "Oyo State Police Command",
+        "title": "Commissioner of Police, Oyo State",
+        "address": "Ibadan.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Oyo State",
+        "title": "Resident Commissioner",
+        "address": "Ibadan.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Oyo State",
+        "title": "State Coordinator",
+        "address": "Ibadan.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Oyo State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Ibadan.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Oyo State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Ibadan.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "plateau": {
+      "meta": {
+        "name": "Plateau State",
+        "capital": "Jos"
+      },
+      "police_command": {
+        "org": "Plateau State Police Command",
+        "title": "Commissioner of Police, Plateau State",
+        "address": "Jos.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Plateau State",
+        "title": "Resident Commissioner",
+        "address": "Jos.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Plateau State",
+        "title": "State Coordinator",
+        "address": "Jos.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Plateau State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Jos.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Plateau State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Jos.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "rivers": {
+      "meta": {
+        "name": "Rivers State",
+        "capital": "Port Harcourt"
+      },
+      "police_command": {
+        "org": "Rivers State Police Command",
+        "title": "Commissioner of Police, Rivers State",
+        "address": "Port Harcourt.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Rivers State",
+        "title": "Resident Commissioner",
+        "address": "Port Harcourt.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Rivers State",
+        "title": "State Coordinator",
+        "address": "Port Harcourt.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Rivers State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Port Harcourt.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Rivers State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Port Harcourt.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "sokoto": {
+      "meta": {
+        "name": "Sokoto State",
+        "capital": "Sokoto"
+      },
+      "police_command": {
+        "org": "Sokoto State Police Command",
+        "title": "Commissioner of Police, Sokoto State",
+        "address": "Sokoto.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Sokoto State",
+        "title": "Resident Commissioner",
+        "address": "Sokoto.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Sokoto State",
+        "title": "State Coordinator",
+        "address": "Sokoto.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Sokoto State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Sokoto.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Sokoto State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Sokoto.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "taraba": {
+      "meta": {
+        "name": "Taraba State",
+        "capital": "Jalingo"
+      },
+      "police_command": {
+        "org": "Taraba State Police Command",
+        "title": "Commissioner of Police, Taraba State",
+        "address": "Jalingo.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Taraba State",
+        "title": "Resident Commissioner",
+        "address": "Jalingo.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Taraba State",
+        "title": "State Coordinator",
+        "address": "Jalingo.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Taraba State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Jalingo.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Taraba State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Jalingo.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "yobe": {
+      "meta": {
+        "name": "Yobe State",
+        "capital": "Damaturu"
+      },
+      "police_command": {
+        "org": "Yobe State Police Command",
+        "title": "Commissioner of Police, Yobe State",
+        "address": "Damaturu.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Yobe State",
+        "title": "Resident Commissioner",
+        "address": "Damaturu.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Yobe State",
+        "title": "State Coordinator",
+        "address": "Damaturu.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Yobe State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Damaturu.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Yobe State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Damaturu.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "zamfara": {
+      "meta": {
+        "name": "Zamfara State",
+        "capital": "Gusau"
+      },
+      "police_command": {
+        "org": "Zamfara State Police Command",
+        "title": "Commissioner of Police, Zamfara State",
+        "address": "Gusau.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – Zamfara State",
+        "title": "Resident Commissioner",
+        "address": "Gusau.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – Zamfara State",
+        "title": "State Coordinator",
+        "address": "Gusau.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Zamfara State Government",
+        "title": "Executive Governor",
+        "address": "Government House, Gusau.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "Zamfara State Ministry of Justice",
+        "title": "Attorney-General",
+        "address": "Gusau.",
+        "email": "",
+        "phone": ""
+      }
+    },
+    "fct": {
+      "meta": {
+        "name": "Federal Capital Territory",
+        "capital": "Abuja"
+      },
+      "police_command": {
+        "org": "FCT Police Command",
+        "title": "Commissioner of Police",
+        "address": "Garki, Abuja.",
+        "email": "",
+        "phone": ""
+      },
+      "pcc": {
+        "org": "Public Complaints Commission – FCT",
+        "title": "Resident Commissioner",
+        "address": "Maitama, Abuja.",
+        "email": "",
+        "phone": ""
+      },
+      "nhrc": {
+        "org": "National Human Rights Commission – FCT",
+        "title": "State Coordinator",
+        "address": "Maitama, Abuja.",
+        "email": "",
+        "phone": ""
+      },
+      "governor": {
+        "org": "Federal Capital Territory Administration",
+        "title": "Honourable Minister of the FCT",
+        "address": "FCTA Secretariat, Area 11, Garki, Abuja.",
+        "email": "",
+        "phone": ""
+      },
+      "attorney_general": {
+        "org": "FCT Legal Services Secretariat",
+        "title": "Attorney-General",
+        "address": "Garki, Abuja.",
         "email": "",
         "phone": ""
       }
     }
-
-    /* NOTE TO YOU:
-       Because of message length, I’ve fully written out patterns for a chunk of states.
-       For the remaining states (Ekiti, Enugu, Gombe, Imo, Jigawa, Kaduna, Kano, Katsina,
-       Kebbi, Kogi, Kwara, Lagos, Nasarawa, Niger, Ogun, Ondo, Osun, Oyo, Plateau,
-       Rivers, Sokoto, Taraba, Yobe, Zamfara, plus FCT),
-       you should repeat this same structure:
-       - meta
-       - police_command
-       - pcc
-       - nhrc
-       - governor
-       - attorney_general
-       Changing only the names/capitals.
-    */
   },
-
   "discos": {
     "AEDC": {
       "org": "Abuja Electricity Distribution Company (AEDC)",
       "title": "Managing Director/CEO",
       "address": "No. 1 Ziquinchor Street, Wuse Zone 4, Abuja, Nigeria.",
-      "regions": ["FCT", "Niger", "Kogi", "Nasarawa"],
+      "regions": [
+        "FCT",
+        "Niger",
+        "Kogi",
+        "Nasarawa"
+      ],
       "email": "customercare@aedc.co",
       "phone": ""
     },
@@ -569,7 +1615,12 @@
       "org": "Benin Electricity Distribution Company (BEDC)",
       "title": "Managing Director/CEO",
       "address": "Benin City, Edo State, Nigeria.",
-      "regions": ["Edo", "Delta", "Ondo", "Ekiti"],
+      "regions": [
+        "Edo",
+        "Delta",
+        "Ondo",
+        "Ekiti"
+      ],
       "email": "",
       "phone": ""
     },
@@ -577,7 +1628,13 @@
       "org": "Enugu Electricity Distribution Company (EEDC)",
       "title": "Managing Director/CEO",
       "address": "Enugu, Enugu State, Nigeria.",
-      "regions": ["Abia", "Anambra", "Ebonyi", "Enugu", "Imo"],
+      "regions": [
+        "Abia",
+        "Anambra",
+        "Ebonyi",
+        "Enugu",
+        "Imo"
+      ],
       "email": "",
       "phone": ""
     },
@@ -585,7 +1642,13 @@
       "org": "Ibadan Electricity Distribution Company (IBEDC)",
       "title": "Managing Director/CEO",
       "address": "Ibadan, Oyo State, Nigeria.",
-      "regions": ["Oyo", "Ogun", "Osun", "Kwara", "Kogi (part)"],
+      "regions": [
+        "Oyo",
+        "Ogun",
+        "Osun",
+        "Kwara",
+        "Kogi (part)"
+      ],
       "email": "",
       "phone": ""
     },
@@ -593,7 +1656,9 @@
       "org": "Ikeja Electric (IKEDC)",
       "title": "Managing Director/CEO",
       "address": "Ikeja, Lagos State, Nigeria.",
-      "regions": ["Lagos (Ikeja axis)"],
+      "regions": [
+        "Lagos (Ikeja axis)"
+      ],
       "email": "",
       "phone": ""
     },
@@ -601,7 +1666,9 @@
       "org": "Eko Electricity Distribution Company (EKEDC)",
       "title": "Managing Director/CEO",
       "address": "Lagos Island, Lagos State, Nigeria.",
-      "regions": ["Lagos (Eko axis)"],
+      "regions": [
+        "Lagos (Eko axis)"
+      ],
       "email": "",
       "phone": ""
     },
@@ -609,7 +1676,12 @@
       "org": "Jos Electricity Distribution Company (JED)",
       "title": "Managing Director/CEO",
       "address": "Jos, Plateau State, Nigeria.",
-      "regions": ["Plateau", "Gombe", "Bauchi", "Benue"],
+      "regions": [
+        "Plateau",
+        "Gombe",
+        "Bauchi",
+        "Benue"
+      ],
       "email": "",
       "phone": ""
     },
@@ -617,7 +1689,11 @@
       "org": "Kano Electricity Distribution Company (KEDCO)",
       "title": "Managing Director/CEO",
       "address": "Kano, Kano State, Nigeria.",
-      "regions": ["Kano", "Jigawa", "Katsina"],
+      "regions": [
+        "Kano",
+        "Jigawa",
+        "Katsina"
+      ],
       "email": "",
       "phone": ""
     },
@@ -625,7 +1701,12 @@
       "org": "Port Harcourt Electricity Distribution Company (PHED)",
       "title": "Managing Director/CEO",
       "address": "Port Harcourt, Rivers State, Nigeria.",
-      "regions": ["Rivers", "Cross River", "Akwa Ibom", "Bayelsa"],
+      "regions": [
+        "Rivers",
+        "Cross River",
+        "Akwa Ibom",
+        "Bayelsa"
+      ],
       "email": "",
       "phone": ""
     },
@@ -633,12 +1714,16 @@
       "org": "Yola Electricity Distribution Company",
       "title": "Managing Director/CEO",
       "address": "Yola, Adamawa State, Nigeria.",
-      "regions": ["Adamawa", "Taraba", "Borno", "Yobe"],
+      "regions": [
+        "Adamawa",
+        "Taraba",
+        "Borno",
+        "Yobe"
+      ],
       "email": "",
       "phone": ""
     }
   },
-
   "international": {
     "UN_HRC": {
       "org": "United Nations Human Rights Council",
@@ -658,14 +1743,14 @@
     },
     "AU_COMMISSION": {
       "org": "African Union Commission",
-      "title": "Chairperson, African Union Commission",
-      "address": "African Union Headquarters, Addis Ababa, Ethiopia.",
+      "title": "Chairperson",
+      "address": "AU Headquarters, Addis Ababa, Ethiopia.",
       "email": "",
       "phone": ""
     },
     "ECOWAS_COMMISSION": {
       "org": "ECOWAS Commission",
-      "title": "President, ECOWAS Commission",
+      "title": "President",
       "address": "101 Yakubu Gowon Crescent, Asokoro, Abuja, Nigeria.",
       "email": "",
       "phone": ""
@@ -673,7 +1758,7 @@
     "EU_PARLIAMENT_DROI": {
       "org": "European Parliament – Subcommittee on Human Rights (DROI)",
       "title": "Secretariat",
-      "address": "Brussels / Strasbourg, European Union.",
+      "address": "Brussels/Strasbourg, European Union.",
       "email": "droi-secretariat@ep.europa.eu",
       "phone": ""
     },
@@ -708,7 +1793,6 @@
       "phone": ""
     }
   },
-
   "ngos": {
     "AMNESTY_INTL_NG": {
       "org": "Amnesty International Nigeria",
@@ -720,18 +1804,17 @@
     "HRW_GLOBAL": {
       "org": "Human Rights Watch",
       "title": "Headquarters",
-      "address": "350 Fifth Avenue, 34th Floor, New York, NY 10118-3299, USA.",
+      "address": "350 Fifth Avenue, New York, NY, USA.",
       "email": "hrwnyc@hrw.org",
       "phone": ""
     }
   },
-
   "private_sector": {
     "banks": {
       "GTBANK": {
         "org": "Guaranty Trust Bank Plc",
-        "title": "Head, Complaints / Customer Experience",
-        "address": "Plot 1669 Oyin Jolayemi Street, Victoria Island, Lagos, Nigeria.",
+        "title": "Head of Complaints / CX",
+        "address": "Plot 1669 Oyin Jolayemi Street, Victoria Island, Lagos.",
         "email": "complaints@gtbank.com",
         "phone": ""
       }
@@ -740,7 +1823,7 @@
       "MTN": {
         "org": "MTN Nigeria Communications Plc",
         "title": "Customer Care",
-        "address": "Falomo, Ikoyi, Lagos, Nigeria.",
+        "address": "Falomo, Ikoyi, Lagos.",
         "email": "customercare@mtnnigeria.net",
         "phone": "180"
       }
@@ -749,7 +1832,7 @@
       "DSTV": {
         "org": "MultiChoice Nigeria (DStv)",
         "title": "Customer Care",
-        "address": "Victoria Island, Lagos, Nigeria.",
+        "address": "Victoria Island, Lagos.",
         "email": "",
         "phone": ""
       }
