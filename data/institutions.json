@@ -57,6 +57,36 @@
       "address": "31 Bijilo Annex Layout, Banjul, The Gambia",
       "title": ""
     },
+"icpc": {
+  "name": "Independent Corrupt Practices and Other Related Offences Commission",
+  "email": "",
+  "address": "ICPC Headquarters, Abuja, Nigeria",
+  "title": ""
+},
+"nemsa": {
+  "name": "Nigerian Electricity Management Services Agency (NEMSA)",
+  "email": "",
+  "address": "NEMSA Headquarters, Abuja, Nigeria",
+  "title": ""
+},
+"psn": {
+  "name": "Pharmaceutical Society of Nigeria",
+  "email": "",
+  "address": "PSN National Secretariat, Lagos, Nigeria",
+  "title": ""
+},
+"nafdac": {
+  "name": "National Agency for Food and Drug Administration and Control (NAFDAC)",
+  "email": "",
+  "address": "NAFDAC Headquarters, Abuja, Nigeria",
+  "title": ""
+},
+"force_cid_homicide": {
+  "name": "Force Criminal Investigation Department – Homicide Section",
+  "email": "",
+  "address": "Nigeria Police Force CID, Abuja, Nigeria",
+  "title": ""
+},
 
     "ecowas_pps": {
       "name": "ECOWAS Political Affairs, Peace & Security",
