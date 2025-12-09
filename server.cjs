@@ -1,9 +1,5 @@
 /**
- * PetitionDesk / JusticeBot Backend (A12 – Payments + Supervisory Escalation Engine)
- * Express + OpenAI + Hybrid routing (Electricity + International + AI)
- * + PCC/NHRC watchdogs
- * + Sector-wide escalation (police, health, aviation, judiciary, banking, telecoms, education)
- * + Flutterwave /pay endpoint
+ * PetitionDesk / JusticeBot Backend (A12.2 – Payments + Supervisory Escalation Engine)
  */
 
 const express = require("express");
@@ -11,11 +7,12 @@ const cors = require("cors");
 require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
+const https = require("https"); // IMPORTANT FIX – replaces fetch
 const OpenAI = require("openai");
 
-// --------------------------------------------------------------
-// LOAD institutions.json (for electricity + international bodies)
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   LOAD institutions.json
+------------------------------------------------------------- */
 let INSTITUTIONS_JSON = {};
 try {
   const filePath = path.join(__dirname, "data", "institutions.json");
@@ -26,55 +23,45 @@ try {
   INSTITUTIONS_JSON = {};
 }
 
-// --------------------------------------------------------------
-// OPENAI INIT (optional – app must still work without it)
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   OPENAI INIT (Optional)
+------------------------------------------------------------- */
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
   try {
     openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     console.log("OpenAI client initialised");
   } catch (err) {
-    console.error("Error initialising OpenAI client:", err);
+    console.error("OpenAI init error:", err);
     openai = null;
   }
 } else {
-  console.log("OPENAI_API_KEY not set; fallback mode active.");
+  console.log("No OPENAI_API_KEY – fallback mode active");
 }
 
-// --------------------------------------------------------------
-// EXPRESS INIT
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   EXPRESS INIT
+------------------------------------------------------------- */
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// --------------------------------------------------------------
-// BASIC ROUTES
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   BASIC ROUTES
+------------------------------------------------------------- */
 app.get("/", (req, res) =>
-  res.send(
-    "JusticeBot A12 Backend (Supervisory Escalation Engine + Payments) is running 💡"
-  )
+  res.send("JusticeBot A12.2 Backend (Escalation Engine + Payments) running")
 );
 
 app.get("/health", (req, res) =>
   res.json({ status: "ok", time: new Date().toISOString() })
 );
 
-app.get("/test", (req, res) =>
-  res.json({
-    status: "ok",
-    message: "Test endpoint working",
-    openai_status: openai ? "ready" : "not_initialized",
-  })
-);
-
-// --------------------------------------------------------------
-// HELPERS
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   HELPERS
+------------------------------------------------------------- */
 function textIncludesAny(t, arr) {
   t = (t || "").toLowerCase();
   return arr.some((x) => t.includes(x.toLowerCase()));
@@ -84,31 +71,28 @@ function normaliseOrgName(o) {
   return (o || "").trim().toLowerCase();
 }
 
-// --------------------------------------------------------------
-// ELECTRICITY DETECTION (AEDC / NERC etc.)
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   ELECTRICITY DETECTION
+------------------------------------------------------------- */
 function detectElectricity(description) {
   const d = (description || "").toLowerCase();
-  const k = [
+
+  const keys = [
     "electricity",
-    "light",
     "power",
     "disco",
-    "distribution company",
     "meter",
-    "prepaid",
     "billing",
-    "over billing",
-    "overbilling",
     "token",
     "transformer",
+    "prepaid"
   ];
-  if (!textIncludesAny(d, k)) return null;
+
+  if (!textIncludesAny(d, keys)) return null;
 
   const list = INSTITUTIONS_JSON.electricity || [];
-  let primary = null;
 
-  // Try to detect AEDC by Abuja area
+  let primary = null;
   if (d.includes("abuja") || d.includes("gwarinpa") || d.includes("kubwa")) {
     primary = list.find((i) => i.key === "aedc") || null;
   }
@@ -119,17 +103,15 @@ function detectElectricity(description) {
       list[0] || {
         org: "Electricity Distribution Company",
         email: "",
-        address: "",
-        title: "",
+        address: ""
       };
   }
 
   const through =
     list.find((i) => i.key === "nerc") || {
-      org: "Nigerian Electricity Regulatory Commission (NERC)",
+      org: "NERC – Nigerian Electricity Regulatory Commission",
       email: "",
-      address: "",
-      title: "",
+      address: ""
     };
 
   const ccList = list
@@ -137,35 +119,30 @@ function detectElectricity(description) {
     .map((i) => ({
       org: i.org,
       email: i.email || "",
-      address: i.address || "",
-      title: i.title || "",
+      address: i.address || ""
     }));
 
   return { primary, through, ccList };
 }
 
-// --------------------------------------------------------------
-// INTERNATIONAL GENOCIDE / MASS ATROCITY ROUTING
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   INTERNATIONAL GENOCIDE DETECTION
+------------------------------------------------------------- */
 function detectInternational(description) {
   const d = (description || "").toLowerCase();
+
   const triggers = [
     "genocide",
-    "ethnic cleansing",
-    "mass killing",
     "massacre",
+    "ethnic cleansing",
     "war crime",
     "crimes against humanity",
-    "religious persecution",
+    "extrajudicial",
     "political prisoner",
-    "extra judicial killing",
-    "extrajudicial killing",
-    "systematic torture",
     "nnamdi kanu",
-    "biafra",
-    "faith-based violence",
-    "minority community",
+    "biafra"
   ];
+
   if (!textIncludesAny(d, triggers)) return null;
 
   const intl = INSTITUTIONS_JSON.international || {};
@@ -173,843 +150,410 @@ function detectInternational(description) {
   const ccList = Object.values(intl).map((i) => ({
     org: i.name,
     email: i.email || "",
-    address: i.address || "",
-    title: "",
+    address: i.address || ""
   }));
 
-  // Pick a strong global primary: US House Foreign Affairs Committee
-  const primarySource = intl.us_congress_house || {};
-  const primary = {
-    org: primarySource.name || "US House Foreign Affairs Committee",
-    email: primarySource.email || "",
-    address:
-      primarySource.address ||
-      "House Committee on Foreign Affairs, Washington, D.C., USA",
-    title: "",
+  const primary = intl.us_congress_house || {
+    name: "US House Foreign Affairs Committee",
+    email: "",
+    address: "Washington, D.C."
   };
 
   const through = {
     org: "Federal Ministry of Justice",
-    email: "info@justice.gov.ng",
-    address: "Federal Secretariat, Abuja, Nigeria.",
-    title: "Attorney General of the Federation",
+    email: "",
+    address: "Federal Secretariat, Abuja"
   };
 
-  return { primary, through, ccList };
+  return {
+    primary: {
+      org: primary.name,
+      email: primary.email,
+      address: primary.address
+    },
+    through,
+    ccList
+  };
 }
 
-// --------------------------------------------------------------
-// AI DETECTION (GENERIC – WORLDWIDE)
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   AI DETECTION (GENERIC)
+------------------------------------------------------------- */
 async function aiDetect(description) {
   if (!openai) return { primary: null, through: null, ccList: [] };
 
   try {
     const resp = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.3,
+      temperature: 0.2,
       messages: [
         {
           role: "system",
           content: `
-You are a global institutions routing engine. RETURN ONLY JSON:
-
+Return ONLY JSON:
 {
-  "primary": { "org": "", "title": "", "email": "", "address": "" },
-  "supervising": [ { "org": "", "title": "", "email": "", "address": "" } ],
-  "cc": [ { "org": "", "title": "", "email": "", "address": "" } ]
+ "primary": {"org":"","title":"","email":"","address":""},
+ "supervising":[{"org":"","title":"","email":"","address":""}],
+ "cc":[{"org":"","title":"","email":"","address":""}]
 }
-
-Rules:
-- Use ONLY verified-style domains for emails (.gov, .gov.ng, .org, .int, or clearly official company domains).
-- If unsure of an email, leave it as an empty string.
-- DO NOT invent fake domains or placeholders.
-- No markdown, no comments, no extra text – JSON only.
-`,
+If email is not certain, leave as empty string.`
         },
         {
           role: "user",
-          content:
-            "Complaint:\n" +
-            description +
-            "\nReturn ONLY the JSON object described. No backticks.",
-        },
-      ],
+          content: description
+        }
+      ]
     });
 
     const txt = resp.choices?.[0]?.message?.content || "{}";
     const data = JSON.parse(txt);
 
-    function clean(o) {
-      if (!o || !o.org) return null;
-      return {
-        org: o.org.trim(),
-        title: (o.title || "").trim(),
-        email: (o.email || "").trim(),
-        address: (o.address || "").trim(),
-      };
-    }
+    const clean = (o) =>
+      o && o.org
+        ? {
+            org: o.org.trim(),
+            title: (o.title || "").trim(),
+            email: (o.email || "").trim(),
+            address: (o.address || "").trim()
+          }
+        : null;
 
     const primary = clean(data.primary);
     const through =
-      Array.isArray(data.supervising) && data.supervising.length
+      Array.isArray(data.supervising) && data.supervising[0]
         ? clean(data.supervising[0])
         : null;
 
     const ccList = [];
 
-    if (Array.isArray(data.supervising)) {
-      data.supervising.slice(1).forEach((x) => {
-        const c = clean(x);
-        if (c) ccList.push(c);
-      });
-    }
-
-    if (Array.isArray(data.cc)) {
-      data.cc.forEach((x) => {
-        const c = clean(x);
-        if (
-          c &&
-          !ccList.some(
-            (e) => normaliseOrgName(e.org) === normaliseOrgName(c.org)
-          )
-        ) {
-          ccList.push(c);
-        }
-      });
-    }
+    (data.cc || []).forEach((c) => {
+      const x = clean(c);
+      if (x && !ccList.some((e) => normaliseOrgName(e.org) === normaliseOrgName(x.org)))
+        ccList.push(x);
+    });
 
     return { primary, through, ccList };
   } catch (err) {
-    console.error("AI routing error:", err);
+    console.error("AI detect error:", err);
     return { primary: null, through: null, ccList: [] };
   }
 }
 
-// --------------------------------------------------------------
-// GLOBAL WATCHDOGS – PCC + NHRC
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   WATCHDOGS (PCC + NHRC)
+------------------------------------------------------------- */
 function applyWatchdogs(description, inst) {
-  const out = inst || {};
-  if (!Array.isArray(out.ccList)) out.ccList = [];
+  if (!inst) inst = {};
+  if (!Array.isArray(inst.ccList)) inst.ccList = [];
 
   function add(obj) {
     if (!obj || !obj.org) return;
-    const key = normaliseOrgName(obj.org);
-    if (!key) return;
-    const exists = out.ccList.some(
-      (c) => normaliseOrgName(c.org) === key
-    );
-    if (!exists) out.ccList.push(obj);
+    if (!inst.ccList.some((x) => normaliseOrgName(x.org) === normaliseOrgName(obj.org)))
+      inst.ccList.push(obj);
   }
 
-  // PCC ALWAYS (administrative injustice watchdog)
   add({
     org: "Public Complaints Commission",
-    email: "complaints@pcc.gov.ng,info@pcc.gov.ng",
-    address: "25 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria.",
-    title: "The Honourable Chief Commissioner",
+    email: "",
+    address: "Maitama, Abuja"
   });
 
-  // NHRC if human rights related
-  const d = (description || "").toLowerCase();
-  const rights = [
-    "human right",
-    "brutality",
-    "torture",
-    "unlawful detention",
-    "illegal detention",
-    "extrajudicial",
-    "extra judicial",
-    "killing",
-    "genocide",
-    "discrimination",
-    "rape",
-    "sexual assault",
-    "domestic violence",
-    "violence",
-    "oppression",
-    "degrading treatment",
-    "threat to life",
-  ];
+  const d = description.toLowerCase();
+  const rights = ["torture", "killing", "assault", "brutality", "violence"];
+
   if (rights.some((x) => d.includes(x))) {
     add({
       org: "National Human Rights Commission",
-      email: "info@nhrc.gov.ng",
-      address: "19 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria.",
-      title: "The Executive Secretary",
+      email: "",
+      address: "Abuja"
     });
   }
 
-  return out;
+  return inst;
 }
 
-// --------------------------------------------------------------
-// A10 SUPERVISORY ESCALATION BY SECTOR (NIGERIA FOCUS)
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   SECTOR SUPERVISORS (POLICE / HEALTH / BANKING etc.)
+------------------------------------------------------------- */
 function applySectorSupervisors(description, inst) {
-  const out = inst || {};
-  if (!Array.isArray(out.ccList)) out.ccList = [];
+  if (!inst) inst = {};
+  if (!Array.isArray(inst.ccList)) inst.ccList = [];
 
-  const d = (description || "").toLowerCase();
-  const primaryName = normaliseOrgName(out.primary?.org || "");
+  const d = description.toLowerCase();
+  const add = (o) => {
+    if (!o || !o.org) return;
+    if (!inst.ccList.some((c) => normaliseOrgName(c.org) === normaliseOrgName(o.org)))
+      inst.ccList.push(o);
+  };
 
-  function addCc(obj) {
-    if (!obj || !obj.org) return;
-    const key = normaliseOrgName(obj.org);
-    if (!key) return;
-    const exists = out.ccList.some(
-      (c) => normaliseOrgName(c.org) === key
-    );
-    if (!exists) out.ccList.push(obj);
+  /* POLICE */
+  if (textIncludesAny(d, ["police", "sars", "custody", "detention", "igp"])) {
+    add({ org: "Inspector-General of Police", address: "Abuja" });
+    add({ org: "Police Service Commission", address: "Abuja" });
   }
 
-  // ---- POLICE & SECURITY ----
-  const policeKeywords = [
-    "police",
-    "sars",
-    "swat",
-    "dpo",
-    "cell",
-    "custody",
-    "station",
-    "anti-kidnapping",
-    "anti kidnapping",
-    "anti-cultism",
-    "detention",
-    "igp",
-  ];
+  /* HEALTH */
+  if (textIncludesAny(d, ["hospital", "doctor", "nurse", "negligence"])) {
+    add({ org: "Federal Ministry of Health" });
+    add({ org: "Medical & Dental Council of Nigeria" });
 
-  const isPolice =
-    textIncludesAny(d, policeKeywords) || primaryName.includes("police");
-
-  if (isPolice) {
-    addCc({
-      org: "Inspector-General of Police, Nigeria Police Force",
-      email: "",
-      address: "Louis Edet House, Shehu Shagari Way, CBD, Abuja, Nigeria.",
-      title: "Inspector-General of Police",
-    });
-
-    addCc({
-      org: "Police Service Commission",
-      email: "",
-      address: "PSC Headquarters, Abuja, Nigeria.",
-      title: "",
-    });
-  }
-
-  // ---- HEALTH SECTOR ----
-  const healthKeywords = [
-    "hospital",
-    "clinic",
-    "doctor",
-    "nurse",
-    "midwife",
-    "surgery",
-    "operation",
-    "medical negligence",
-    "wrong diagnosis",
-    "pharmacy",
-    "drug",
-    "medication",
-    "injection",
-    "laboratory",
-    "lab result",
-  ];
-
-  const isHealth =
-    textIncludesAny(d, healthKeywords) ||
-    primaryName.includes("hospital") ||
-    primaryName.includes("clinic") ||
-    primaryName.includes("medical");
-
-  if (isHealth) {
-    addCc({
-      org: "Federal Ministry of Health",
-      email: "",
-      address: "Federal Secretariat, Abuja, Nigeria.",
-      title: "Honourable Minister of Health",
-    });
-
-    addCc({
-      org: "Medical and Dental Council of Nigeria",
-      email: "",
-      address: "Abuja, Nigeria.",
-      title: "",
-    });
-
-    // NAFDAC if drugs / injections / fake medicine
-    const drugWords = [
-      "drug",
-      "medication",
-      "fake medicine",
-      "fake drug",
-      "expired drug",
-      "pharmacy",
-      "injection",
-      "syrup",
-    ];
-    if (textIncludesAny(d, drugWords)) {
-      addCc({
-        org: "National Agency for Food and Drug Administration and Control (NAFDAC)",
-        email: "",
-        address: "NAFDAC Headquarters, Abuja, Nigeria.",
-        title: "",
-      });
-    }
-
-    // NCDC if outbreak / epidemic
-    const outbreakWords = [
-      "cholera",
-      "outbreak",
-      "epidemic",
-      "pandemic",
-      "infectious disease",
-      "ebola",
-    ];
-    if (textIncludesAny(d, outbreakWords)) {
-      addCc({
-        org: "Nigeria Centre for Disease Control and Prevention (NCDC)",
-        email: "",
-        address: "Abuja, Nigeria.",
-        title: "",
-      });
+    if (textIncludesAny(d, ["drug", "medicine", "pharmacy"])) {
+      add({ org: "NAFDAC" });
     }
   }
 
-  // ---- AVIATION ----
-  const aviationKeywords = [
-    "flight",
-    "airline",
-    "airport",
-    "boarding pass",
-    "aircraft",
-    "plane",
-    "runway",
-    "lost luggage",
-    "baggage",
-    "tarmac",
-  ];
-
-  const isAviation =
-    textIncludesAny(d, aviationKeywords) ||
-    primaryName.includes("airline") ||
-    primaryName.includes("airport") ||
-    primaryName.includes("aviation");
-
-  if (isAviation) {
-    addCc({
-      org: "Nigerian Civil Aviation Authority (NCAA)",
-      email: "",
-      address: "Murtala Muhammed Airport, Lagos, Nigeria.",
-      title: "",
-    });
-
-    addCc({
-      org: "Federal Airports Authority of Nigeria (FAAN)",
-      email: "",
-      address: "FAAN Headquarters, Lagos, Nigeria.",
-      title: "",
-    });
-
-    addCc({
-      org: "Federal Ministry of Aviation",
-      email: "",
-      address: "Federal Secretariat, Abuja, Nigeria.",
-      title: "Honourable Minister of Aviation",
-    });
+  /* BANKING */
+  if (textIncludesAny(d, ["bank", "loan", "atm", "transfer", "pos"])) {
+    add({ org: "Central Bank of Nigeria – Consumer Protection" });
+    add({ org: "NDIC" });
+    add({ org: "FCCPC" });
   }
 
-  // ---- JUDICIARY ----
-  const judiciaryKeywords = [
-    "court",
-    "judge",
-    "magistrate",
-    "justice",
-    "bail",
-    "registry",
-    "judicial",
-    "appeal",
-  ];
-
-  const isJudiciary =
-    textIncludesAny(d, judiciaryKeywords) ||
-    primaryName.includes("court") ||
-    primaryName.includes("judicial") ||
-    primaryName.includes("registry");
-
-  if (isJudiciary) {
-    addCc({
-      org: "National Judicial Council (NJC)",
-      email: "",
-      address: "Abuja, Nigeria.",
-      title: "",
-    });
-
-    addCc({
-      org: "Nigerian Bar Association",
-      email: "",
-      address:
-        "NBA House, 4 Ladi Kwali Street, Wuse Zone 4, Abuja, Nigeria.",
-      title: "",
-    });
+  /* TELECOM */
+  if (textIncludesAny(d, ["mtn", "airtel", "glo", "9mobile", "network"])) {
+    add({ org: "NCC – Nigerian Communications Commission" });
   }
 
-  // ---- BANKING & FINANCIAL ----
-  const bankingKeywords = [
-    "bank",
-    "account",
-    "atm",
-    "pos",
-    "debit",
-    "credit",
-    "transfer",
-    "loan",
-    "mortgage",
-    "card",
-    "dom account",
-    "current account",
-    "savings account",
-    "chargeback",
-  ];
-
-  const isBanking =
-    textIncludesAny(d, bankingKeywords) ||
-    primaryName.includes("bank") ||
-    primaryName.includes("microfinance");
-
-  if (isBanking) {
-    addCc({
-      org: "Central Bank of Nigeria – Consumer Protection Department",
-      email: "",
-      address: "Central Bank of Nigeria, Abuja, Nigeria.",
-      title: "",
-    });
-
-    addCc({
-      org: "Nigeria Deposit Insurance Corporation (NDIC)",
-      email: "",
-      address: "NDIC Headquarters, Abuja, Nigeria.",
-      title: "",
-    });
-
-    addCc({
-      org: "Federal Competition and Consumer Protection Commission (FCCPC)",
-      email: "",
-      address: "FCCPC Headquarters, Abuja, Nigeria.",
-      title: "",
-    });
-  }
-
-  // ---- TELECOMMUNICATIONS ----
-  const telcoKeywords = [
-    "mtn",
-    "glo",
-    "airtel",
-    "9mobile",
-    "etisalat",
-    "data bundle",
-    "call rate",
-    "network",
-    "no service",
-    "dropped call",
-    "sms",
-    "ussd",
-    "recharge card",
-  ];
-
-  const isTelecom =
-    textIncludesAny(d, telcoKeywords) ||
-    primaryName.includes("telecom") ||
-    primaryName.includes("mtn") ||
-    primaryName.includes("airtel") ||
-    primaryName.includes("glo") ||
-    primaryName.includes("9mobile");
-
-  if (isTelecom) {
-    addCc({
-      org: "Nigerian Communications Commission (NCC)",
-      email: "",
-      address: "NCC Headquarters, Abuja, Nigeria.",
-      title: "",
-    });
-
-    addCc({
-      org: "Federal Ministry of Communications, Innovation and Digital Economy",
-      email: "",
-      address: "Abuja, Nigeria.",
-      title: "",
-    });
-  }
-
-  // ---- EDUCATION ----
-  const educationKeywords = [
-    "school",
-    "student",
-    "pupil",
-    "university",
-    "polytechnic",
-    "college",
-    "lecturer",
-    "teacher",
-    "principal",
-    "vc",
-    "dean",
-    "expulsion",
-    "suspension",
-    "fee",
-    "tuition",
-  ];
-
-  const isEducation =
-    textIncludesAny(d, educationKeywords) ||
-    primaryName.includes("university") ||
-    primaryName.includes("polytechnic") ||
-    primaryName.includes("college") ||
-    primaryName.includes("school");
-
-  if (isEducation) {
-    addCc({
-      org: "Federal Ministry of Education",
-      email: "",
-      address: "Federal Secretariat, Abuja, Nigeria.",
-      title: "Honourable Minister of Education",
-    });
-
-    addCc({
-      org: "National Universities Commission (NUC)",
-      email: "",
-      address: "Abuja, Nigeria.",
-      title: "",
-    });
-
-    addCc({
-      org: "National Commission for Colleges of Education (NCCE)",
-      email: "",
-      address: "Abuja, Nigeria.",
-      title: "",
-    });
-
-    addCc({
-      org: "Universal Basic Education Commission (UBEC)",
-      email: "",
-      address: "Abuja, Nigeria.",
-      title: "",
-    });
-  }
-
-  // ---- ELECTRICITY SUPERVISOR EXTRA (if not already in JSON) ----
-  const isElectricity =
-    textIncludesAny(d, ["electricity", "disco", "meter", "prepaid", "token"]) ||
-    primaryName.includes("electricity") ||
-    primaryName.includes("distribution company") ||
-    primaryName.includes("disco");
-
-  if (isElectricity) {
-    addCc({
-      org: "Federal Ministry of Power",
-      email: "",
-      address: "Federal Secretariat, Abuja, Nigeria.",
-      title: "Honourable Minister of Power",
-    });
-  }
-
-  return out;
+  return inst;
 }
 
-// --------------------------------------------------------------
-// HYBRID DETECTION PIPELINE (A10)
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   HYBRID DETECTION PIPELINE
+------------------------------------------------------------- */
 async function detectHybrid(description) {
-  // 1. Electricity rule – always first for billing/meter issues
   const elec = detectElectricity(description);
-  if (elec) {
-    console.log("Routing via ELECTRICITY rules");
-    return elec;
-  }
+  if (elec) return elec;
 
-  // 2. International genocide / mass atrocity escalation
   const intl = detectInternational(description);
-  if (intl) {
-    console.log("Routing via INTERNATIONAL GENOCIDE rules");
-    return intl;
-  }
+  if (intl) return intl;
 
-  // 3. Generic AI-based detection for all other cases
-  const ai = await aiDetect(description);
-  console.log("Routing via AI generic detection");
-  return ai;
+  return await aiDetect(description);
 }
 
-// --------------------------------------------------------------
-// PETITION BUILDERS
-// --------------------------------------------------------------
-async function buildPetition(complainant, inst) {
-  const { fullName, email, phone, address, description } = complainant;
-  if (!openai) return fallbackPetition(complainant, inst);
+/* -------------------------------------------------------------
+   PETITION BUILDERS
+------------------------------------------------------------- */
+async function buildPetition(c, inst) {
+  if (!openai) return fallbackPetition(c, inst);
 
-  const today = new Date().toLocaleDateString("en-NG", {
+  const date = new Date().toLocaleDateString("en-NG", {
     day: "numeric",
     month: "long",
-    year: "numeric",
+    year: "numeric"
   });
 
-  const header = [
-    fullName,
-    address,
-    email ? `Email: ${email}` : "",
-    phone ? `Phone: ${phone}` : "",
-    today,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const header = `${c.fullName}
+${c.address || ""}
+${c.email ? "Email: " + c.email : ""}
+${c.phone ? "Phone: " + c.phone : ""}
+${date}`;
 
-  const ccText =
-    inst.ccList
-      ?.map((c) => `${c.org}\n${c.address || ""}`)
-      .join("\n\n") || "None";
+  const ccBlock = inst.ccList
+    .map((x) => `${x.org}\n${x.address || ""}`)
+    .join("\n\n");
 
-  const primaryBlock = `
-${inst.primary?.title || ""}
-${inst.primary?.org || ""}
-${inst.primary?.address || ""}`.trim();
+  const primary = `${inst.primary?.org || ""}
+${inst.primary?.address || ""}`;
 
-  const throughBlock =
+  const through =
     inst.through && inst.through.org
       ? `Through:
-${inst.through.title || ""}
 ${inst.through.org}
-${inst.through.address || ""}`.trim()
+${inst.through.address || ""}`
       : "";
 
   const systemPrompt = `
-You are an expert Nigerian petition drafting lawyer.
-Write a VERY STRONG, highly formal petition.
-No placeholders (no [Your Name], [Address], etc).
-Use only provided real-world details.
-Tone: firm, legal, respectful, authoritative.
-Structure:
-- Header with complainant details and date
-- Proper addressing of primary institution (and "Through" line if any)
-- CC list
-- Clear subject line
-- Facts of the case in numbered or well-structured paragraphs
-- Legal / rights basis where appropriate
-- Numbered reliefs requested
-- Strong closing paragraph
-- "Yours faithfully" and complainant details.
+You are a Nigerian senior petition lawyer.
+Write a VERY STRONG, legally structured petition.
+No placeholders. Use provided data only.
 `;
 
   const userPrompt = `
 ${header}
 
-${primaryBlock}
+${primary}
 
-${throughBlock ? "\n\n" + throughBlock : ""}
+${through ? "\n" + through : ""}
 
 CC:
-${ccText}
+${ccBlock}
 
-SUBJECT: Generate a strong, precise subject based on the description.
+SUBJECT: Generate a strong subject from the description.
 
-Description of complaint (use this to build the facts):
-${description}
+Description:
+${c.description}
 
-Write the full petition letter now following all rules. Do NOT invent new facts or institutions.`;
+Write full petition letter now.
+`;
 
   try {
     const r = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.25,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
+        { role: "user", content: userPrompt }
+      ]
     });
 
-    return (
-      r.choices?.[0]?.message?.content ||
-      fallbackPetition(complainant, inst)
-    );
+    return r.choices?.[0]?.message?.content || fallbackPetition(c, inst);
   } catch (err) {
-    console.error("AI petition error:", err);
-    return fallbackPetition(complainant, inst);
+    console.error("Petition AI error:", err);
+    return fallbackPetition(c, inst);
   }
 }
 
-// --------------------------------------------------------------
-// FALLBACK PETITION (NO OPENAI OR ERROR)
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   FALLBACK PETITION
+------------------------------------------------------------- */
 function fallbackPetition(c, inst) {
-  const today = new Date().toLocaleDateString("en-NG", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
   return `
 ${c.fullName}
 ${c.address || ""}
-Email: ${c.email || ""}
-Phone: ${c.phone || ""}
-${today}
+${c.email || ""}
+${c.phone || ""}
 
-${inst.primary?.org || "The Appropriate Authority"}
-${inst.primary?.address || ""}
-
-Through:
-${inst.through?.org || ""}
-
-CC:
-${(inst.ccList || []).map((x) => x.org).join("\n")}
+${inst.primary?.org || ""}
 
 Dear Sir/Madam,
 
-RE: FORMAL COMPLAINT / PETITION
-
 ${c.description}
-
-I respectfully request an immediate investigation and appropriate remedies.
 
 Yours faithfully,
 ${c.fullName}
-${c.phone || ""}
-${c.email || ""}
-`.trim();
+`;
 }
 
-// --------------------------------------------------------------
-// POST: GENERATE PETITION
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   GENERATE PETITION ENDPOINT
+------------------------------------------------------------- */
 app.post("/generate-petition", async (req, res) => {
-  console.log("Incoming request:", req.body);
+  const { fullName, email, phone, address, description } = req.body;
 
-  const description = req.body.description || "";
-  if (!description.trim()) {
-    return res.status(200).json({
-      petitionText: "Please enter your complaint description.",
+  if (!description) {
+    return res.json({
+      petitionText: "Please enter your complaint.",
       primaryInstitution: null,
       throughInstitution: null,
-      ccList: [],
+      ccList: []
     });
   }
 
   const complainant = {
-    fullName: req.body.fullName || "",
-    email: req.body.email || "",
-    phone: req.body.phone || "",
-    address: req.body.address || "",
-    description,
+    fullName,
+    email,
+    phone,
+    address,
+    description
   };
 
-  // 1. Core routing (electricity / international / AI)
   let inst = await detectHybrid(description);
-
-  // Ensure base shape
-  if (!inst || typeof inst !== "object") {
-    inst = { primary: null, through: null, ccList: [] };
-  }
-  if (!Array.isArray(inst.ccList)) inst.ccList = [];
-
-  // 2. Apply watchdogs (PCC + NHRC)
   inst = applyWatchdogs(description, inst);
-
-  // 3. Apply A10 sector-wide supervisors (police, health, aviation, etc.)
   inst = applySectorSupervisors(description, inst);
 
-  // Clean CC list
-  inst.ccList = inst.ccList.filter(
-    (c) => c && typeof c.org === "string" && c.org.trim()
-  );
-
-  // 4. Build petition text
   const petitionText = await buildPetition(complainant, inst);
 
-  // 5. Respond
-  return res.status(200).json({
+  return res.json({
     petitionText,
     primaryInstitution: inst.primary,
     throughInstitution: inst.through,
-    ccList: inst.ccList,
+    ccList: inst.ccList
   });
 });
 
-// --------------------------------------------------------------
-// POST: PAY (Flutterwave V3)
-// --------------------------------------------------------------
-app.post("/pay", async (req, res) => {
-  try {
-    const secret = process.env.FLW_SECRET_KEY;
-    if (!secret) {
-      return res
-        .status(500)
-        .json({ error: "Payment gateway not configured." });
-    }
+/* -------------------------------------------------------------
+   HELPER – FLUTTERWAVE HTTPS REQUEST
+------------------------------------------------------------- */
+function callFlutterwave(payload, secret) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(payload);
 
-    const {
-      amount = 1500, // default amount in NGN
-      currency,
-      fullName,
-      email,
-      description,
-    } = req.body || {};
-
-    const baseCurrency =
-      currency || process.env.BASE_PAYMENT_CURRENCY || "NGN";
-
-    const txRef = `PDK-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-
-    const payload = {
-      tx_ref: txRef,
-      amount,
-      currency: baseCurrency,
-      redirect_url:
-        process.env.FLW_REDIRECT_URL ||
-        "https://petitiondesk.com/payment-complete",
-      customer: {
-        email: email || "no-email@petitiondesk.com",
-        name: fullName || "PetitionDesk User",
-      },
-      customizations: {
-        title: "PetitionDesk – Petition Draft",
-        description:
-          (description && description.slice(0, 200)) ||
-          "Payment for petition drafting service.",
-      },
-    };
-
-    const fwRes = await fetch("https://api.flutterwave.com/v3/payments", {
+    const options = {
+      hostname: "api.flutterwave.com",
+      path: "/v3/payments",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${secret}`,
-      },
-      body: JSON.stringify(payload),
+        "Content-Length": Buffer.byteLength(body),
+        Authorization: `Bearer ${secret}`
+      }
+    };
+
+    const req = https.request(options, (resp) => {
+      let data = "";
+
+      resp.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      resp.on("end", () => {
+        try {
+          const json = data ? JSON.parse(data) : {};
+          resolve({ statusCode: resp.statusCode, data: json });
+        } catch (err) {
+          reject(err);
+        }
+      });
     });
 
-    const data = await fwRes.json().catch(() => ({}));
+    req.on("error", reject);
 
-    if (!fwRes.ok || !data?.data?.link) {
-      console.error("Flutterwave init error:", data);
-      return res
-        .status(500)
-        .json({ error: "Unable to initialise payment." });
+    req.write(body);
+    req.end();
+  });
+}
+
+/* -------------------------------------------------------------
+   PAYMENT ENDPOINT (A12.2 FIXED)
+------------------------------------------------------------- */
+app.post("/pay", async (req, res) => {
+  try {
+    const secret = process.env.FLW_SECRET_KEY;
+
+    if (!secret) {
+      console.error("FLW_SECRET_KEY missing");
+      return res.status(500).json({ error: "Payment gateway not configured." });
+    }
+
+    const { fullName, email, description } = req.body;
+
+    const txRef = `PDK-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+    const payload = {
+      tx_ref: txRef,
+      amount: 1500,
+      currency: "NGN",
+      redirect_url:
+        process.env.FLW_REDIRECT_URL || "https://petitiondesk.com/payment-complete",
+      customer: {
+        email: email || "no-email@petitiondesk.com",
+        name: fullName || "PetitionDesk User"
+      },
+      customizations: {
+        title: "PetitionDesk – Petition Draft",
+        description: description ? description.slice(0, 100) : "Petition service"
+      }
+    };
+
+    const fw = await callFlutterwave(payload, secret);
+
+    if (!(fw.statusCode >= 200 && fw.statusCode < 300) || !fw.data?.data?.link) {
+      console.error("Flutterwave error:", fw);
+      return res.status(500).json({ error: "Unable to initialise payment." });
     }
 
     return res.json({
-      paymentLink: data.data.link,
-      txRef,
+      paymentLink: fw.data.data.link,
+      txRef
     });
   } catch (err) {
-    console.error("Payment route error:", err);
-    return res.status(500).json({ error: "Payment error." });
+    console.error("PAY ERROR:", err);
+    return res.status(500).json({ error: "Payment error" });
   }
 });
 
-// --------------------------------------------------------------
-// START SERVER
-// --------------------------------------------------------------
+/* -------------------------------------------------------------
+   START SERVER
+------------------------------------------------------------- */
 app.listen(PORT, "0.0.0.0", () =>
-  console.log(`JusticeBot A12 Backend running on ${PORT}`)
+  console.log(`JusticeBot A12.2 Backend running on ${PORT}`)
 );
