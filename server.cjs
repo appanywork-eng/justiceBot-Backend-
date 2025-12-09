@@ -1,9 +1,9 @@
 /**
- * PetitionDesk / JusticeBot Backend (A11 – Verified Email Escalation Engine)
+ * PetitionDesk / JusticeBot Backend (A12 – Payments + Supervisory Escalation Engine)
  * Express + OpenAI + Hybrid routing (Electricity + International + AI)
  * + PCC/NHRC watchdogs
  * + Sector-wide escalation (police, health, aviation, judiciary, banking, telecoms, education)
- * + A11: Safer, more realistic email extraction & filtering
+ * + Flutterwave /pay endpoint
  */
 
 const express = require("express");
@@ -20,7 +20,7 @@ let INSTITUTIONS_JSON = {};
 try {
   const filePath = path.join(__dirname, "data", "institutions.json");
   INSTITUTIONS_JSON = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  console.log("A11 institutions loaded successfully");
+  console.log("A10 institutions loaded successfully");
 } catch (err) {
   console.error("Failed to load institutions.json:", err);
   INSTITUTIONS_JSON = {};
@@ -56,7 +56,7 @@ app.use(express.json());
 // --------------------------------------------------------------
 app.get("/", (req, res) =>
   res.send(
-    "JusticeBot A11 Backend (Verified Email Escalation Engine) is running 💡"
+    "JusticeBot A12 Backend (Supervisory Escalation Engine + Payments) is running 💡"
   )
 );
 
@@ -69,7 +69,6 @@ app.get("/test", (req, res) =>
     status: "ok",
     message: "Test endpoint working",
     openai_status: openai ? "ready" : "not_initialized",
-    engineVersion: "A11",
   })
 );
 
@@ -83,57 +82,6 @@ function textIncludesAny(t, arr) {
 
 function normaliseOrgName(o) {
   return (o || "").trim().toLowerCase();
-}
-
-// A11 – basic safety filter for institution emails
-function isLikelyOfficialEmail(email) {
-  if (!email || typeof email !== "string") return false;
-  const e = email.trim().toLowerCase();
-
-  // Basic email pattern
-  const basicPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!basicPattern.test(e)) return false;
-
-  const parts = e.split("@");
-  if (parts.length !== 2) return false;
-  const domain = parts[1];
-
-  // Block obvious free-email providers
-  const blockedDomains = [
-    "gmail.com",
-    "yahoo.com",
-    "yahoo.co.uk",
-    "hotmail.com",
-    "outlook.com",
-    "live.com",
-    "aol.com",
-    "protonmail.com"
-  ];
-  if (blockedDomains.includes(domain)) return false;
-
-  // Allow common official / institutional endings
-  const allowedEndings = [
-    ".gov",
-    ".gov.ng",
-    ".mil",
-    ".org",
-    ".int",
-    ".edu",
-    ".edu.ng",
-    ".ng",
-    ".eu",
-    ".africa",
-    ".house.gov",
-    ".senate.gov",
-    ".parliament.uk",
-    ".europa.eu",
-    ".who.int",
-    ".un.org",
-    ".com", // allow .com for corporate/NGO domains, still blocked above if Gmail etc.
-    ".net"
-  ];
-
-  return allowedEndings.some((suffix) => domain.endsWith(suffix));
 }
 
 // --------------------------------------------------------------
@@ -251,7 +199,7 @@ function detectInternational(description) {
 }
 
 // --------------------------------------------------------------
-// AI DETECTION (GENERIC – WORLDWIDE)  [A11 UPGRADED]
+// AI DETECTION (GENERIC – WORLDWIDE)
 // --------------------------------------------------------------
 async function aiDetect(description) {
   if (!openai) return { primary: null, through: null, ccList: [] };
@@ -264,16 +212,7 @@ async function aiDetect(description) {
         {
           role: "system",
           content: `
-You are a global institutions routing engine for JusticeBot / PetitionDesk.
-
-Your job:
-- Read the complaint.
-- Decide:
-  1) PRIMARY institution to address the problem.
-  2) SUPERVISING / oversight institutions (regulators, ombudsman, etc.).
-  3) CC institutions that should be informed (parliaments, human-rights bodies, consumer agencies, etc.).
-
-Return ONLY JSON in this format:
+You are a global institutions routing engine. RETURN ONLY JSON:
 
 {
   "primary": { "org": "", "title": "", "email": "", "address": "" },
@@ -281,26 +220,11 @@ Return ONLY JSON in this format:
   "cc": [ { "org": "", "title": "", "email": "", "address": "" } ]
 }
 
-A11 EMAIL RULES (VERY IMPORTANT):
-- Use ONLY emails that you are reasonably confident are used by the institution, based on your training on:
-  * official websites,
-  * verified social-media pages,
-  * well-known public contact details.
-- Prefer official-style domains:
-  .gov, .gov.ng, .mil, .org, .int, .edu, .edu.ng, .ng, .eu, .africa
-  and clearly official corporate / NGO domains (.com, .net) like cbn.gov.ng, nerc.gov.ng, ncc.gov.ng, pcc.gov.ng, nhrc.gov.ng, un.org, eu.int, etc.
-- AVOID free email providers for institutions (gmail.com, yahoo.com, hotmail.com, outlook.com, live.com, etc.).
-- If you are NOT at least ~80% confident the email is correct, leave the "email" field as an empty string "".
-- NEVER invent weird or random-looking domains or addresses.
-- NEVER put placeholders like "[email]" or "[address]".
-
-GENERAL ROUTING RULES:
-- For Nigerian bank complaints: consider CBN Consumer Protection Department, FCCPC, etc.
-- For telecom complaints: NCC and relevant telco.
-- For electricity complaints: relevant DISCO + NERC.
-- For serious human-rights complaints: NHRC and sometimes international bodies.
-- For each institution, include org (name) and address when you know it.
-- Do NOT add markdown or comments. JSON ONLY.
+Rules:
+- Use ONLY verified-style domains for emails (.gov, .gov.ng, .org, .int, or clearly official company domains).
+- If unsure of an email, leave it as an empty string.
+- DO NOT invent fake domains or placeholders.
+- No markdown, no comments, no extra text – JSON only.
 `,
         },
         {
@@ -308,7 +232,7 @@ GENERAL ROUTING RULES:
           content:
             "Complaint:\n" +
             description +
-            "\n\nReturn ONLY the JSON object described. No backticks, no extra text.",
+            "\nReturn ONLY the JSON object described. No backticks.",
         },
       ],
     });
@@ -317,19 +241,13 @@ GENERAL ROUTING RULES:
     const data = JSON.parse(txt);
 
     function clean(o) {
-      if (!o || !o.org || typeof o.org !== "string") return null;
-
-      const org = o.org.trim();
-      const title = (o.title || "").trim();
-      let email = (o.email || "").trim();
-      const address = (o.address || "").trim();
-
-      // A11: enforce email filter – clear anything that doesn't look official
-      if (email && !isLikelyOfficialEmail(email)) {
-        email = "";
-      }
-
-      return { org, title, email, address };
+      if (!o || !o.org) return null;
+      return {
+        org: o.org.trim(),
+        title: (o.title || "").trim(),
+        email: (o.email || "").trim(),
+        address: (o.address || "").trim(),
+      };
     }
 
     const primary = clean(data.primary);
@@ -427,7 +345,7 @@ function applyWatchdogs(description, inst) {
 }
 
 // --------------------------------------------------------------
-// A10/A11 SUPERVISORY ESCALATION BY SECTOR (NIGERIA FOCUS)
+// A10 SUPERVISORY ESCALATION BY SECTOR (NIGERIA FOCUS)
 // --------------------------------------------------------------
 function applySectorSupervisors(description, inst) {
   const out = inst || {};
@@ -632,7 +550,8 @@ function applySectorSupervisors(description, inst) {
     addCc({
       org: "Nigerian Bar Association",
       email: "",
-      address: "NBA House, 4 Ladi Kwali Street, Wuse Zone 4, Abuja, Nigeria.",
+      address:
+        "NBA House, 4 Ladi Kwali Street, Wuse Zone 4, Abuja, Nigeria.",
       title: "",
     });
   }
@@ -800,7 +719,7 @@ function applySectorSupervisors(description, inst) {
 }
 
 // --------------------------------------------------------------
-// HYBRID DETECTION PIPELINE (A11)
+// HYBRID DETECTION PIPELINE (A10)
 // --------------------------------------------------------------
 async function detectHybrid(description) {
   // 1. Electricity rule – always first for billing/meter issues
@@ -870,14 +789,13 @@ Write a VERY STRONG, highly formal petition.
 No placeholders (no [Your Name], [Address], etc).
 Use only provided real-world details.
 Tone: firm, legal, respectful, authoritative.
-
 Structure:
 - Header with complainant details and date
 - Proper addressing of primary institution (and "Through" line if any)
 - CC list
-- Clear subject line starting with "RE:"
+- Clear subject line
 - Facts of the case in numbered or well-structured paragraphs
-- Legal / rights basis where appropriate (CBN, NCC, NERC, Constitution, African Charter, etc.)
+- Legal / rights basis where appropriate
 - Numbered reliefs requested
 - Strong closing paragraph
 - "Yours faithfully" and complainant details.
@@ -893,9 +811,9 @@ ${throughBlock ? "\n\n" + throughBlock : ""}
 CC:
 ${ccText}
 
-SUBJECT: Generate a strong, precise subject based on the description (start it with "RE:").
+SUBJECT: Generate a strong, precise subject based on the description.
 
-Description of complaint (use this to build the facts – do not invent new facts):
+Description of complaint (use this to build the facts):
 ${description}
 
 Write the full petition letter now following all rules. Do NOT invent new facts or institutions.`;
@@ -974,7 +892,6 @@ app.post("/generate-petition", async (req, res) => {
       primaryInstitution: null,
       throughInstitution: null,
       ccList: [],
-      engineVersion: "A11",
     });
   }
 
@@ -998,7 +915,7 @@ app.post("/generate-petition", async (req, res) => {
   // 2. Apply watchdogs (PCC + NHRC)
   inst = applyWatchdogs(description, inst);
 
-  // 3. Apply sector-wide supervisors (police, health, aviation, etc.)
+  // 3. Apply A10 sector-wide supervisors (police, health, aviation, etc.)
   inst = applySectorSupervisors(description, inst);
 
   // Clean CC list
@@ -1015,13 +932,84 @@ app.post("/generate-petition", async (req, res) => {
     primaryInstitution: inst.primary,
     throughInstitution: inst.through,
     ccList: inst.ccList,
-    engineVersion: "A11",
   });
+});
+
+// --------------------------------------------------------------
+// POST: PAY (Flutterwave V3)
+// --------------------------------------------------------------
+app.post("/pay", async (req, res) => {
+  try {
+    const secret = process.env.FLW_SECRET_KEY;
+    if (!secret) {
+      return res
+        .status(500)
+        .json({ error: "Payment gateway not configured." });
+    }
+
+    const {
+      amount = 1500, // default amount in NGN
+      currency,
+      fullName,
+      email,
+      description,
+    } = req.body || {};
+
+    const baseCurrency =
+      currency || process.env.BASE_PAYMENT_CURRENCY || "NGN";
+
+    const txRef = `PDK-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+
+    const payload = {
+      tx_ref: txRef,
+      amount,
+      currency: baseCurrency,
+      redirect_url:
+        process.env.FLW_REDIRECT_URL ||
+        "https://petitiondesk.com/payment-complete",
+      customer: {
+        email: email || "no-email@petitiondesk.com",
+        name: fullName || "PetitionDesk User",
+      },
+      customizations: {
+        title: "PetitionDesk – Petition Draft",
+        description:
+          (description && description.slice(0, 200)) ||
+          "Payment for petition drafting service.",
+      },
+    };
+
+    const fwRes = await fetch("https://api.flutterwave.com/v3/payments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${secret}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await fwRes.json().catch(() => ({}));
+
+    if (!fwRes.ok || !data?.data?.link) {
+      console.error("Flutterwave init error:", data);
+      return res
+        .status(500)
+        .json({ error: "Unable to initialise payment." });
+    }
+
+    return res.json({
+      paymentLink: data.data.link,
+      txRef,
+    });
+  } catch (err) {
+    console.error("Payment route error:", err);
+    return res.status(500).json({ error: "Payment error." });
+  }
 });
 
 // --------------------------------------------------------------
 // START SERVER
 // --------------------------------------------------------------
 app.listen(PORT, "0.0.0.0", () =>
-  console.log(`JusticeBot A11 Backend running on ${PORT}`)
+  console.log(`JusticeBot A12 Backend running on ${PORT}`)
 );
