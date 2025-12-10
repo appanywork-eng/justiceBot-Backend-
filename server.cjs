@@ -1,10 +1,10 @@
 /**
- * PetitionDesk / JusticeBot Backend (A13 – Strong Petitions + Paywall + Supervisory Escalation)
+ * PetitionDesk / JusticeBot Backend (PDPS-2.1 – A13)
  * Express + OpenAI + Hybrid routing (Electricity + International + AI)
  * + PCC/NHRC watchdogs
  * + Sector-wide escalation (police, health, aviation, judiciary, banking, telecoms, education)
  * + Flutterwave /pay endpoint
- * + Preview vs Paid full petition (hasPaid flag)
+ * + SAN-grade petition builder (police-specific template)
  */
 
 const express = require("express");
@@ -14,9 +14,6 @@ const fs = require("fs");
 const path = require("path");
 const OpenAI = require("openai");
 
-// Node 18+ has global fetch. If not, uncomment below and install node-fetch.
-// const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
-
 // --------------------------------------------------------------
 // LOAD institutions.json (for electricity + international bodies)
 // --------------------------------------------------------------
@@ -24,7 +21,7 @@ let INSTITUTIONS_JSON = {};
 try {
   const filePath = path.join(__dirname, "data", "institutions.json");
   INSTITUTIONS_JSON = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  console.log("A13 institutions loaded successfully");
+  console.log("A10 institutions loaded successfully");
 } catch (err) {
   console.error("Failed to load institutions.json:", err);
   INSTITUTIONS_JSON = {};
@@ -60,7 +57,7 @@ app.use(express.json());
 // --------------------------------------------------------------
 app.get("/", (req, res) =>
   res.send(
-    "JusticeBot A13 Backend (Strong Petitions + Paywall + Supervisory Escalation) is running 💡"
+    "JusticeBot PDPS-2.1 Backend (Supervisory Escalation Engine + Payments + SAN-grade petitions) is running 💡"
   )
 );
 
@@ -349,7 +346,7 @@ function applyWatchdogs(description, inst) {
 }
 
 // --------------------------------------------------------------
-// A10–A13 SUPERVISORY ESCALATION BY SECTOR (NIGERIA FOCUS)
+// A10 SUPERVISORY ESCALATION BY SECTOR (NIGERIA FOCUS)
 // --------------------------------------------------------------
 function applySectorSupervisors(description, inst) {
   const out = inst || {};
@@ -382,6 +379,7 @@ function applySectorSupervisors(description, inst) {
     "anti-cultism",
     "detention",
     "igp",
+    "checkpoint",
   ];
 
   const isPolice =
@@ -443,7 +441,6 @@ function applySectorSupervisors(description, inst) {
       title: "",
     });
 
-    // NAFDAC if drugs / injections / fake medicine
     const drugWords = [
       "drug",
       "medication",
@@ -463,7 +460,6 @@ function applySectorSupervisors(description, inst) {
       });
     }
 
-    // NCDC if outbreak / epidemic
     const outbreakWords = [
       "cholera",
       "outbreak",
@@ -723,7 +719,213 @@ function applySectorSupervisors(description, inst) {
 }
 
 // --------------------------------------------------------------
-// HYBRID DETECTION PIPELINE (A10–A13)
+// SECTOR DETECTION (for petition style selection)
+// --------------------------------------------------------------
+function detectSector(description, inst) {
+  const d = (description || "").toLowerCase();
+  const primaryName = normaliseOrgName(inst?.primary?.org || "");
+
+  const policeKeywords = [
+    "police",
+    "sars",
+    "swat",
+    "dpo",
+    "checkpoint",
+    "cell",
+    "custody",
+    "station",
+    "anti-kidnapping",
+    "anti kidnapping",
+    "anti-cultism",
+    "detention",
+    "igp",
+  ];
+  if (textIncludesAny(d, policeKeywords) || primaryName.includes("police")) {
+    return "police";
+  }
+
+  const elecKeywords = [
+    "electricity",
+    "disco",
+    "meter",
+    "prepaid",
+    "token",
+    "transformer",
+    "overbilling",
+    "over billing",
+    "light",
+    "power",
+  ];
+  if (textIncludesAny(d, elecKeywords) || primaryName.includes("electricity")) {
+    return "electricity";
+  }
+
+  const bankingKeywords = [
+    "bank",
+    "account",
+    "atm",
+    "pos",
+    "debit",
+    "credit",
+    "transfer",
+    "loan",
+    "mortgage",
+    "card",
+    "dom account",
+  ];
+  if (textIncludesAny(d, bankingKeywords) || primaryName.includes("bank")) {
+    return "banking";
+  }
+
+  const healthKeywords = [
+    "hospital",
+    "clinic",
+    "doctor",
+    "nurse",
+    "midwife",
+    "surgery",
+    "operation",
+    "medical negligence",
+    "wrong diagnosis",
+    "pharmacy",
+    "drug",
+    "medication",
+  ];
+  if (
+    textIncludesAny(d, healthKeywords) ||
+    primaryName.includes("hospital") ||
+    primaryName.includes("clinic")
+  ) {
+    return "health";
+  }
+
+  const telcoKeywords = [
+    "mtn",
+    "glo",
+    "airtel",
+    "9mobile",
+    "etisalat",
+    "network",
+    "data bundle",
+    "recharge card",
+    "call rate",
+  ];
+  if (
+    textIncludesAny(d, telcoKeywords) ||
+    primaryName.includes("telecom") ||
+    primaryName.includes("ncc")
+  ) {
+    return "telecom";
+  }
+
+  const educationKeywords = [
+    "school",
+    "student",
+    "pupil",
+    "university",
+    "polytechnic",
+    "college",
+    "lecturer",
+    "teacher",
+    "principal",
+    "vc",
+    "dean",
+  ];
+  if (
+    textIncludesAny(d, educationKeywords) ||
+    primaryName.includes("university") ||
+    primaryName.includes("polytechnic") ||
+    primaryName.includes("college")
+  ) {
+    return "education";
+  }
+
+  // fallback
+  return "general";
+}
+
+// --------------------------------------------------------------
+// POLICE ADDRESSING REFINER (CP + IGP "Through")
+// --------------------------------------------------------------
+function refinePoliceInstitutions(description, inst) {
+  const out = inst || { primary: null, through: null, ccList: [] };
+  if (!Array.isArray(out.ccList)) out.ccList = [];
+
+  const d = (description || "").toLowerCase();
+
+  const STATE_MATCHES = [
+    {
+      state: "Federal Capital Territory (FCT)",
+      command: "FCT Police Command",
+      keywords: ["abuja", "gwarinpa", "kubwa", "nyanya", "lugbe", "fct"],
+    },
+    {
+      state: "Kogi State",
+      command: "Kogi State Police Command",
+      keywords: ["kogi", "okene", "lokoja", "ayegunle"],
+    },
+    {
+      state: "Edo State",
+      command: "Edo State Police Command",
+      keywords: ["edo", "benin", "ekpoma", "auch", "auchii"],
+    },
+    {
+      state: "Lagos State",
+      command: "Lagos State Police Command",
+      keywords: ["lagos", "lekki", "oshodi", "ikorodu", "ajah", "ikeja"],
+    },
+    {
+      state: "Rivers State",
+      command: "Rivers State Police Command",
+      keywords: ["rivers", "port harcourt", "ph city"],
+    },
+  ];
+
+  let detected = null;
+  for (const entry of STATE_MATCHES) {
+    if (textIncludesAny(d, entry.keywords)) {
+      detected = entry;
+      break;
+    }
+  }
+
+  let emailBackup =
+    out.primary && out.primary.email ? out.primary.email : "";
+
+  if (detected) {
+    out.primary = {
+      org: `Commissioner of Police, ${detected.command}`,
+      title: "The Commissioner of Police",
+      address: `${detected.command} Headquarters, ${detected.state}, Nigeria.`,
+      email: emailBackup,
+    };
+  } else if (
+    !out.primary ||
+    !normaliseOrgName(out.primary.org || "").includes("police")
+  ) {
+    out.primary = {
+      org: "Commissioner of Police, State Police Command",
+      title: "The Commissioner of Police",
+      address: "State Police Command Headquarters, Nigeria.",
+      email: emailBackup,
+    };
+  }
+
+  const throughEmail =
+    out.through && out.through.email ? out.through.email : "";
+
+  out.through = {
+    org: "Inspector-General of Police, Nigeria Police Force",
+    title: "The Inspector-General of Police",
+    address: "Force Headquarters, Louis Edet House, Abuja, Nigeria.",
+    email: throughEmail,
+  };
+
+  return out;
+}
+
+// --------------------------------------------------------------
+// HYBRID DETECTION PIPELINE (A10)
 // --------------------------------------------------------------
 async function detectHybrid(description) {
   // 1. Electricity rule – always first for billing/meter issues
@@ -747,9 +949,9 @@ async function detectHybrid(description) {
 }
 
 // --------------------------------------------------------------
-// PETITION BUILDERS (STRONG – GROK-STYLE QUALITY)
+// PETITION BUILDERS (PDPS-2.1)
 // --------------------------------------------------------------
-async function buildPetition(complainant, inst) {
+async function buildPetition(complainant, inst, sector) {
   const { fullName, email, phone, address, description } = complainant;
   if (!openai) return fallbackPetition(complainant, inst);
 
@@ -759,100 +961,150 @@ async function buildPetition(complainant, inst) {
     year: "numeric",
   });
 
-  const headerLines = [
+  const header = [
     fullName,
     address,
     email ? `Email: ${email}` : "",
     phone ? `Phone: ${phone}` : "",
     today,
-  ].filter(Boolean);
-
-  const header = headerLines.join("\n");
-
-  const primaryLines = [];
-  if (inst.primary?.title) primaryLines.push(inst.primary.title);
-  if (inst.primary?.org) primaryLines.push(inst.primary.org);
-  if (inst.primary?.address) primaryLines.push(inst.primary.address);
-  const primaryBlock = primaryLines.join("\n");
-
-  let throughBlock = "";
-  if (inst.through && inst.through.org) {
-    const tb = [];
-    tb.push("Through:");
-    if (inst.through.title) tb.push(inst.through.title);
-    tb.push(inst.through.org);
-    if (inst.through.address) tb.push(inst.through.address);
-    throughBlock = tb.join("\n");
-  }
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const ccText =
-    inst.ccList && inst.ccList.length
-      ? inst.ccList
-          .map((c) => `${c.org}${c.address ? "\n" + c.address : ""}`)
-          .join("\n\n")
-      : "None";
+    inst.ccList
+      ?.map((c) => `${c.org}\n${c.address || ""}`.trim())
+      .join("\n\n") || "None";
 
-  const systemPrompt = `
-You are an expert Nigerian petition-drafting lawyer.
-Your job is to write very strong, formal petitions that look like something a senior legal practitioner wrote for a serious complaint.
+  const primaryBlock = `
+${inst.primary?.title || ""}
+${inst.primary?.org || ""}
+${inst.primary?.address || ""}`.trim();
 
-STRICT RULES:
-- Use ONLY the details given (complainant + institutions + description).
-- NO placeholders like [Your Name], [Your Address], [Account Number]. If something is missing, just keep the wording general.
-- Tone must be firm, respectful, and legally grounded.
-- Petition should look ready for printing on A4, addressed to Nigerian authorities or international bodies.
+  const throughBlock =
+    inst.through && inst.through.org
+      ? `Through:
+${inst.through.title || ""}
+${inst.through.org}
+${inst.through.address || ""}`.trim()
+      : "";
 
-STRUCTURE (VERY IMPORTANT):
-1. Complainant block (name, address, contact, date) – already provided in header.
-2. Address block of the PRIMARY institution, then a clear "Through:" block if any supervising body is given.
-3. "CC:" section listing other institutions.
-4. Salutation: "Sir," or "Your Excellency," depending on the addressee; if in doubt use "Sir,".
-5. Subject line in ALL CAPS and very specific (e.g. "PETITION AGAINST PERSISTENT AND GROSS OVER-BILLING BY THE FCT WATER BOARD – ACCOUNT NO: …").
-6. Intro paragraph: who the complainant is, location, and summary of the grievance.
-7. FACTS section (numbered paragraphs 1, 2, 3… with clear, chronological facts: dates, amounts, actions taken).
-8. A paragraph on legal / rights basis (e.g. Nigerian Constitution, PCC Act, sector regulations) ONLY when clearly relevant. Do not overdo it.
-9. RELIEFS SOUGHT / PRAYERS section: numbered (a, b, c, d) with clear, practical requests.
-10. Closing paragraph: strong but respectful, asking for swift intervention.
-11. "Yours faithfully," then complainant’s name and contact.
+  let systemPrompt;
+  let userPrompt;
 
-FORMATTING:
-- Use clear headings like "FACTS OF THE CASE", "RELIEFS SOUGHT", etc.
-- Use numbered items and indentation similar to a real Nigerian official letter.
-- Do NOT wrap the output in backticks or markdown. Plain text only.
+  // --- POLICE SPECIAL TEMPLATE (SAN-grade) ---
+  if (sector === "police") {
+    systemPrompt = `
+You are a top-tier Nigerian human rights and criminal justice lawyer (SAN level).
+Write an EXTREMELY STRONG but respectful police-related petition.
+
+STRICT FORMAT:
+- Nigerian official letter style.
+- No placeholders (no [Your Name], [Address], etc.).
+- Use ONLY real details from the prompt.
+- Tone: firm, legal, authoritative, respectful, fearless.
+- Use numbered paragraphs for the facts (2, 3, 4...).
+- Include a short "Legal Basis" section referencing:
+  * Section 34(1) of the 1999 Constitution (right to dignity).
+  * Section 35 (right to personal liberty).
+  * Section 36 (fair hearing) – where relevant.
+  * Relevant provisions of the Administration of Criminal Justice Act (ACJA) 2015 on arrest/detention.
+  * Police Act 2020 & Anti-Torture Act 2017 where relevant.
+- Include a clear "Reliefs Sought" section with numbered prayers.
+- Closing must be strong but courteous, affirming trust in the institution.
+
+ADDRESSING RULES:
+- Use the provided primary and "Through" blocks EXACTLY as given.
+- If "Through" is present, show it under the primary block.
+- "CC" section should list key watchdogs provided (PCC, NHRC, others).
+
+OUTPUT:
+- Fully ready-to-print letter.
+- No explanations, no markdown, no commentary – ONLY the petition letter text.
 `;
 
-  const userPrompt = `
-COMPLAINANT HEADER (print exactly as given at the top of the letter):
-
+    userPrompt = `
 ${header}
 
-PRIMARY INSTITUTION BLOCK:
 ${primaryBlock}
 
-${throughBlock ? "\n" + throughBlock : ""}
+${throughBlock ? "\n\n" + throughBlock : ""}
 
-CC RECIPIENTS:
+CC:
 ${ccText}
 
-COMPLAINT DESCRIPTION (this is the raw story – convert it into structured facts and legal narrative):
+SUBJECT:
+Write a strong, all-caps subject line that clearly captures UNLAWFUL ARREST, ILLEGAL DETENTION, EXTORTION, THREAT TO LIFE or other police misconduct based strictly on the facts below.
+
+FACTS OF THE CASE (use this to build clear, numbered facts):
 ${description}
 
-Write the FULL petition letter now, following all the structure rules above.
-Do NOT add any placeholders in square brackets.
-Do NOT invent new institutions or contacts – use ONLY what is reasonably implied from the context.
+INSTRUCTIONS:
+- Do NOT invent new facts.
+- Do NOT invent institutions that are not in the addressing / CC.
+- Make the story clear: date, place (checkpoint / station), officers (if named), actions taken, threats, breaches.
+- Then add a short "Legal Basis" section citing the relevant laws.
+- Then add a numbered "Reliefs Sought" section (investigation, discipline, apology, compensation, etc. as appropriate).
+- End with "Yours faithfully," and the complainant's name.`;
+  } else {
+    // --- GENERAL / OTHER SECTORS (still strong, SAN-like) ---
+    systemPrompt = `
+You are an expert Nigerian petition drafting lawyer (SAN standard).
+Write a VERY STRONG, highly formal petition.
+
+Rules:
+- Nigerian official letter style.
+- No placeholders (no [Your Name], [Address], etc.).
+- Use only the real-world details provided.
+- Tone: firm, legal, respectful, authoritative.
+- Structure:
+  * Header with complainant details and date.
+  * Proper addressing of primary institution (and "Through" block if any).
+  * CC list.
+  * Clear subject line.
+  * Facts of the case in numbered or well-structured paragraphs.
+  * Short legal / rights basis (e.g., Public Complaints Commission Act, Consumer protection laws, sector regulators, Constitution) where appropriate.
+  * Numbered "Reliefs Sought" section.
+  * Strong closing paragraph.
+  * "Yours faithfully" and complainant details.
+
+- Do NOT invent new institutions beyond those in the addressing / CC.
+- Do NOT add fake statutes; only use well-known Nigerian frameworks (Constitution, PCC Act, sector regulators, consumer protection, etc.).
 `;
+
+    userPrompt = `
+${header}
+
+${primaryBlock}
+
+${throughBlock ? "\n\n" + throughBlock : ""}
+
+CC:
+${ccText}
+
+SUBJECT:
+Generate a strong, precise subject line based strictly on the description.
+
+Description of complaint (use this to build the facts):
+${description}
+
+Write the full petition letter now following all rules. Do NOT invent new facts or new institutions.`;
+  }
 
   try {
     const r = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.25,
+      temperature: 0.22,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
     });
 
-    return r.choices?.[0]?.message?.content || fallbackPetition(complainant, inst);
+    return (
+      r.choices?.[0]?.message?.content ||
+      fallbackPetition(complainant, inst)
+    );
   } catch (err) {
     console.error("AI petition error:", err);
     return fallbackPetition(complainant, inst);
@@ -901,21 +1153,18 @@ ${c.email || ""}
 }
 
 // --------------------------------------------------------------
-// POST: GENERATE PETITION  (with preview vs full based on hasPaid)
+// POST: GENERATE PETITION
 // --------------------------------------------------------------
 app.post("/generate-petition", async (req, res) => {
-  console.log("Incoming /generate-petition request:", req.body);
+  console.log("Incoming request:", req.body);
 
   const description = req.body.description || "";
-  const hasPaid = !!req.body.hasPaid; // if true, return full; if false, return preview
-
   if (!description.trim()) {
     return res.status(200).json({
       petitionText: "Please enter your complaint description.",
       primaryInstitution: null,
       throughInstitution: null,
       ccList: [],
-      locked: true,
     });
   }
 
@@ -942,27 +1191,19 @@ app.post("/generate-petition", async (req, res) => {
   // 3. Apply A10 sector-wide supervisors (police, health, aviation, etc.)
   inst = applySectorSupervisors(description, inst);
 
+  // 4. Detect sector & refine institutions for police cases (CP + IGP)
+  const sector = detectSector(description, inst);
+  if (sector === "police") {
+    inst = refinePoliceInstitutions(description, inst);
+  }
+
   // Clean CC list
   inst.ccList = inst.ccList.filter(
     (c) => c && typeof c.org === "string" && c.org.trim()
   );
 
-  // 4. Build full petition text
-  const fullPetition = await buildPetition(complainant, inst);
-
-  // 5. Paywall: if not paid, return only preview/truncated version
-  let petitionText = fullPetition;
-  let locked = false;
-
-  if (!hasPaid) {
-    locked = true;
-    const maxChars = 900; // you can tune this
-    if (petitionText.length > maxChars) {
-      petitionText =
-        petitionText.slice(0, maxChars) +
-        "\n\n[Full petition locked. Complete payment on PetitionDesk.com to unlock the complete version, including full legal arguments, reliefs, and formatting.]";
-    }
-  }
+  // 5. Build petition text (sector-aware)
+  const petitionText = await buildPetition(complainant, inst, sector);
 
   // 6. Respond
   return res.status(200).json({
@@ -970,14 +1211,11 @@ app.post("/generate-petition", async (req, res) => {
     primaryInstitution: inst.primary,
     throughInstitution: inst.through,
     ccList: inst.ccList,
-    locked,
   });
 });
 
 // --------------------------------------------------------------
 // POST: PAY (Flutterwave V3)
-// NIGERIA: 1000 NGN
-// OTHERS: 1500 NGN  (all in NGN; Flutterwave handles FX)
 // --------------------------------------------------------------
 app.post("/pay", async (req, res) => {
   try {
@@ -989,25 +1227,22 @@ app.post("/pay", async (req, res) => {
     }
 
     const {
+      amount = 1500, // default amount in NGN
+      currency,
       fullName,
       email,
       description,
-      countryCode = "NG", // expect "NG" or ISO-2
     } = req.body || {};
 
-    let amount = 1000;
-    let currency = "NGN";
-
-    if (countryCode && countryCode.toUpperCase() !== "NG") {
-      amount = 1500;
-    }
+    const baseCurrency =
+      currency || process.env.BASE_PAYMENT_CURRENCY || "NGN";
 
     const txRef = `PDK-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 
     const payload = {
       tx_ref: txRef,
       amount,
-      currency,
+      currency: baseCurrency,
       redirect_url:
         process.env.FLW_REDIRECT_URL ||
         "https://petitiondesk.com/payment-complete",
@@ -1044,8 +1279,6 @@ app.post("/pay", async (req, res) => {
     return res.json({
       paymentLink: data.data.link,
       txRef,
-      amount,
-      currency,
     });
   } catch (err) {
     console.error("Payment route error:", err);
@@ -1057,5 +1290,5 @@ app.post("/pay", async (req, res) => {
 // START SERVER
 // --------------------------------------------------------------
 app.listen(PORT, "0.0.0.0", () =>
-  console.log(`JusticeBot A13 Backend running on ${PORT}`)
+  console.log(`JusticeBot PDPS-2.1 Backend running on ${PORT}`)
 );
