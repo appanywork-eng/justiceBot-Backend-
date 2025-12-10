@@ -1,6 +1,6 @@
 /**
- * PetitionDesk Backend (PDPS-2.3 PRO)
- * Strong routing + SAN-grade petition building + verified-paywall
+ * PetitionDesk Backend (PDPS-2.4 PRO)
+ * Strong routing + Professional-grade petition builder + Verified paywall + Minimum ₦1000 enforcement
  */
 
 const express = require("express");
@@ -28,7 +28,7 @@ app.use(express.json());
 // BASIC ROUTES
 // =====================================================================
 app.get("/", (req, res) =>
-  res.send("PetitionDesk PDPS-2.3 PRO Backend is running 💡")
+  res.send("PetitionDesk PDPS-2.4 PRO Backend is running 💡")
 );
 
 app.get("/health", (req, res) =>
@@ -70,20 +70,17 @@ app.post("/generate-petition", async (req, res) => {
   };
 
   try {
-    // Routing
+    // Routing logic
     let inst = await detectHybrid(description);
     inst = applyWatchdogs(description, inst);
     inst = applySectorSupervisors(description, inst);
 
     const sector = detectSector(description, inst);
-
-    if (sector === "police") {
-      inst = refinePoliceInstitutions(description, inst);
-    }
+    if (sector === "police") inst = refinePoliceInstitutions(description, inst);
 
     inst.ccList = inst.ccList.filter((c) => c?.org?.trim());
 
-    // Generate preview petition
+    // Build petition preview
     const petitionText = await buildPetition(complainant, inst, sector);
 
     return res.status(200).json({
@@ -103,22 +100,44 @@ app.post("/generate-petition", async (req, res) => {
 });
 
 // =====================================================================
-// START PAYMENT
+// START PAYMENT (ENFORCES MINIMUM ₦1000)
 // =====================================================================
 app.post("/pay", async (req, res) => {
   try {
-    const result = await startFlutterwavePayment(req.body);
+    const { amount, fullName, email, description } = req.body;
+
+    // --- Hard validation: cannot bypass front-end ---
+    if (!amount || amount < 1000) {
+      return res.status(400).json({
+        ok: false,
+        error:
+          "Minimum petition fee is ₦1000. Please enter ₦1000 or above to proceed.",
+      });
+    }
+
+    const result = await startFlutterwavePayment({
+      amount,
+      currency: "NGN",
+      fullName,
+      email,
+      description: description || "PetitionDesk – Petition drafting fee",
+    });
+
     if (!result.ok) {
-      return res.status(500).json({ error: result.error });
+      return res.status(500).json({
+        ok: false,
+        error: result.error || "Payment error.",
+      });
     }
 
     return res.json({
+      ok: true,
       paymentLink: result.paymentLink,
       txRef: result.txRef,
     });
   } catch (err) {
     console.error("Pay error:", err);
-    return res.status(500).json({ error: "Payment error." });
+    return res.status(500).json({ ok: false, error: "Payment error." });
   }
 });
 
@@ -145,5 +164,5 @@ app.get("/verify-payment", async (req, res) => {
 // START SERVER
 // =====================================================================
 app.listen(PORT, "0.0.0.0", () =>
-  console.log(`PDPS-2.3 PRO Backend running on ${PORT}`)
+  console.log(`PDPS-2.4 PRO Backend running on port ${PORT}`)
 );
