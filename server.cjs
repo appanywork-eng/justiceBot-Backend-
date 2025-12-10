@@ -1,6 +1,6 @@
 /**
- * PetitionDesk Backend (PDPS-2.4 PRO)
- * Strong routing + Professional-grade petition builder + Verified paywall + Minimum ₦1000 enforcement
+ * PetitionDesk Backend (PDPS-2.5 PRO)
+ * Pay-per-petition + Professional petition builder + Secure verified unlock
  */
 
 const express = require("express");
@@ -14,8 +14,8 @@ const { buildPetition } = require("./core/petitions");
 const {
   startFlutterwavePayment,
   verifyFlutterwavePayment,
-  isVerified,
 } = require("./core/payments");
+
 const { isOpenAIReady } = require("./core/openaiClient");
 
 const app = express();
@@ -24,11 +24,14 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+/** Store verified petitions by petitionId */
+const VERIFIED_PETITIONS = {};
+
 // =====================================================================
 // BASIC ROUTES
 // =====================================================================
 app.get("/", (req, res) =>
-  res.send("PetitionDesk PDPS-2.4 PRO Backend is running 💡")
+  res.send("PetitionDesk PDPS-2.5 PRO Backend is running 💡")
 );
 
 app.get("/health", (req, res) =>
@@ -44,7 +47,7 @@ app.get("/test", (req, res) =>
 );
 
 // =====================================================================
-// GENERATE PETITION (PREVIEW MODE – NO COPY/EMAIL/DOWNLOAD)
+// GENERATE PETITION (Preview Only – Locked Tools)
 // =====================================================================
 app.post("/generate-petition", async (req, res) => {
   console.log("Incoming:", req.body);
@@ -56,7 +59,7 @@ app.post("/generate-petition", async (req, res) => {
       primaryInstitution: null,
       throughInstitution: null,
       ccList: [],
-      txRef: null,
+      petitionId: null,
       verified: false,
     });
   }
@@ -83,44 +86,60 @@ app.post("/generate-petition", async (req, res) => {
     // Build petition preview
     const petitionText = await buildPetition(complainant, inst, sector);
 
+    // Unique petition ID (used for unlocking)
+    const petitionId =
+      "PID_" + Date.now() + "_" + Math.floor(Math.random() * 999999);
+
     return res.status(200).json({
       petitionText,
       primaryInstitution: inst.primary,
       throughInstitution: inst.through,
       ccList: inst.ccList,
+      petitionId,
       verified: false,
     });
   } catch (err) {
     console.error("Error:", err);
     return res.status(500).json({
       petitionText: "An internal error occurred.",
+      petitionId: null,
       verified: false,
     });
   }
 });
 
 // =====================================================================
-// START PAYMENT (ENFORCES MINIMUM ₦1000)
+// START PAYMENT (User Pays Flutterwave Charges)
 // =====================================================================
 app.post("/pay", async (req, res) => {
   try {
-    const { amount, fullName, email, description } = req.body;
+    const { amount, petitionId, fullName, email } = req.body;
 
-    // --- Hard validation: cannot bypass front-end ---
-    if (!amount || amount < 1000) {
+    if (!petitionId) {
       return res.status(400).json({
         ok: false,
-        error:
-          "Minimum petition fee is ₦1000. Please enter ₦1000 or above to proceed.",
+        error: "Missing petitionId.",
       });
     }
 
+    if (!amount || amount < 1000) {
+      return res.status(400).json({
+        ok: false,
+        error: "Minimum petition fee is ₦1000.",
+      });
+    }
+
+    /** Calculate Flutterwave fee (1.4% + ₦50) */
+    const flutterwaveFee = Math.ceil(amount * 0.014 + 50);
+    const finalAmount = amount + flutterwaveFee;
+
     const result = await startFlutterwavePayment({
-      amount,
+      amount: finalAmount,
       currency: "NGN",
       fullName,
       email,
-      description: description || "PetitionDesk – Petition drafting fee",
+      petitionId,
+      description: "PetitionDesk – Petition unlocking fee",
     });
 
     if (!result.ok) {
@@ -134,6 +153,8 @@ app.post("/pay", async (req, res) => {
       ok: true,
       paymentLink: result.paymentLink,
       txRef: result.txRef,
+      petitionId,
+      amountToPay: finalAmount,
     });
   } catch (err) {
     console.error("Pay error:", err);
@@ -142,20 +163,31 @@ app.post("/pay", async (req, res) => {
 });
 
 // =====================================================================
-// VERIFY PAYMENT
+// VERIFY PAYMENT (Unlocks ONLY that petitionId)
 // =====================================================================
 app.get("/verify-payment", async (req, res) => {
   const txRef = req.query.txRef;
-  if (!txRef) return res.status(400).json({ verified: false });
+  const petitionId = req.query.petitionId;
+
+  if (!txRef || !petitionId) {
+    return res.status(400).json({ verified: false });
+  }
 
   try {
-    if (isVerified(txRef)) {
-      return res.json({ verified: true });
+    if (VERIFIED_PETITIONS[petitionId]) {
+      return res.json({ verified: true, petitionId });
     }
 
     const v = await verifyFlutterwavePayment(txRef);
-    return res.json({ verified: v.verified || false });
+
+    if (v.verified) {
+      VERIFIED_PETITIONS[petitionId] = true;
+      return res.json({ verified: true, petitionId });
+    }
+
+    return res.json({ verified: false });
   } catch (err) {
+    console.error("Verify error:", err);
     return res.status(500).json({ verified: false });
   }
 });
@@ -164,5 +196,5 @@ app.get("/verify-payment", async (req, res) => {
 // START SERVER
 // =====================================================================
 app.listen(PORT, "0.0.0.0", () =>
-  console.log(`PDPS-2.4 PRO Backend running on port ${PORT}`)
+  console.log(`PDPS-2.5 PRO Backend running on port ${PORT}`)
 );
