@@ -283,9 +283,8 @@ Write a complete petition including:
 // Exports
 // --------------------------------------------------------
 module.exports = {
-  getOpenAIClient,
-  detectSector,
-  getInstitutionsForSector,
-  aiDetect,
-  generatePetition,
+    getOpenAIClient,
+    detectSector,
+    getInstitutionsForSector,
+    generatePetition
 };
