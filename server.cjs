@@ -7,7 +7,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const { detectHybrid } = require("./core/aiRouting");
+const { aiDetect } = require("./core/aiRouting");
 const { applyWatchdogs, applySectorSupervisors } = require("./core/watchdogs");
 const { detectSector, refinePoliceInstitutions } = require("./core/police");
 const { buildPetition } = require("./core/petitions");
@@ -64,7 +64,7 @@ app.post("/generate-petition", async (req, res) => {
   };
 
   try {
-    let inst = await detectHybrid(description);
+let inst = await aiDetect(complainant.fullName, description, complainant.address);
     inst = applyWatchdogs(description, inst);
     inst = applySectorSupervisors(description, inst);
 
