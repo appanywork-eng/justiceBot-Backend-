@@ -359,8 +359,7 @@
     {
       "id": "nuc",
       "org": "National Universities Commission (NUC)",
-      "email": "info@nuc.edu.ng",
-      "address": "26 Aguiyi Ironsi Street, Maitama, Abuja",
+      "email": "info@nuc.edu.ng",      "address": "26 Aguiyi Ironsi Street, Maitama, Abuja",
       "sector": ["education"]
     },
     {
@@ -735,7 +734,6 @@
       "email": "",
       "category": "regional"
     },
-
     {
       "id": "eu_human_rights",
       "org": "European Union – Directorate for Human Rights",
@@ -750,7 +748,6 @@
       "email": "",
       "category": "international_policy"
     },
-
     {
       "id": "uk_parliament_human_rights",
       "org": "UK Parliament – Joint Committee on Human Rights",
@@ -765,7 +762,6 @@
       "email": "",
       "category": "foreign_government"
     },
-
     {
       "id": "us_house_foreign_affairs",
       "org": "US House Committee on Foreign Affairs",
@@ -787,7 +783,6 @@
       "email": "",
       "category": "human_rights"
     },
-
     {
       "id": "interpol",
       "org": "INTERPOL National Central Bureau",
@@ -795,7 +790,6 @@
       "email": "",
       "category": "law_enforcement"
     },
-
     {
       "id": "amnesty_international",
       "org": "Amnesty International – Research & Advocacy",
@@ -811,3 +805,4 @@
       "category": "ngo"
     }
   ]
+}
