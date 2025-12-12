@@ -1,7 +1,9 @@
 /**
  * PetitionDesk Backend (PDPS-2.5 PRO)
- * Stable – Secure – Production Ready
+ * Stable • Secure • Production Ready
  */
+
+"use strict";
 
 const express = require("express");
 const cors = require("cors");
@@ -11,31 +13,29 @@ require("dotenv").config();
 // IMPORT CORRECT FUNCTIONS
 //
 const {
-    generatePetition, 
-    detectSector,
-    getInstitutionsForSector
+  detectSector,
+  getInstitutionsForSector,
 } = require("./core/aiRouting");
 
 const {
-    applyWatchdogs,
-    applySectorSupervisors
+  applyWatchdogs,
+  applySectorSupervisors,
 } = require("./core/watchdogs");
 
 const {
-    detectSector: detectSectorLegacy,
-    refinePoliceInstitutions
+  detectSector: detectSectorLegacy, // kept for future use if needed
+  refinePoliceInstitutions,
 } = require("./core/police");
 
-const { buildPetition } = require("./core/petitions");
+const { buildPetition, fallbackPetition } = require("./core/petitions");
 
 const {
-    startFlutterwavePayment,
-    verifyFlutterwavePayment,
-    isVerified
+  startFlutterwavePayment,
+  verifyFlutterwavePayment,
+  isVerified,
 } = require("./core/payments");
 
 const { isOpenAIReady } = require("./core/openaiClient");
-
 
 //
 // EXPRESS SETUP
@@ -46,198 +46,230 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
-// ========================================================
+//
+// ================================================================
 // BASIC ROUTES
-// ========================================================
+// ================================================================
 app.get("/", (req, res) => {
-    res.send("PetitionDesk PDPS-2.5 PRO Backend is running.");
+  res.send("PetitionDesk PDPS-2.5 PRO Backend is running.");
 });
 
 app.get("/health", (req, res) => {
-    res.json({ status: "ok", time: new Date().toISOString() });
+  res.json({
+    status: "ok",
+    time: new Date().toISOString(),
+    openAI: isOpenAIReady ? isOpenAIReady() : false,
+  });
 });
 
-
-// ========================================================
+//
+// ================================================================
 // GENERATE PETITION (MAIN ENDPOINT)
-// ========================================================
+// ================================================================
 app.post("/generate-petition", async (req, res) => {
-    console.log("Incoming:", req.body);
+  console.log("Incoming:", req.body);
 
-    const description = req.body.description || "";
+  const description = req.body.description || "";
 
-    if (!description.trim()) {
-        return res.status(200).json({
-            ok: false,
-            error: "Please describe your complaint.",
-            petitionId: null,
-            verified: false,
-        });
-    }
+  if (!description.trim()) {
+    return res.status(200).json({
+      ok: false,
+      error: "Please describe your complaint.",
+      petitionId: null,
+      verified: false,
+    });
+  }
 
-    const complainant = {
-        fullName: req.body.fullName || "",
-        email: req.body.email || "",
-        phone: req.body.phone || "",
-        address: req.body.address || "",
-        description
+  const complainant = {
+    fullName: req.body.fullName || "",
+    email: req.body.email || "",
+    phone: req.body.phone || "",
+    address: req.body.address || "",
+    description,
+  };
+
+  try {
+    //
+    // 1. DETECT SECTOR USING AI ROUTING
+    //
+    const sector = detectSector(description) || "general";
+
+    //
+    // 2. GET BASE ROUTES FOR THE SECTOR
+    //
+    let inst = {
+      primary: null,
+      through: null,
+      ccList: [],
     };
 
-    try {
-        //
-        // 1. DETECT SECTOR USING AI ROUTING
-        //
-        const sector = detectSector(description);
+    const baseRoutes = getInstitutionsForSector(sector, complainant.address) || [];
 
-        //
-        // 2. GET BASE ROUTES FOR THE SECTOR
-        //
-        let inst = {
-            primary: null,
-            through: null,
-            ccList: []
-        };
-
-        const institutions = getInstitutionsForSector(sector, complainant.address);
-        if (institutions.length > 0) {
-            inst.primary = institutions[0];
-            inst.through = institutions[1] || null;
-            inst.ccList = institutions.slice(2);
-        }
-
-        //
-        // 3. APPLY WATCHDOGS & SUPERVISORS
-        //
-        inst = applyWatchdogs(description, inst);
-        inst = applySectorSupervisors(description, inst);
-
-        //
-        // 4. SPECIAL RULES FOR POLICE SECTOR
-        //
-        if (sector === "police") {
-            inst = refinePoliceInstitutions(description, inst);
-        }
-
-        //
-        // 5. FILTER CC LIST
-        //
-        inst.ccList = inst.ccList.filter(c => c?.org?.trim());
-
-        //
-        // 6. GENERATE PETITION TEXT VIA OPENAI
-        //
-        const aiResult = await generatePetition(
-            complainant.fullName,
-            complainant.email,
-            complainant.phone,
-            complainant.address,
-            description
-        );
-
-        const petitionText = aiResult.petition;
-
-        //
-        // 7. BUILD PETITION ID
-        //
-        const petitionId = "PD-" + Date.now() + "-" + Math.floor(Math.random() * 9999);
-
-        //
-        // 8. SEND RESPONSE
-        //
-        return res.status(200).json({
-            ok: true,
-            petitionText,
-            primaryInstitution: inst.primary,
-            throughInstitution: inst.through,
-            ccList: inst.ccList,
-            petitionId,
-            verified: false,
-        });
-
-    } catch (err) {
-        console.error("Error generating petition:", err);
-        return res.status(500).json({
-            ok: false,
-            error: "Internal error.",
-            verified: false,
-        });
+    if (Array.isArray(baseRoutes) && baseRoutes.length > 0) {
+      inst.primary = baseRoutes[0] || null;
+      inst.through = baseRoutes[1] || null;
+      inst.ccList = baseRoutes.slice(2);
     }
+
+    //
+    // 3. APPLY WATCHDOGS & SUPERVISORS
+    //
+    inst = applyWatchdogs(description, inst) || inst;
+    inst = applySectorSupervisors(description, inst) || inst;
+
+    //
+    // 4. SPECIAL RULES FOR POLICE SECTOR
+    //
+    if (sector === "police") {
+      inst = refinePoliceInstitutions(description, inst, complainant.address) || inst;
+    }
+
+    //
+    // 5. FILTER CC LIST (ensure only valid entries)
+    //
+    inst.ccList = (inst.ccList || []).filter(
+      (c) => c && c.org && String(c.org).trim()
+    );
+
+    //
+    // 6. GENERATE PETITION TEXT (SAN-grade) VIA core/petitions.js
+    //
+    let petitionText;
+    try {
+      petitionText = await buildPetition(complainant, inst, sector);
+    } catch (innerErr) {
+      console.error("AI petition generation failed, using fallback:", innerErr);
+      petitionText = fallbackPetition(complainant, inst);
+    }
+
+    //
+    // 7. BUILD PETITION ID
+    //
+    const randomPart = Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(6, "0");
+    const petitionId = "PD-" + Date.now() + "-" + randomPart;
+
+    //
+    // 8. SEND RESPONSE
+    //
+    return res.status(200).json({
+      ok: true,
+      petitionText,
+      primaryInstitution: inst.primary,
+      throughInstitution: inst.through,
+      ccList: inst.ccList,
+      petitionId,
+      verified: false,
+      sector,
+    });
+  } catch (err) {
+    console.error("Error generating petition:", err);
+    return res.status(500).json({
+      ok: false,
+      error: "Internal error.",
+      petitionId: null,
+      verified: false,
+    });
+  }
 });
 
-
-// ========================================================
-// PAYMENT – requires petitionId
-// ========================================================
+//
+// ================================================================
+// PAYMENT - requires petitionId
+// ================================================================
 app.post("/pay", async (req, res) => {
-    try {
-        const { amount, fullName, email, petitionId } = req.body;
+  try {
+    const { amount, fullName, email, petitionId } = req.body || {};
 
-        if (!petitionId) {
-            return res.status(400).json({
-                ok: false,
-                error: "Missing petitionId.",
-            });
-        }
-
-        if (!amount || amount < 1000) {
-            return res.status(400).json({
-                ok: false,
-                error: "Minimum petition fee is ₦1000.",
-            });
-        }
-
-        const redirectUrl = `${process.env.FLW_REDIRECT_URL}?petitionId=${petitionId}`;
-
-        const result = await startFlutterwavePayment({
-            amount,
-            currency: "NGN",
-            fullName,
-            email,
-            description: "PetitionDesk – Petition Payment",
-            redirect_url: redirectUrl,
-        });
-
-        if (!result.ok) {
-            return res.status(500).json({ ok: false, error: result.error });
-        }
-
-        return res.json({
-            ok: true,
-            paymentLink: result.paymentLink,
-            txRef: result.txRef,
-            petitionId,
-        });
-
-    } catch (err) {
-        console.error("Payment error:", err);
-        return res.status(500).json({ ok: false, error: "Payment failed." });
+    if (!petitionId) {
+      return res.status(400).json({
+        ok: false,
+        error: "Missing petitionId.",
+      });
     }
+
+    if (!amount || amount < 1000) {
+      return res.status(400).json({
+        ok: false,
+        error: "Minimum petition fee is ₦1000.",
+      });
+    }
+
+    const baseRedirect = process.env.FLW_REDIRECT_URL || "";
+    const redirectUrl =
+      baseRedirect +
+      (baseRedirect.includes("?") ? "&" : "?") +
+      "petitionId=" +
+      encodeURIComponent(petitionId);
+
+    const result = await startFlutterwavePayment({
+      amount,
+      currency: "NGN",
+      fullName,
+      email,
+      description: "PetitionDesk - Petition Payment",
+      redirect_url: redirectUrl,
+    });
+
+    if (!result || !result.ok) {
+      console.error("Flutterwave payment init failed:", result);
+      return res.status(500).json({
+        ok: false,
+        error: "Unable to start payment. Please try again.",
+      });
+    }
+
+    return res.json({
+      ok: true,
+      paymentLink: result.paymentLink,
+      txRef: result.txRef,
+      petitionId,
+    });
+  } catch (err) {
+    console.error("Payment error:", err);
+    return res.status(500).json({
+      ok: false,
+      error: "Payment error.",
+    });
+  }
 });
 
-
-// ========================================================
+//
+// ================================================================
 // VERIFY PAYMENT
-// ========================================================
+// ================================================================
 app.get("/verify-payment", async (req, res) => {
-    const txRef = req.query.txRef;
-    if (!txRef) return res.status(400).json({ verified: false });
+  const txRef = req.query.txRef;
 
-    try {
-        if (isVerified(txRef)) return res.json({ verified: true });
+  if (!txRef) {
+    return res.status(400).json({
+      verified: false,
+      error: "Missing txRef.",
+    });
+  }
 
-        const v = await verifyFlutterwavePayment(txRef);
-        return res.json({ verified: v.verified || false });
-
-    } catch (err) {
-        return res.status(500).json({ verified: false });
+  try {
+    // quick in-memory / cache check if implemented
+    if (typeof isVerified === "function" && isVerified(txRef)) {
+      return res.json({ verified: true });
     }
+
+    const v = await verifyFlutterwavePayment(txRef);
+    return res.json({ verified: !!(v && v.verified) });
+  } catch (err) {
+    console.error("Verify payment error:", err);
+    return res.status(500).json({
+      verified: false,
+      error: "Verification error.",
+    });
+  }
 });
 
-
-// ========================================================
+//
+// ================================================================
 // START SERVER
-// ========================================================
+// ================================================================
 app.listen(PORT, "0.0.0.0", () => {
-    console.log(`PDPS-2.5 PRO Backend running on port ${PORT}`);
+  console.log(`PDPS-2.5 PRO Backend running on port ${PORT}`);
 });
