@@ -5,396 +5,503 @@
       "org": "Federal Ministry of Justice",
       "email": "info@justice.gov.ng",
       "address": "Federal Secretariat, Abuja, Nigeria",
-      "sector": ["legal", "national"]
+      "sector": [
+        "legal",
+        "national"
+      ]
     },
     {
       "id": "fmf",
       "org": "Federal Ministry of Finance",
       "email": "info@finance.gov.ng",
       "address": "Ahmadu Bello Way, Central Business District, Abuja",
-      "sector": ["finance", "national"]
+      "sector": [
+        "finance",
+        "national"
+      ]
     },
     {
       "id": "fmic",
       "org": "Federal Ministry of Information and National Orientation",
       "email": "info@fmic.gov.ng",
       "address": "Radio House, Garki, Abuja",
-      "sector": ["media", "national"]
+      "sector": [
+        "media",
+        "national"
+      ]
     },
     {
       "id": "fmwph",
       "org": "Federal Ministry of Works & Housing",
       "email": "info@worksandhousing.gov.ng",
       "address": "Mabushi, Abuja",
-      "sector": ["housing", "infrastructure"]
+      "sector": [
+        "housing",
+        "infrastructure"
+      ]
     }
   ],
-
   "regulators": [
     {
       "id": "nerc",
       "org": "Nigerian Electricity Regulatory Commission (NERC)",
       "email": "info@nerc.gov.ng",
       "address": "Adamawa Plaza, Plot 1099, CBD, Abuja",
-      "sector": ["electricity", "energy"]
+      "sector": [
+        "electricity",
+        "energy"
+      ]
     },
     {
       "id": "ncc",
       "org": "Nigerian Communications Commission (NCC)",
       "email": "consumerportal@ncc.gov.ng",
       "address": "Plot 423 Aguiyi Ironsi Street, Maitama, Abuja",
-      "sector": ["telecom"]
+      "sector": [
+        "telecom"
+      ]
     },
     {
       "id": "cbn",
       "org": "Central Bank of Nigeria (CBN)",
       "email": "contactcbn@cbn.gov.ng",
       "address": "Central Bank HQ, Abuja",
-      "sector": ["finance", "banking"]
+      "sector": [
+        "finance",
+        "banking"
+      ]
     },
     {
       "id": "ndic",
       "org": "Nigeria Deposit Insurance Corporation (NDIC)",
       "email": "info@ndic.gov.ng",
       "address": "Plot 447/448 Constitution Ave, Abuja",
-      "sector": ["banking"]
+      "sector": [
+        "banking"
+      ]
     },
     {
       "id": "naicom",
       "org": "National Insurance Commission (NAICOM)",
       "email": "contact@naicom.gov.ng",
       "address": "Plot 1239 Ladoke Akintola Boulevard, Garki II, Abuja",
-      "sector": ["insurance"]
+      "sector": [
+        "insurance"
+      ]
     },
     {
       "id": "pencom",
       "org": "National Pension Commission (PenCom)",
       "email": "info@pencom.gov.ng",
       "address": "Plot 174 Adetokunbo Ademola Crescent, Wuse II, Abuja",
-      "sector": ["pension"]
+      "sector": [
+        "pension"
+      ]
     },
     {
       "id": "sec",
       "org": "Securities and Exchange Commission (SEC Nigeria)",
       "email": "sec@sec.gov.ng",
       "address": "Plot 272 Samuel Ademulegun Ave, CBD, Abuja",
-      "sector": ["investment"]
+      "sector": [
+        "investment"
+      ]
     }
   ],
-
   "oversight": [
     {
       "id": "pcc",
       "org": "Public Complaints Commission (PCC)",
       "email": "complaints@pcc.gov.ng",
       "address": "25 Aguiyi Ironsi Street, Maitama, Abuja",
-      "sector": ["ombudsman", "oversight"]
+      "sector": [
+        "ombudsman",
+        "oversight"
+      ]
     },
     {
       "id": "nhrc",
       "org": "National Human Rights Commission (NHRC)",
       "email": "info@nhrc.gov.ng",
       "address": "19 Aguiyi Ironsi Street, Maitama, Abuja",
-      "sector": ["human_rights"]
+      "sector": [
+        "human_rights"
+      ]
     },
     {
       "id": "ombudsman",
       "org": "Nigeria Ombudsman Office (Complaints)",
       "email": "",
       "address": "Abuja, Nigeria",
-      "sector": ["oversight"]
+      "sector": [
+        "oversight"
+      ]
     }
   ],
-
   "security_agencies": [
     {
       "id": "npf",
       "org": "Nigeria Police Force Headquarters",
       "email": "pressforceng@gmail.com",
       "address": "Louis Edet House, Abuja",
-      "sector": ["security", "police"]
+      "sector": [
+        "security",
+        "police"
+      ]
     },
     {
       "id": "dss",
       "org": "Department of State Services (DSS)",
       "email": "dsspr@dss.gov.ng",
       "address": "Aso Drive, Abuja",
-      "sector": ["security"]
+      "sector": [
+        "security"
+      ]
     },
     {
       "id": "nsCDC",
       "org": "Nigeria Security and Civil Defence Corps (NSCDC)",
       "email": "info@nscdc.gov.ng",
       "address": "Abuja HQ",
-      "sector": ["security"]
+      "sector": [
+        "security"
+      ]
     },
     {
       "id": "efcc",
       "org": "Economic and Financial Crimes Commission (EFCC)",
       "email": "info@efcc.gov.ng",
       "address": "5 Fomella Street, Off Adetokunbo Ademola Crescent, Wuse II, Abuja",
-      "sector": ["anti_corruption"]
+      "sector": [
+        "anti_corruption"
+      ]
     },
     {
       "id": "icpc",
       "org": "Independent Corrupt Practices Commission (ICPC)",
       "email": "info@icpc.gov.ng",
       "address": "ICPC HQ, Abuja",
-      "sector": ["anti_corruption"]
+      "sector": [
+        "anti_corruption"
+      ]
     },
     {
       "id": "ndlea",
       "org": "National Drug Law Enforcement Agency (NDLEA)",
       "email": "info@ndlea.gov.ng",
       "address": "NDLEA HQ, Garki II, Abuja",
-      "sector": ["drug_enforcement"]
+      "sector": [
+        "drug_enforcement"
+      ]
     },
     {
       "id": "naptip",
       "org": "National Agency for the Prohibition of Trafficking in Persons (NAPTIP)",
       "email": "info@naptip.gov.ng",
       "address": "NAPTIP HQ, Abuja",
-      "sector": ["human_trafficking"]
+      "sector": [
+        "human_trafficking"
+      ]
     }
   ],
-
   "sector_agencies": [
     {
       "id": "nafdac",
       "org": "National Agency for Food and Drug Administration and Control (NAFDAC)",
       "email": "nafdac@nafdac.gov.ng",
       "address": "NAFDAC HQ, Abuja",
-      "sector": ["health", "consumer_protection"]
+      "sector": [
+        "health",
+        "consumer_protection"
+      ]
     },
     {
       "id": "son",
       "org": "Standards Organisation of Nigeria (SON)",
       "email": "info@son.gov.ng",
       "address": "Plot 1687, Ladi Kwali Street, Abuja",
-      "sector": ["consumer_protection", "industry"]
+      "sector": [
+        "consumer_protection",
+        "industry"
+      ]
     },
     {
       "id": "frsc",
       "org": "Federal Road Safety Corps (FRSC)",
       "email": "info@frsc.gov.ng",
       "address": "FRSC Headquarters, Wuse Zone 3, Abuja",
-      "sector": ["transport"]
+      "sector": [
+        "transport"
+      ]
     },
     {
       "id": "faac",
       "org": "Federal Airports Authority of Nigeria (FAAN)",
       "email": "contact@faan.gov.ng",
       "address": "Murtala Muhammed Airport Road, Lagos",
-      "sector": ["aviation"]
+      "sector": [
+        "aviation"
+      ]
     },
     {
       "id": "ncaa",
       "org": "Nigerian Civil Aviation Authority (NCAA)",
       "email": "info@ncaa.gov.ng",
       "address": "Aviation House, Lagos",
-      "sector": ["aviation", "regulation"]
+      "sector": [
+        "aviation",
+        "regulation"
+      ]
     },
     {
       "id": "nimc",
       "org": "National Identity Management Commission (NIMC)",
       "email": "contact@nimc.gov.ng",
       "address": "NIMC HQ, Abuja",
-      "sector": ["identity"]
+      "sector": [
+        "identity"
+      ]
     },
     {
       "id": "inec",
       "org": "Independent National Electoral Commission (INEC)",
       "email": "iccc@inecnigeria.org",
       "address": "Plot 436 Zambezi Crescent, Maitama, Abuja",
-      "sector": ["elections"]
+      "sector": [
+        "elections"
+      ]
     }
   ],
-
   "telecom_companies": [
     {
       "id": "mtn",
       "org": "MTN Nigeria",
       "email": "customercare@mtnnigeria.net",
       "address": "Falomo, Ikoyi, Lagos",
-      "sector": ["telecom"]
+      "sector": [
+        "telecom"
+      ]
     },
     {
       "id": "airtel",
       "org": "Airtel Nigeria",
       "email": "customercare@ng.airtel.com",
       "address": "Plot L2, Banana Island, Lagos",
-      "sector": ["telecom"]
+      "sector": [
+        "telecom"
+      ]
     },
     {
       "id": "glo",
       "org": "Globacom Nigeria (GLO)",
       "email": "customercare@gloworld.com",
       "address": "Mike Adenuga Towers, Lagos",
-      "sector": ["telecom"]
+      "sector": [
+        "telecom"
+      ]
     },
     {
       "id": "9mobile",
       "org": "9mobile Nigeria",
       "email": "care@9mobile.com.ng",
       "address": "Banana Island, Lagos",
-      "sector": ["telecom"]
+      "sector": [
+        "telecom"
+      ]
     }
   ],
-
   "banks": [
     {
       "id": "gtb",
       "org": "Guaranty Trust Bank (GTBank)",
       "email": "complaints@gtbank.com",
       "address": "Plot 635, Akin Adesola St, Victoria Island, Lagos",
-      "sector": ["banking"]
+      "sector": [
+        "banking"
+      ]
     },
     {
       "id": "zenith",
       "org": "Zenith Bank",
       "email": "zenithdirect@zenithbank.com",
       "address": "Plot 87 Ajose Adeogun St, Victoria Island, Lagos",
-      "sector": ["banking"]
+      "sector": [
+        "banking"
+      ]
     },
     {
       "id": "uba",
       "org": "United Bank for Africa (UBA)",
       "email": "cfc@ubagroup.com",
       "address": "57 Marina, Lagos Island, Lagos",
-      "sector": ["banking"]
+      "sector": [
+        "banking"
+      ]
     },
     {
       "id": "access",
       "org": "Access Bank",
       "email": "contactcenter@accessbankplc.com",
       "address": "Plot 999C, Danmole Street, Off Adeola Odeku, Lagos",
-      "sector": ["banking"]
+      "sector": [
+        "banking"
+      ]
     },
     {
       "id": "firstbank",
       "org": "First Bank of Nigeria",
       "email": "firstcontact@firstbanknigeria.com",
       "address": "Samuel Asabia House, Marina, Lagos",
-      "sector": ["banking"]
+      "sector": [
+        "banking"
+      ]
     },
     {
       "id": "fidelity",
       "org": "Fidelity Bank",
       "email": "true.serve@fidelitybank.ng",
       "address": "2 Kofo Abayomi St, Victoria Island, Lagos",
-      "sector": ["banking"]
+      "sector": [
+        "banking"
+      ]
     }
   ],
-
   "power_companies": [
     {
       "id": "ikedc",
       "org": "Ikeja Electric Distribution Company (IKEDC)",
       "email": "customercare@ikejaelectric.com",
       "address": "Ikeja, Lagos",
-      "sector": ["electricity"]
+      "sector": [
+        "electricity"
+      ]
     },
     {
       "id": "eedc",
       "org": "Enugu Electricity Distribution Company (EEDC)",
       "email": "customercare@enugudisco.com",
       "address": "Okpara Avenue, Enugu",
-      "sector": ["electricity"]
+      "sector": [
+        "electricity"
+      ]
     },
     {
       "id": "kcedc",
       "org": "Kano Electricity Distribution Company (KEDCO)",
       "email": "customercare@kedco.ng",
       "address": "Kano State",
-      "sector": ["electricity"]
+      "sector": [
+        "electricity"
+      ]
     },
     {
       "id": "abuja_disco",
       "org": "Abuja Electricity Distribution Company (AEDC)",
       "email": "customercare@abujaelectricity.com",
       "address": "Abuja, Nigeria",
-      "sector": ["electricity"]
+      "sector": [
+        "electricity"
+      ]
     },
     {
       "id": "ibedc",
       "org": "Ibadan Electricity Distribution Company (IBEDC)",
       "email": "customercare@ibedc.com",
       "address": "Ibadan, Nigeria",
-      "sector": ["electricity"]
+      "sector": [
+        "electricity"
+      ]
     }
   ],
-
   "health_agencies": [
     {
       "id": "nhis",
       "org": "National Health Insurance Authority (NHIA/NHIS)",
       "email": "info@nhis.gov.ng",
       "address": "NHIA HQ, Abuja",
-      "sector": ["health_insurance"]
+      "sector": [
+        "health_insurance"
+      ]
     },
     {
       "id": "ncdc",
       "org": "Nigeria Centre for Disease Control (NCDC)",
       "email": "info@ncdc.gov.ng",
       "address": "Plot 801, Ebitu Ukiwe St, Jabi, Abuja",
-      "sector": ["public_health"]
+      "sector": [
+        "public_health"
+      ]
     },
     {
       "id": "fmc",
       "org": "Federal Medical Centres (FMC) - Nationwide",
       "email": "",
       "address": "Various locations nationwide",
-      "sector": ["health"]
+      "sector": [
+        "health"
+      ]
     }
   ],
-
   "education_bodies": [
     {
       "id": "nbte",
       "org": "National Board for Technical Education (NBTE)",
       "email": "info@nbte.gov.ng",
       "address": "No. 1, Ebony Road, Barnawa, Kaduna",
-      "sector": ["education"]
+      "sector": [
+        "education"
+      ]
     },
     {
       "id": "nuc",
       "org": "National Universities Commission (NUC)",
-      "email": "info@nuc.edu.ng",      "address": "26 Aguiyi Ironsi Street, Maitama, Abuja",
-      "sector": ["education"]
+      "email": "info@nuc.edu.ng",
+      "address": "26 Aguiyi Ironsi Street, Maitama, Abuja",
+      "sector": [
+        "education"
+      ]
     },
     {
       "id": "national_teachers_council",
       "org": "Teachers Registration Council of Nigeria (TRCN)",
       "email": "info@trcn.gov.ng",
       "address": "Abuja",
-      "sector": ["education"]
+      "sector": [
+        "education"
+      ]
     }
   ],
-
   "civil_rights_ngos": [
     {
       "id": "serap",
       "org": "Socio-Economic Rights and Accountability Project (SERAP)",
       "email": "serap@serap-nigeria.org",
       "address": "Ikeja, Lagos",
-      "sector": ["human_rights", "advocacy"]
+      "sector": [
+        "human_rights",
+        "advocacy"
+      ]
     },
     {
       "id": "yiaga",
       "org": "YIAGA Africa",
       "email": "info@yiaga.org",
       "address": "Abuja",
-      "sector": ["democracy", "rights"]
+      "sector": [
+        "democracy",
+        "rights"
+      ]
     },
     {
       "id": "budgit",
       "org": "BudgIT Foundation",
       "email": "info@yourbudgit.com",
       "address": "Lagos",
-      "sector": ["transparency"]
+      "sector": [
+        "transparency"
+      ]
     }
   ],
-
   "police_commands": [
     {
       "id": "fct_cp",
@@ -403,7 +510,6 @@
       "email": "",
       "state": "FCT"
     },
-
     {
       "id": "abia_cp",
       "org": "Commissioner of Police, Abia State Command",
@@ -657,7 +763,6 @@
       "state": "Zamfara"
     }
   ],
-
   "police_special_units": [
     {
       "id": "igp",
@@ -674,135 +779,132 @@
       "role": "oversight"
     }
   ],
-
   "international_bodies": [
     {
-      "id": "un_human_rights",
-      "org": "United Nations Human Rights Council (UNHRC)",
-      "address": "Palais des Nations, Geneva, Switzerland",
-      "email": "",
-      "category": "human_rights"
+      "id": "us_congress_house",
+      "org": "US House Foreign Affairs Committee",
+      "email": "hfca@mail.house.gov",
+      "address": "House Committee on Foreign Affairs, Washington, D.C., USA",
+      "category": "international"
     },
     {
-      "id": "un_special_rapporteur_torture",
-      "org": "UN Special Rapporteur on Torture",
-      "address": "Office of the High Commissioner for Human Rights, Geneva",
-      "email": "",
-      "category": "human_rights"
+      "id": "us_congress_hr",
+      "org": "US Human Rights Subcommittee",
+      "email": "globalHR@mail.house.gov",
+      "address": "Subcommittee on Global Human Rights, Washington, D.C., USA",
+      "category": "international"
     },
     {
-      "id": "un_special_rapporteur_extrajudicial",
-      "org": "UN Special Rapporteur on Extrajudicial Killings",
-      "address": "United Nations Office, Geneva",
-      "email": "",
-      "category": "human_rights"
+      "id": "us_congress_senate",
+      "org": "US Senate Foreign Relations Committee",
+      "email": "foreign_relations@foreign.senate.gov",
+      "address": "Senate Foreign Relations Committee, Washington, D.C., USA",
+      "category": "international"
     },
     {
-      "id": "un_special_rapporteur_judges",
-      "org": "UN Special Rapporteur on Independence of Judges & Lawyers",
-      "address": "OHCHR, Geneva, Switzerland",
-      "email": "",
-      "category": "judicial"
-    },
-
-    {
-      "id": "ecowas_court",
-      "org": "ECOWAS Community Court of Justice",
-      "address": "No. 10 Dar es Salaam Street, Wuse II, Abuja",
-      "email": "",
-      "category": "human_rights"
+      "id": "uk_parliament_petitions",
+      "org": "UK Parliament Petitions Committee",
+      "email": "petitionscommittee@parliament.uk",
+      "address": "UK Parliament, London, UK",
+      "category": "international"
     },
     {
-      "id": "ecowas_commission",
-      "org": "ECOWAS Commission – Political Affairs, Peace & Security",
-      "address": "101 Yakubu Gowon Crescent, Asokoro, Abuja",
-      "email": "",
-      "category": "regional"
-    },
-
-    {
-      "id": "au_human_rights",
-      "org": "African Commission on Human & Peoples' Rights (ACHPR)",
-      "address": "Banjul, The Gambia",
-      "email": "",
-      "category": "human_rights"
+      "id": "uk_parliament_fac",
+      "org": "UK Foreign Affairs Committee",
+      "email": "faccom@parliament.uk",
+      "address": "UK Parliament, London, UK",
+      "category": "international"
     },
     {
-      "id": "au_peace_security",
-      "org": "African Union Peace & Security Council",
-      "address": "Addis Ababa, Ethiopia",
-      "email": "",
-      "category": "regional"
+      "id": "eu_parliament_droi",
+      "org": "EU Parliament Subcommittee on Human Rights (DROI)",
+      "email": "droi-secretariat@europarl.europa.eu",
+      "address": "European Parliament, Brussels, Belgium",
+      "category": "international"
     },
     {
-      "id": "eu_human_rights",
-      "org": "European Union – Directorate for Human Rights",
-      "address": "Brussels, Belgium",
-      "email": "",
-      "category": "international_policy"
+      "id": "eu_eeas_hr",
+      "org": "European External Action Service - Human Rights",
+      "email": "humanrights@eeas.europa.eu",
+      "address": "EEAS Headquarters, Brussels, Belgium",
+      "category": "international"
     },
     {
-      "id": "eu_external_action",
-      "org": "European External Action Service (EEAS) – Human Rights Division",
-      "address": "Brussels, Belgium",
-      "email": "",
-      "category": "international_policy"
+      "id": "au_paps",
+      "org": "African Union - Peace & Security Department",
+      "email": "pa@africa-union.org",
+      "address": "African Union Commission, Addis Ababa, Ethiopia",
+      "category": "international"
     },
     {
-      "id": "uk_parliament_human_rights",
-      "org": "UK Parliament – Joint Committee on Human Rights",
-      "address": "London, United Kingdom",
-      "email": "",
-      "category": "foreign_government"
+      "id": "achpr",
+      "org": "African Commission on Human & Peoples’ Rights",
+      "email": "achpr@achpr.org",
+      "address": "31 Bijilo Annex Layout, Banjul, The Gambia",
+      "category": "international"
     },
     {
-      "id": "uk_foreign_affairs_committee",
-      "org": "UK House of Commons – Foreign Affairs Committee",
-      "address": "London, United Kingdom",
+      "id": "icpc",
+      "org": "Independent Corrupt Practices and Other Related Offences Commission",
       "email": "",
-      "category": "foreign_government"
+      "address": "ICPC Headquarters, Abuja, Nigeria",
+      "category": "international"
     },
     {
-      "id": "us_house_foreign_affairs",
-      "org": "US House Committee on Foreign Affairs",
-      "address": "Washington, D.C., USA",
+      "id": "nemsa",
+      "org": "Nigerian Electricity Management Services Agency (NEMSA)",
       "email": "",
-      "category": "foreign_government"
+      "address": "NEMSA Headquarters, Abuja, Nigeria",
+      "category": "international"
     },
     {
-      "id": "us_senate_foreign_relations",
-      "org": "US Senate Committee on Foreign Relations",
-      "address": "Washington, D.C., USA",
+      "id": "psn",
+      "org": "Pharmaceutical Society of Nigeria",
       "email": "",
-      "category": "foreign_government"
+      "address": "PSN National Secretariat, Lagos, Nigeria",
+      "category": "international"
     },
     {
-      "id": "us_human_rights_subcommittee",
-      "org": "US House Human Rights Subcommittee",
-      "address": "Washington, D.C., USA",
+      "id": "nafdac",
+      "org": "National Agency for Food and Drug Administration and Control (NAFDAC)",
       "email": "",
-      "category": "human_rights"
+      "address": "NAFDAC Headquarters, Abuja, Nigeria",
+      "category": "international"
     },
     {
-      "id": "interpol",
-      "org": "INTERPOL National Central Bureau",
-      "address": "Lyon, France (with NCB Abuja office)",
+      "id": "force_cid_homicide",
+      "org": "Force Criminal Investigation Department – Homicide Section",
       "email": "",
-      "category": "law_enforcement"
+      "address": "Nigeria Police Force CID, Abuja, Nigeria",
+      "category": "international"
     },
     {
-      "id": "amnesty_international",
-      "org": "Amnesty International – Research & Advocacy",
-      "address": "London, United Kingdom",
-      "email": "",
-      "category": "ngo"
+      "id": "ecowas_pps",
+      "org": "ECOWAS Political Affairs, Peace & Security",
+      "email": "ppsd@ecowas.int",
+      "address": "ECOWAS Commission, Abuja, Nigeria",
+      "category": "international"
     },
     {
-      "id": "human_rights_watch",
-      "org": "Human Rights Watch",
-      "address": "New York, USA",
+      "id": "ecowas_info",
+      "org": "ECOWAS Commission",
+      "email": "info@ecowas.int",
+      "address": "ECOWAS Headquarters, Abuja, Nigeria",
+      "category": "international"
+    },
+    {
+      "id": "un_bodies",
+      "org": "",
       "email": "",
-      "category": "ngo"
+      "address": "",
+      "category": "international"
+    },
+    {
+      "id": "media",
+      "org": "",
+      "email": "",
+      "address": "",
+      "category": "international"
     }
   ]
 }

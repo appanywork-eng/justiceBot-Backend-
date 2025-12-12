@@ -1,0 +1,905 @@
+// core/aiRouting.js (PDPS Option B - All sectors, HARD routing rules)
+// ---------------------------------------------------------------
+const fs = require("fs");
+const path = require("path");
+const OpenAI = require("openai");
+
+// ---------------------------------------------------------------
+// 1) OpenAI client (optional - app works without it)
+// ---------------------------------------------------------------
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn("[aiRouting] OPENAI_API_KEY missing. Offline routing only.");
+    return null;
+  }
+  try {
+    return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  } catch (e) {
+    console.warn("[aiRouting] OpenAI init failed. Offline routing only.");
+    return null;
+  }
+}
+
+const openai = getOpenAIClient();
+
+// ---------------------------------------------------------------
+// 2) Load institutions.json (IMPORTANT: core folder -> ../data)
+// ---------------------------------------------------------------
+const institutionsPath = path.join(__dirname, "..", "data", "institutions.json");
+
+let institutions = {};
+try {
+  institutions = JSON.parse(fs.readFileSync(institutionsPath, "utf8"));
+  console.log("[aiRouting] institutions.json loaded OK");
+} catch (err) {
+  console.error("❌ [aiRouting] ERROR loading institutions.json:", err.message);
+  institutions = {};
+}
+
+// safe array getter
+function getArray(key) {
+  const arr = institutions[key];
+  return Array.isArray(arr) ? arr : [];
+}
+
+// ---------------------------------------------------------------
+// 3) Helpers
+// ---------------------------------------------------------------
+function norm(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function textIncludesAny(text, kws) {
+  const t = norm(text);
+  return (kws || []).some((k) => t.includes(norm(k)));
+}
+
+function splitEmails(emailField) {
+  if (!emailField) return [];
+  return String(emailField)
+    .split(/[;,]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function toInstShape(x) {
+  if (!x) return null;
+  // tolerate any existing schemas
+  return {
+    id: x.id || x.key || x.slug || x.org || x.name,
+    org: x.org || x.name || "",
+    title: x.title || "",
+    email: x.email || "",
+    address: x.address || "",
+    category: x.category || "",
+    sector: x.sector || "",
+    state: x.state || "",
+    keywords: Array.isArray(x.keywords) ? x.keywords : [],
+  };
+}
+
+// push unique by normalized org OR id
+
+function pushUnique(list, inst) {
+  if (!Array.isArray(list)) list = [];
+  if (!inst || !inst.org) return;
+
+  const id = inst.id ? norm(inst.id) : "";
+  const orgKey = norm(inst.org);
+  if (!orgKey) return;
+
+  const exists = list.some(x => {
+    if (!x) return false;
+    const xid = x.id ? norm(x.id) : "";
+    const xorg = x.org ? norm(x.org) : "";
+    return (id && xid && id === xid) || (xorg && xorg === orgKey);
+  });
+
+  if (!exists) list.push(inst);
+}
+
+function dedupeAndRemove(list, removeOrgs = []) {
+  const out = [];
+  const removeKeys = (removeOrgs || []).map((x) => norm(x)).filter(Boolean);
+
+  for (const item of list || []) {
+    if (!item || !item.org) continue;
+    const k = norm(item.org);
+    if (!k) continue;
+    if (removeKeys.includes(k)) continue;
+    pushUnique(out, item);
+  }
+  return out;
+}
+
+// Try match institution from array by keywords appearing in description or address
+function bestMatchFromArray(arr, description, userAddress) {
+  const d = norm(description);
+  const a = norm(userAddress);
+
+  let best = null;
+  let bestScore = 0;
+
+  for (const raw of arr || []) {
+    const inst = toInstShape(raw);
+    const kws = inst.keywords || [];
+    let score = 0;
+
+    // score keyword hits
+    for (const kw of kws) {
+      const k = norm(kw);
+      if (!k) continue;
+      if (d.includes(k)) score += 3;
+      if (a.includes(k)) score += 2;
+    }
+
+    // also score org name hits
+    const org = norm(inst.org);
+    if (org && d.includes(org)) score += 4;
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = inst;
+    }
+  }
+
+  return bestScore > 0 ? best : null;
+}
+
+// Find known “watchdogs” from json if present, otherwise fallback by org text
+function findWatchdogByIdOrOrg(idsOrNames) {
+  const pools = Object.values(institutions).filter(Array.isArray).flat();
+  const targets = (idsOrNames || []).map((x) => norm(x));
+
+  for (const item of pools) {
+    const inst = toInstShape(item);
+    const id = norm(inst.id || "");
+    const org = norm(inst.org || "");
+    if (targets.some(t =>
+    t &&
+    ((id === t) ||
+     (org === t) ||
+     (id && id.includes(t)) ||
+     (org && org.includes(t)))
+  )) return inst;
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------
+// 4) Sector detection (broad)
+// ---------------------------------------------------------------
+
+/* ============================================================
+ * INTERNATIONAL / FOREIGN CASE DETECTOR (HARD RULE)
+ * ============================================================
+ */
+function detectInternational(description = "") {
+  const text = description.toLowerCase();
+
+  const triggers = [
+    "embassy", "high commission", "foreign", "international",
+    "united states", "usa", "uk", "british", "canada",
+    "european union", "eu", "germany", "france",
+    "china", "india", "uae", "dubai",
+    "un", "united nations", "human rights council",
+    "amnesty", "human rights watch",
+    "deportation", "immigration abuse", "visa denial",
+    "political detention", "extrajudicial",
+    "cross border", "diaspora",
+    "facebook", "meta", "google", "x.com", "twitter",
+    "tiktok", "binance", "crypto exchange"
+  ];
+
+  return triggers.some(k => text.includes(k));
+}
+
+
+function detectSector(description) {
+  const text = norm(description);
+
+  const map = {
+    police: [
+      "police",
+      "npf",
+      "sars",
+      "swat",
+      "dpo",
+      "checkpoint",
+      "unlawful arrest",
+      "illegal arrest",
+      "detention",
+      "cell",
+      "bail",
+      "extortion",
+      "brutality",
+      "kidnap",
+      "kidnapping",
+      "force headquarters",
+      "commissioner of police",
+      "inspector general",
+      "igp",
+    ],
+    power: [
+      "electricity",
+      "light",
+      "power",
+      "disco",
+      "estimated billing",
+      "overbilling",
+      "meter",
+      "token",
+      "transformer",
+      "nerc",
+      "aedc",
+      "ikedc",
+      "ekedc",
+      "ibedc",
+      "jedc",
+      "phed",
+      "kedco",
+    ],
+    banking: [
+      "bank",
+      "atm",
+      "pos",
+      "transfer",
+      "reversal",
+      "unauthorized debit",
+      "fraud",
+      "scam",
+      "chargeback",
+      "mobile banking",
+      "internet banking",
+      "loan",
+      "card",
+      "debit",
+      "credit",
+    ],
+    telecom: [
+      "mtn",
+      "glo",
+      "airtel",
+      "9mobile",
+      "network",
+      "data",
+      "airtime",
+      "sim",
+      "nin",
+      "ussd",
+      "call drop",
+      "broadband",
+      "isp",
+      "router",
+      "ncc",
+    ],
+    housing: [
+      "landlord",
+      "tenant",
+      "rent",
+      "eviction",
+      "quit notice",
+      "demolition",
+      "task force",
+      "development control",
+      "urban development",
+      "housing authority",
+      "estate",
+      "property",
+      "land",
+      "fcta",
+      "fcda",
+    ],
+    health: [
+      "hospital",
+      "clinic",
+      "doctor",
+      "nurse",
+      "medical negligence",
+      "malpractice",
+      "nhis",
+      "hmo",
+      "surgery",
+      "pharmacy",
+      "drug",
+    ],
+    education: [
+      "school",
+      "university",
+      "polytechnic",
+      "college",
+      "teacher",
+      "lecturer",
+      "student",
+      "jamb",
+      "waec",
+      "neco",
+      "admission",
+      "fees",
+      "tuition",
+    ],
+    labour: [
+      "salary",
+      "wages",
+      "promotion",
+      "arrears",
+      "pension",
+      "gratuity",
+      "dismissal",
+      "termination",
+      "suspension",
+      "overtime",
+      "labour",
+      "union",
+    ],
+  };
+
+  for (const [sector, kws] of Object.entries(map)) {
+    if (textIncludesAny(text, kws)) return sector;
+  }
+  return "general";
+}
+
+// ---------------------------------------------------------------
+
+
+// ================= INTERNATIONAL ROUTING (STRICT) =================
+
+// Detect foreign jurisdiction keywords
+function detectJurisdiction(text = "", addr = "") {
+  const t = norm(text + " " + addr);
+
+  if (/(usa|united states|america|california|new york|texas)/.test(t)) return "us";
+  if (/(uk|united kingdom|england|london|britain)/.test(t)) return "uk";
+  if (/(eu|european union|europe|brussels)/.test(t)) return "eu";
+
+  return null;
+}
+
+// International regulators (fallback-safe)
+function getInternationalRegulators(jurisdiction) {
+  if (jurisdiction === "us") {
+    return {
+      primary: toInstShape({
+        id: "us-ftc",
+        org: "Federal Trade Commission (FTC)",
+        title: "The Chair",
+        address: "Washington, D.C., USA",
+        category: "regulator",
+        sector: "international"
+      }),
+      cc: [
+        toInstShape({
+          id: "us-doj",
+          org: "U.S. Department of Justice",
+          title: "The Attorney General",
+          address: "Washington, D.C., USA",
+          category: "law",
+          sector: "international"
+        })
+      ]
+    };
+  }
+
+  if (jurisdiction === "uk") {
+    return {
+      primary: toInstShape({
+        id: "uk-fca",
+        org: "Financial Conduct Authority (FCA)",
+        title: "The Chief Executive",
+        address: "London, United Kingdom",
+        category: "regulator",
+        sector: "international"
+      }),
+      cc: [
+        toInstShape({
+          id: "uk-cma",
+          org: "Competition and Markets Authority (CMA)",
+          title: "The Chief Executive",
+          address: "London, United Kingdom",
+          category: "regulator",
+          sector: "international"
+        })
+      ]
+    };
+  }
+
+  if (jurisdiction === "eu") {
+    return {
+      primary: toInstShape({
+        id: "eu-dgcomp",
+        org: "European Commission – DG Competition",
+        title: "The Commissioner",
+        address: "Brussels, Belgium",
+        category: "regulator",
+        sector: "international"
+      }),
+      cc: [
+        toInstShape({
+          id: "echr",
+          org: "European Court of Human Rights",
+          title: "The Registrar",
+          address: "Strasbourg, France",
+          category: "court",
+          sector: "international"
+        })
+      ]
+    };
+  }
+
+  return null;
+}
+
+// ================= END INTERNATIONAL ROUTING =================
+// 5) HARD RULE routing (the main thing you requested)
+// ---------------------------------------------------------------
+function buildHardRoute(sector, description, userAddress = "") {
+  const d = norm(description);
+  const addr = norm(userAddress);
+
+  // Common ALWAYS watchdogs where admin injustice exists
+  const PCC =
+    findWatchdogByIdOrOrg(["pcc", "public complaints commission"]) ||
+    toInstShape({
+      id: "pcc",
+      org: "Public Complaints Commission",
+      title: "The Honourable Chief Commissioner",
+      email: "", // keep empty if not 100% verified
+      address: "Abuja, Nigeria.",
+      category: "watchdog",
+      sector: "watchdog",
+    });
+
+  const NHRC =
+    findWatchdogByIdOrOrg(["nhrc", "national human rights commission"]) ||
+    toInstShape({
+      id: "nhrc",
+      org: "National Human Rights Commission",
+      title: "The Executive Secretary",
+      email: "",
+      address: "Abuja, Nigeria.",
+      category: "watchdog",
+      sector: "watchdog",
+    });
+
+  // Sector authorities (try from json first)
+  const PSC = findWatchdogByIdOrOrg(["psc", "police service commission"]);
+  const IGP = findWatchdogByIdOrOrg(["igp", "inspector-general of police"]);
+  const NERC = findWatchdogByIdOrOrg(["nerc"]);
+  const FMPower = findWatchdogByIdOrOrg([
+    "federal ministry of power",
+    "ministry of power",
+  ]);
+  const FCCPC = findWatchdogByIdOrOrg(["fccpc"]);
+  const CBN = findWatchdogByIdOrOrg(["cbn", "central bank of nigeria"]);
+  const NDIC = findWatchdogByIdOrOrg(["ndic"]);
+  const NCC = findWatchdogByIdOrOrg(["ncc", "nigerian communications commission"]);
+  const SERVICOM = findWatchdogByIdOrOrg(["servicom"]);
+
+  // default output
+  const out = { primary: null, through: null, ccList: [] };
+
+  // ---------------- POLICE (STRICT) ----------------
+  if (sector === "police") {
+    // 1) Primary MUST be State CP where incident happened
+    const policeStates = getArray("police_states"); // your institutions.json MUST have this array
+    const statePrimary =
+      bestMatchFromArray(policeStates, description, userAddress) || null;
+
+    // fallback if no state matched
+    out.primary =
+      statePrimary ||
+      toInstShape({
+        id: "cp_state",
+        org: "Commissioner of Police, State Police Command",
+        title: "The Commissioner of Police",
+        email: "",
+        address: "State Police Command Headquarters, Nigeria.",
+        category: "police",
+        sector: "police",
+      });
+
+    // 2) Through MUST be IGP
+    out.through =
+      IGP ||
+      toInstShape({
+        id: "igp",
+        org: "Inspector-General of Police, Nigeria Police Force",
+        title: "The Inspector-General of Police",
+        email: "",
+        address: "Force Headquarters, Abuja, Nigeria.",
+        category: "police",
+        sector: "police",
+      });
+
+    // 3) CC MUST ALWAYS include: PSC + PCC + NHRC
+    if (PSC) pushUnique(out.ccList, toInstShape(PSC));
+    pushUnique(out.ccList, PCC);
+    pushUnique(out.ccList, NHRC);
+
+    // Situational extras (only if keywords show)
+    if (d.includes("bribe") || d.includes("corruption") || d.includes("extortion")) {
+      const EFCC = findWatchdogByIdOrOrg(["efcc"]);
+      const ICPC = findWatchdogByIdOrOrg(["icpc"]);
+      if (EFCC) pushUnique(out.ccList, toInstShape(EFCC));
+      if (ICPC) pushUnique(out.ccList, toInstShape(ICPC));
+    }
+
+    // Remove duplicates of primary/through from CC
+    out.ccList = dedupeAndRemove(out.ccList, [out.primary.org, out.through.org]);
+    return out;
+  }
+
+  // ---------------- POWER / DISCO (STRICT) ----------------
+  if (sector === "power") {
+    const discos = getArray("discos");
+    const discoPrimary = bestMatchFromArray(discos, description, userAddress);
+
+    out.primary =
+      discoPrimary ||
+      toInstShape({
+        id: "disco_generic",
+        org: "Electricity Distribution Company (DISCO)",
+        title: "The Managing Director",
+        email: "",
+        address: "Nigeria.",
+        category: "power",
+        sector: "power",
+      });
+
+    out.through =
+      (NERC ? toInstShape(NERC) : null) ||
+      toInstShape({
+        id: "nerc",
+        org: "Nigerian Electricity Regulatory Commission (NERC)",
+        title: "The Chairman/CEO",
+        email: "",
+        address: "Abuja, Nigeria.",
+        category: "regulator",
+        sector: "power",
+      });
+
+    // CC: FMPower + PCC + FCCPC (+ SERVICOM sometimes)
+    if (FMPower) pushUnique(out.ccList, toInstShape(FMPower));
+    pushUnique(out.ccList, PCC);
+    if (FCCPC) pushUnique(out.ccList, toInstShape(FCCPC));
+
+    if (SERVICOM && (d.includes("ministry") || d.includes("agency") || d.includes("mda"))) {
+      pushUnique(out.ccList, toInstShape(SERVICOM));
+    }
+
+    out.ccList = dedupeAndRemove(out.ccList, [out.primary.org, out.through.org]);
+    return out;
+  }
+
+  // ---------------- BANKING (STRICT) ----------------
+  if (sector === "banking") {
+    const bankBranches = getArray("bank_branches");
+    const bankHQs = getArray("bank_hq");
+
+    // Primary: bank branch involved (best match); fallback generic
+    const branchPrimary = bestMatchFromArray(bankBranches, description, userAddress);
+
+    out.primary =
+      branchPrimary ||
+      toInstShape({
+        id: "bank_branch_generic",
+        org: "Bank Branch (Customer Service / Branch Manager)",
+        title: "The Branch Manager",
+        email: "",
+        address: "Nigeria.",
+        category: "banking",
+        sector: "banking",
+      });
+
+    // Through: bank HQ (try match same bank name)
+    let hq = null;
+    if (branchPrimary) {
+      const branchOrg = norm(branchPrimary.org);
+      hq =
+        bankHQs
+          .map(toInstShape)
+          .find((x) => x?.org && branchOrg && branchOrg.includes(norm(x.org))) || null;
+    }
+    if (!hq) hq = bestMatchFromArray(bankHQs, description, userAddress);
+
+    out.through =
+      hq ||
+      toInstShape({
+        id: "bank_hq_generic",
+        org: "Bank Headquarters (Customer Service / Compliance Unit)",
+        title: "The Managing Director/CEO",
+        email: "",
+        address: "Nigeria.",
+        category: "banking",
+        sector: "banking",
+      });
+
+    // CC: CBN + NDIC + PCC + FCCPC (ALWAYS for banking consumer harm)
+    if (CBN) pushUnique(out.ccList, toInstShape(CBN));
+    if (NDIC) pushUnique(out.ccList, toInstShape(NDIC));
+    pushUnique(out.ccList, PCC);
+    if (FCCPC) pushUnique(out.ccList, toInstShape(FCCPC));
+
+    // situational extras
+    if (d.includes("fraud") || d.includes("scam")) {
+      const EFCC = findWatchdogByIdOrOrg(["efcc"]);
+      if (EFCC) pushUnique(out.ccList, toInstShape(EFCC));
+    }
+
+    out.ccList = dedupeAndRemove(out.ccList, [out.primary.org, out.through.org]);
+    return out;
+  }
+
+  // ---------------- TELECOM (STRICT-ish) ----------------
+  if (sector === "telecom") {
+    const telcos = getArray("telcos");
+    const telcoPrimary = bestMatchFromArray(telcos, description, userAddress);
+
+    out.primary =
+      telcoPrimary ||
+      toInstShape({
+        id: "telco_generic",
+        org: "Telecom Operator (Customer Care)",
+        title: "Customer Care/Regional Manager",
+        email: "",
+        address: "Nigeria.",
+        category: "telecom",
+        sector: "telecom",
+      });
+
+    out.through =
+      (NCC ? toInstShape(NCC) : null) ||
+      toInstShape({
+        id: "ncc",
+        org: "Nigerian Communications Commission (NCC)",
+        title: "The Executive Vice Chairman/CEO",
+        email: "",
+        address: "Abuja, Nigeria.",
+        category: "regulator",
+        sector: "telecom",
+      });
+
+    // CC: PCC + FCCPC always for consumer injustice; NHRC only if rights language
+    pushUnique(out.ccList, PCC);
+    if (FCCPC) pushUnique(out.ccList, toInstShape(FCCPC));
+    if (textIncludesAny(d, ["threat", "harassment", "intimidation", "privacy", "dox", "leak"])) {
+      pushUnique(out.ccList, NHRC);
+    }
+
+    out.ccList = dedupeAndRemove(out.ccList, [out.primary.org, out.through.org]);
+    return out;
+  }
+
+  // ---------------- HOUSING / EVICTION / DEMOLITION (STRICT) ----------------
+  if (sector === "housing") {
+    const housingAuthorities = getArray("housing_authorities");
+    const devControl = getArray("development_control");
+    const taskForces = getArray("task_forces");
+
+    const primary =
+      bestMatchFromArray(housingAuthorities, description, userAddress) ||
+      bestMatchFromArray(devControl, description, userAddress) ||
+      bestMatchFromArray(taskForces, description, userAddress);
+
+    out.primary =
+      primary ||
+      toInstShape({
+        id: "housing_generic",
+        org: "State/FCT Ministry of Housing / Urban Development / Development Control",
+        title: "The Honourable Commissioner / Director",
+        email: "",
+        address: "Nigeria.",
+        category: "housing",
+        sector: "housing",
+      });
+
+    // Through: if FCT keywords -> FCTA; otherwise state government oversight (kept generic unless you have ids)
+    const fcta = findWatchdogByIdOrOrg(["fcta", "federal capital territory administration"]);
+    if (addr.includes("abuja") || d.includes("abuja") || d.includes("fct")) {
+      out.through =
+        (fcta ? toInstShape(fcta) : null) ||
+        toInstShape({
+          id: "fcta",
+          org: "Federal Capital Territory Administration (FCTA)",
+          title: "The Honourable Minister of FCT",
+          email: "",
+          address: "Abuja, Nigeria.",
+          category: "government",
+          sector: "housing",
+        });
+    } else {
+      out.through = toInstShape({
+        id: "state_gov",
+        org: "State Government (Office of the Governor / SSG)",
+        title: "",
+        email: "",
+        address: "Relevant State, Nigeria.",
+        category: "government",
+        sector: "housing",
+      });
+    }
+
+    // CC: PCC ALWAYS (administrative injustice) + NHRC if eviction/demolition/force
+    pushUnique(out.ccList, PCC);
+
+    if (textIncludesAny(d, ["demolition", "eviction", "task force", "assault", "violence", "gun", "threat"])) {
+      pushUnique(out.ccList, NHRC);
+      // if force/police present, include PSC & IGP (but as CC, not through)
+      if (textIncludesAny(d, ["police", "npf", "sars", "swat"])) {
+        if (PSC) pushUnique(out.ccList, toInstShape(PSC));
+        if (IGP) pushUnique(out.ccList, toInstShape(IGP));
+      }
+    }
+
+    if (FCCPC && textIncludesAny(d, ["developer", "estate", "service charge", "fraud", "scam"])) {
+      pushUnique(out.ccList, toInstShape(FCCPC));
+    }
+
+    out.ccList = dedupeAndRemove(out.ccList, [out.primary.org, out.through.org]);
+    return out;
+  }
+
+  // ---------------- GENERAL (fallback) ----------------
+  // Primary: PCC for admin injustice; Through: relevant Ministry/Regulator if AI says; CC: situational NHRC
+  out.primary = PCC;
+  out.through = null;
+
+  if (textIncludesAny(d, ["torture", "rape", "sexual", "killing", "threat to life", "unlawful detention", "brutality"])) {
+    pushUnique(out.ccList, NHRC);
+  }
+
+  out.ccList = dedupeAndRemove(out.ccList, [out.primary.org]);
+  return out;
+}
+
+// ---------------------------------------------------------------
+// 6) Optional OpenAI assist (ONLY to help pick sector or entity)
+// BUT HARD RULES STILL OVERRIDE OUTPUT STRUCTURE.
+// ---------------------------------------------------------------
+async function openaiAssistPickSector(description) {
+  if (!openai) return null;
+
+  try {
+    const resp = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.1,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Classify the complaint into one sector word only from: police, power, banking, telecom, housing, health, education, labour, general. Return ONLY the one word.",
+        },
+        { role: "user", content: description || "" },
+      ],
+    });
+
+    const txt = (resp.choices?.[0]?.message?.content || "").trim().toLowerCase();
+    const allowed = ["police", "power", "banking", "telecom", "housing", "health", "education", "labour", "general"];
+    if (allowed.includes(txt)) return txt;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------
+// 7) Main exported function: detectHybrid
+// Server uses this and then adds watchdogs etc if desired,
+// BUT you asked strict rules, so this already includes them.
+// ---------------------------------------------------------------
+async function detectHybrid(description, userAddress = "") {
+  // ================= INTERNATIONAL ROUTING RULE =================
+  const isInternational = detectInternational(description);
+
+  const offlineSector = detectSector(description);
+  const aiSector = await openaiAssistPickSector(description);
+
+  // If OpenAI suggests a sector, use it only if it’s in our allowed map
+  const sector = aiSector || offlineSector || "general";
+
+  const route = buildHardRoute(sector, description, userAddress);
+  // -------- International override (if detected) ----------
+  const jurisdiction = detectJurisdiction(description, userAddress);
+  if (jurisdiction) {
+    const intl = getInternationalRegulators(jurisdiction);
+    if (intl) {
+      route.primary = intl.primary;
+      intl.cc.forEach(x => pushUnique(route.cclist, x));
+      pushUnique(route.cclist, PCC); // ALWAYS keep PCC for Nigerian users
+    }
+  }
+
+
+  // final sanity: ensure structure always safe
+  const primary = route.primary && route.primary.org ? route.primary : null;
+  const through = route.through && route.through.org ? route.through : null;
+  let ccList = Array.isArray(route.ccList) ? route.ccList : [];
+
+  // remove duplicates again, hard
+  const remove = [];
+  if (primary?.org) remove.push(primary.org);
+  if (through?.org) remove.push(through.org);
+  ccList = dedupeAndRemove(ccList, remove);
+
+// ================= FINAL MANDATORY CC ENFORCEMENT (ABSOLUTE) =================
+// Nothing below this point may remove CCs
+
+
+try {
+  // HARD CORE REGULATORS (absolute, never missing)
+
+  const CBNx = {
+    id: "cbn",
+    org: "Central Bank of Nigeria (CBN)",
+    title: "Governor",
+    address: "Abuja, Nigeria",
+    category: "regulator",
+    sector: "banking"
+  };
+
+  const NDICx = {
+    id: "ndic",
+    org: "Nigeria Deposit Insurance Corporation (NDIC)",
+    title: "Managing Director",
+    address: "Abuja, Nigeria",
+    category: "regulator",
+    sector: "banking"
+  };
+
+  const FCCPCx = {
+    id: "fccpc",
+    org: "Federal Competition and Consumer Protection Commission (FCCPC)",
+    title: "Executive Vice Chairman",
+    address: "Abuja, Nigeria",
+    category: "regulator",
+    sector: "consumer"
+  };
+
+  const FMPx = {
+    id: "fmpower",
+    org: "Federal Ministry of Power",
+    title: "Honourable Minister",
+    address: "Abuja, Nigeria",
+    category: "ministry",
+    sector: "power"
+  };
+
+  if (sector === "banking") {
+    pushUnique(ccList, toInstShape(CBNx));
+    pushUnique(ccList, toInstShape(NDICx));
+    pushUnique(ccList, toInstShape(FCCPCx));
+    pushUnique(ccList, PCC);
+  }
+
+  if (sector === "power") {
+    pushUnique(ccList, toInstShape(FMPx));
+    pushUnique(ccList, toInstShape(FCCPCx));
+    pushUnique(ccList, PCC);
+  }
+
+  ccList = dedupeAndRemove(ccList, []);
+} catch (e) {}
+
+
+
+  
+  // ===== FINAL HARD SAFETY =====
+  if (!Array.isArray(ccList)) ccList = [];
+  ccList = ccList.filter(x => x && x.org);
+
+  return {
+    primary,
+    through,
+    ccList,
+    sector,
+  };
+
+}
+
+module.exports = {
+  detectHybrid,
+};
