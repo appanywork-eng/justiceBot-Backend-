@@ -16,45 +16,35 @@ function safeRequire(path, fallback = {}) {
   try {
     return require(path);
   } catch (e) {
-    console.warn(`⚠️ Failed to load ${path} – using fallback`);
+    console.warn(`⚠️ Failed to load ${path} – using fallback: ${e.message}`);
     return fallback;
   }
 }
 
 // ================================
-// IMPORTS (CORRECTED)
+// IMPORTS (SAFE)
 // ================================
 const { detectHybrid } =
   safeRequire("./core/aiRouting", { detectHybrid: async () => ({}) });
 
 // helpers.js EXISTS
-const {
-  applyWatchdogs,
-  applySectorSupervisors,
-} = safeRequire("./core/helpers", {});
+const { applyWatchdogs, applySectorSupervisors } =
+  safeRequire("./core/helpers", {});
 
 // police.js EXISTS
-const {
-  refinePoliceInstitutions,
-} = safeRequire("./core/police", {});
+const { refinePoliceInstitutions } =
+  safeRequire("./core/police", {});
 
 // petitions.js EXISTS
-const {
-  buildPetition,
-  fallbackPetition,
-} = safeRequire("./core/petitions", {
-  buildPetition: async () =>
-    "Petition processing temporarily unavailable.",
-  fallbackPetition: () =>
-    "Petition processing temporarily unavailable.",
-});
+const { buildPetition, fallbackPetition } =
+  safeRequire("./core/petitions", {
+    buildPetition: async () => "Petition processing temporarily unavailable.",
+    fallbackPetition: () => "Petition processing temporarily unavailable.",
+  });
 
 // payments.js EXISTS
-const {
-  startFlutterwavePayment,
-  verifyFlutterwavePayment,
-  isVerified,
-} = safeRequire("./core/payments", {});
+const { startFlutterwavePayment, verifyFlutterwavePayment, isVerified } =
+  safeRequire("./core/payments", {});
 
 // openaiClient.js EXISTS
 const { isOpenAIReady } =
@@ -68,6 +58,45 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
+
+// ================================
+// HELPERS
+// ================================
+function pccFallbackInstitution() {
+  return {
+    org: "Public Complaints Commission",
+    title: "The Honourable Chief Commissioner",
+    address: "Nigeria",
+    category: "government",
+  };
+}
+
+function isValidInst(x) {
+  return x && typeof x === "object" && String(x.org || "").trim().length > 0;
+}
+
+function normalizeInst(x, fallbackOrg = "Institution") {
+  if (!x || typeof x !== "object") {
+    return { org: fallbackOrg, title: fallbackOrg, address: "Nigeria" };
+  }
+  return {
+    id: x.id,
+    org: String(x.org || fallbackOrg).trim(),
+    title: String(x.title || x.org || fallbackOrg).trim(),
+    email: String(x.email || "").trim(),
+    address: String(x.address || "Nigeria").trim(),
+    category: String(x.category || "").trim(),
+    state: x.state ? String(x.state) : undefined,
+  };
+}
+
+function normalizeCCList(arr) {
+  const out = Array.isArray(arr) ? arr : [];
+  return out
+    .filter((c) => c && typeof c === "object")
+    .map((c) => normalizeInst(c))
+    .filter((c) => c && c.org && String(c.org).trim());
+}
 
 // ================================
 // BASIC ROUTES
@@ -107,65 +136,69 @@ app.post("/generate-petition", async (req, res) => {
       description,
     };
 
-    // 🔐 AI routing (never crash)
+    // ✅ AI routing (never crash)
     let route = {};
     try {
-      route = await detectHybrid(
-        complainant.description,
-        complainant.address
-      );
+      route = await detectHybrid(complainant.description, complainant.address);
     } catch (e) {
-      console.error("AI routing failed:", e);
+      console.error("AI routing failed:", e?.message || e);
+      route = {};
     }
 
-    const sector = route?.sector || "general";
+    const sector = String(route?.sector || "general");
 
-    // Default institution fallback
+    // ✅ CRITICAL FIX:
+    // Build inst FROM route (if present), NOT PCC-first.
+    // PCC should only be used as final fallback.
     let inst = {
-      primary: {
-        org: "Public Complaints Commission",
-        title: "The Honourable Chief Commissioner",
-        address: "Nigeria",
-        category: "government",
-      },
-      through: null,
-      ccList: [],
+      primary: isValidInst(route?.primary) ? normalizeInst(route.primary) : null,
+      through: isValidInst(route?.through) ? normalizeInst(route.through) : null,
+      ccList: normalizeCCList(route?.ccList || route?.cc || []),
     };
 
-    // Apply routing helpers safely
+    // Final fallback: if routing didn't return a primary, use PCC
+    if (!isValidInst(inst.primary)) {
+      inst.primary = pccFallbackInstitution();
+    }
+
+    // Apply routing helpers safely (should NOT override the routed primary)
     try {
-      if (typeof applyWatchdogs === "function")
-        inst = applyWatchdogs(inst, route);
+      if (typeof applyWatchdogs === "function") {
+        inst = applyWatchdogs(inst, route) || inst;
+      }
+      if (typeof applySectorSupervisors === "function") {
+        inst = applySectorSupervisors(inst, route) || inst;
+      }
 
-      if (typeof applySectorSupervisors === "function")
-        inst = applySectorSupervisors(inst, route);
-
-      if (
-        sector === "police" &&
-        typeof refinePoliceInstitutions === "function"
-      ) {
-        inst = refinePoliceInstitutions(description, inst);
+      // Police refinement (optional)
+      if (sector === "police" && typeof refinePoliceInstitutions === "function") {
+        inst = refinePoliceInstitutions(description, inst) || inst;
       }
     } catch (e) {
-      console.error("Routing helpers error (ignored):", e);
+      console.error("Routing helpers error (ignored):", e?.message || e);
     }
 
     // Clean CC list
-    inst.ccList = (inst.ccList || []).filter(
-      (c) => c && c.org && String(c.org).trim()
-    );
+    inst.ccList = normalizeCCList(inst.ccList);
+
+    // Optional debug
+    if (String(process.env.DEBUG_ROUTING || "").toLowerCase() === "true") {
+      console.log("[routing] sector:", sector);
+      console.log("[routing] primary:", inst.primary?.org);
+      console.log("[routing] through:", inst.through?.org || null);
+      console.log("[routing] cc:", (inst.ccList || []).map((x) => x.org));
+    }
 
     // Build petition text
     let petitionText;
     try {
       petitionText = await buildPetition(complainant, inst);
     } catch (e) {
-      console.error("AI petition failed, using fallback:", e);
+      console.error("AI petition failed, using fallback:", e?.message || e);
       petitionText = fallbackPetition(complainant, inst);
     }
 
-    const petitionId =
-      "PD-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
+    const petitionId = "PD-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
 
     return res.status(200).json({
       ok: true,
@@ -178,7 +211,7 @@ app.post("/generate-petition", async (req, res) => {
       verified: false,
     });
   } catch (err) {
-    console.error("Error generating petition:", err);
+    console.error("Error generating petition:", err?.message || err);
     return res.status(500).json({
       ok: false,
       error: "Internal error.",
@@ -196,16 +229,17 @@ app.post("/pay", async (req, res) => {
     const amount = Number(req.body?.amount);
     const petitionId = String(req.body?.petitionId || "");
 
-    if (!petitionId)
+    if (!petitionId) {
       return res.status(400).json({ ok: false, error: "Missing petitionId." });
+    }
 
-    if (!amount || amount < 1000)
-      return res
-        .status(400)
-        .json({ ok: false, error: "Minimum petition fee is ₦1000." });
+    if (!amount || amount < 1000) {
+      return res.status(400).json({ ok: false, error: "Minimum petition fee is ₦1000." });
+    }
 
-    if (typeof startFlutterwavePayment !== "function")
+    if (typeof startFlutterwavePayment !== "function") {
       throw new Error("Payment service unavailable");
+    }
 
     const redirectUrl =
       (process.env.FLW_REDIRECT_URL || "") +
@@ -228,7 +262,7 @@ app.post("/pay", async (req, res) => {
       petitionId,
     });
   } catch (err) {
-    console.error("Payment error:", err);
+    console.error("Payment error:", err?.message || err);
     return res.status(500).json({
       ok: false,
       error: "Payment error.",
@@ -241,23 +275,26 @@ app.post("/pay", async (req, res) => {
 // ================================
 app.get("/verify-payment", async (req, res) => {
   const txRef = String(req.query?.txRef || "");
-  if (!txRef)
+  if (!txRef) {
     return res.status(400).json({
       verified: false,
       error: "Missing txRef.",
     });
+  }
 
   try {
-    if (typeof isVerified === "function" && isVerified(txRef))
+    if (typeof isVerified === "function" && isVerified(txRef)) {
       return res.json({ verified: true });
+    }
 
-    if (typeof verifyFlutterwavePayment !== "function")
+    if (typeof verifyFlutterwavePayment !== "function") {
       throw new Error("Verification unavailable");
+    }
 
     const v = await verifyFlutterwavePayment(txRef);
     return res.json({ verified: !!v?.verified });
   } catch (err) {
-    console.error("Verify payment error:", err);
+    console.error("Verify payment error:", err?.message || err);
     return res.status(500).json({
       verified: false,
       error: "Verification error.",
