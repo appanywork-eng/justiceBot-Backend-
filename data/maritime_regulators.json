@@ -1,0 +1,44 @@
+{
+  "regulators": {
+    "nimasa": {
+      "id": "nimasa",
+      "name": "Nigerian Maritime Administration and Safety Agency",
+      "address": "NIMASA Headquarters, Lagos, Nigeria"
+    },
+    "npa": {
+      "id": "npa",
+      "name": "Nigerian Ports Authority",
+      "address": "NPA Headquarters, Lagos, Nigeria"
+    },
+    "ncs": {
+      "id": "ncs",
+      "name": "Nigeria Customs Service",
+      "address": "Nigeria Customs Service Headquarters, Abuja, Nigeria"
+    },
+    "fm_marine": {
+      "id": "fm_marine",
+      "name": "Federal Ministry of Marine and Blue Economy",
+      "address": "Federal Secretariat, Abuja, Nigeria"
+    },
+    "pcc": {
+      "id": "pcc",
+      "name": "Public Complaints Commission",
+      "address": "PCC Headquarters, Abuja, Nigeria"
+    },
+    "fccpc": {
+      "id": "fccpc",
+      "name": "Federal Competition and Consumer Protection Commission",
+      "address": "FCCPC Headquarters, Abuja, Nigeria"
+    },
+    "nhrc": {
+      "id": "nhrc",
+      "name": "National Human Rights Commission",
+      "address": "NHRC Headquarters, Abuja, Nigeria"
+    },
+    "imo": {
+      "id": "imo",
+      "name": "International Maritime Organization",
+      "address": "IMO Headquarters, London, United Kingdom"
+    }
+  }
+}

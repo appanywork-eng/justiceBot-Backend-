@@ -1,0 +1,29 @@
+{
+  "hospitals": [
+    {
+      "name": "University of Uyo Teaching Hospital",
+      "state": "Akwa Ibom",
+      "type": "teaching"
+    },
+    {
+      "name": "Lagos University Teaching Hospital",
+      "state": "Lagos",
+      "type": "teaching"
+    },
+    {
+      "name": "National Hospital Abuja",
+      "state": "FCT",
+      "type": "federal"
+    },
+    {
+      "name": "General Hospital Warri",
+      "state": "Delta",
+      "type": "state"
+    },
+    {
+      "name": "Reddington Hospital",
+      "state": "Lagos",
+      "type": "private"
+    }
+  ]
+}

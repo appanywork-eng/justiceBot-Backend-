@@ -1,0 +1,24 @@
+{
+  "regulators": {
+    "frsc_hq": {
+      "id": "frsc_hq",
+      "name": "Federal Road Safety Corps Headquarters",
+      "address": "FRSC National Headquarters, Abuja, Nigeria"
+    },
+    "min_transport": {
+      "id": "min_transport",
+      "name": "Federal Ministry of Transportation",
+      "address": "Federal Ministry of Transportation, Abuja, Nigeria"
+    },
+    "fccpc": {
+      "id": "fccpc",
+      "name": "Federal Competition and Consumer Protection Commission",
+      "address": "FCCPC Headquarters, Abuja, Nigeria"
+    },
+    "pcc": {
+      "id": "pcc",
+      "name": "Public Complaints Commission",
+      "address": "PCC Headquarters, Abuja, Nigeria"
+    }
+  }
+}

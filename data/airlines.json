@@ -1,0 +1,24 @@
+{
+  "airlines": [
+    {
+      "name": "Air Peace",
+      "country": "Nigeria"
+    },
+    {
+      "name": "Arik Air",
+      "country": "Nigeria"
+    },
+    {
+      "name": "Dana Air",
+      "country": "Nigeria"
+    },
+    {
+      "name": "Ibom Air",
+      "country": "Nigeria"
+    },
+    {
+      "name": "Overland Airways",
+      "country": "Nigeria"
+    }
+  ]
+}

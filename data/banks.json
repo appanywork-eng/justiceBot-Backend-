@@ -1,0 +1,21 @@
+{
+  "banks": [
+    { "id": "access", "name": "Access Bank Plc" },
+    { "id": "gtb", "name": "Guaranty Trust Bank Plc (GTBank)" },
+    { "id": "zenith", "name": "Zenith Bank Plc" },
+    { "id": "uba", "name": "United Bank for Africa (UBA)" },
+    { "id": "firstbank", "name": "First Bank of Nigeria Ltd" },
+    { "id": "fidelity", "name": "Fidelity Bank Plc" },
+    { "id": "union", "name": "Union Bank of Nigeria Plc" },
+    { "id": "ecobank", "name": "Ecobank Nigeria" },
+    { "id": "stanbic", "name": "Stanbic IBTC Bank" },
+    { "id": "polaris", "name": "Polaris Bank Ltd" },
+    { "id": "keystone", "name": "Keystone Bank Ltd" },
+    { "id": "wema", "name": "Wema Bank Plc" },
+    { "id": "heritage", "name": "Heritage Bank Plc" },
+    { "id": "providus", "name": "Providus Bank" },
+    { "id": "suntrust", "name": "SunTrust Bank Nigeria Ltd" },
+    { "id": "jaiz", "name": "Jaiz Bank Plc" },
+    { "id": "taj", "name": "TAJ Bank Ltd" }
+  ]
+}

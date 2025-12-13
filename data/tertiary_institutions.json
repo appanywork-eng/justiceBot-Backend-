@@ -1,0 +1,29 @@
+{
+  "institutions": [
+    {
+      "name": "University of Uyo",
+      "type": "university",
+      "state": "Akwa Ibom"
+    },
+    {
+      "name": "University of Lagos",
+      "type": "university",
+      "state": "Lagos"
+    },
+    {
+      "name": "Federal Polytechnic Nekede",
+      "type": "polytechnic",
+      "state": "Imo"
+    },
+    {
+      "name": "Yaba College of Technology",
+      "type": "polytechnic",
+      "state": "Lagos"
+    },
+    {
+      "name": "Federal College of Education Zaria",
+      "type": "college",
+      "state": "Kaduna"
+    }
+  ]
+}

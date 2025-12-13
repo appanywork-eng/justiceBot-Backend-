@@ -1,0 +1,77 @@
+{
+  "watchdogs": {
+    "pcc": {
+      "id": "pcc",
+      "name": "Public Complaints Commission",
+      "email": "",
+      "address": "Public Complaints Commission Headquarters, Abuja, Nigeria",
+      "category": "watchdog"
+    },
+    "nhrc": {
+      "id": "nhrc",
+      "name": "National Human Rights Commission",
+      "email": "",
+      "address": "National Human Rights Commission Headquarters, Abuja, Nigeria",
+      "category": "watchdog"
+    },
+    "fccpc": {
+      "id": "fccpc",
+      "name": "Federal Competition and Consumer Protection Commission",
+      "email": "",
+      "address": "FCCPC Headquarters, Abuja, Nigeria",
+      "category": "watchdog"
+    },
+    "servicom": {
+      "id": "servicom",
+      "name": "SERVICOM Office",
+      "email": "",
+      "address": "SERVICOM Office, Federal Secretariat, Abuja, Nigeria",
+      "category": "watchdog"
+    }
+  },
+
+  "federal_bodies": {
+    "attorney_general_federation": {
+      "id": "attorney_general_federation",
+      "name": "Attorney-General of the Federation",
+      "email": "",
+      "address": "Federal Ministry of Justice, Abuja, Nigeria",
+      "category": "federal"
+    },
+    "ministry_power": {
+      "id": "ministry_power",
+      "name": "Federal Ministry of Power",
+      "email": "",
+      "address": "Federal Ministry of Power, Abuja, Nigeria",
+      "category": "federal"
+    },
+    "ministry_transport": {
+      "id": "ministry_transport",
+      "name": "Federal Ministry of Transportation",
+      "email": "",
+      "address": "Federal Ministry of Transportation, Abuja, Nigeria",
+      "category": "federal"
+    },
+    "ministry_aviation": {
+      "id": "ministry_aviation",
+      "name": "Federal Ministry of Aviation and Aerospace Development",
+      "email": "",
+      "address": "Federal Ministry of Aviation Headquarters, Abuja, Nigeria",
+      "category": "federal"
+    },
+    "ministry_health": {
+      "id": "ministry_health",
+      "name": "Federal Ministry of Health",
+      "email": "",
+      "address": "Federal Ministry of Health, Abuja, Nigeria",
+      "category": "federal"
+    },
+    "ministry_education": {
+      "id": "ministry_education",
+      "name": "Federal Ministry of Education",
+      "email": "",
+      "address": "Federal Ministry of Education, Abuja, Nigeria",
+      "category": "federal"
+    }
+  }
+}

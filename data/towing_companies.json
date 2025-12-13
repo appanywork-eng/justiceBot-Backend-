@@ -1,0 +1,6 @@
+{
+  "towing_operators": [
+    { "id": "aau", "name": "AA Rescue Limited" },
+    { "id": "state_towing", "name": "State-Approved Towing Contractor" }
+  ]
+}

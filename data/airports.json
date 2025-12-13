@@ -1,0 +1,13 @@
+{
+  "airports": [
+    { "id": "los", "name": "Murtala Muhammed International Airport", "state": "Lagos" },
+    { "id": "abuja", "name": "Nnamdi Azikiwe International Airport", "state": "FCT" },
+    { "id": "phc", "name": "Port Harcourt International Airport", "state": "Rivers" },
+    { "id": "kan", "name": "Mallam Aminu Kano International Airport", "state": "Kano" },
+    { "id": "enu", "name": "Akanu Ibiam International Airport", "state": "Enugu" },
+    { "id": "uyo", "name": "Akwa Ibom International Airport", "state": "Akwa Ibom" },
+    { "id": "yor", "name": "Yola Airport", "state": "Adamawa" },
+    { "id": "jalingo", "name": "Danbaba Suntai Airport", "state": "Taraba" },
+    { "id": "gusau", "name": "Gusau Airport", "state": "Zamfara" }
+  ]
+}

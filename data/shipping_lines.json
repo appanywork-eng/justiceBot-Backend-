@@ -1,0 +1,9 @@
+{
+  "shipping_lines": [
+    { "name": "Maersk Line" },
+    { "name": "MSC Mediterranean Shipping Company" },
+    { "name": "CMA CGM" },
+    { "name": "COSCO Shipping" },
+    { "name": "Hapag-Lloyd" }
+  ]
+}

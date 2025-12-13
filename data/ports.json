@@ -1,0 +1,9 @@
+{
+  "ports": [
+    { "name": "Apapa Port", "state": "Lagos" },
+    { "name": "Tin Can Island Port", "state": "Lagos" },
+    { "name": "Onne Port", "state": "Rivers" },
+    { "name": "Calabar Port", "state": "Cross River" },
+    { "name": "Warri Port", "state": "Delta" }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "regulators": {
+    "nerc": {
+      "id": "nerc",
+      "name": "Nigerian Electricity Regulatory Commission",
+      "address": "NERC Headquarters, Abuja, Nigeria"
+    },
+    "ministry_power": {
+      "id": "ministry_power",
+      "name": "Federal Ministry of Power",
+      "address": "Federal Ministry of Power, Abuja, Nigeria"
+    },
+    "nemsa": {
+      "id": "nemsa",
+      "name": "Nigerian Electricity Management Services Agency (NEMSA)",
+      "address": "NEMSA Headquarters, Abuja, Nigeria"
+    }
+  }
+}

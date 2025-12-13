@@ -1,0 +1,39 @@
+{
+  "regulators": {
+    "ncaa": {
+      "id": "ncaa",
+      "name": "Nigerian Civil Aviation Authority",
+      "address": "NCAA Headquarters, Abuja, Nigeria"
+    },
+    "faan": {
+      "id": "faan",
+      "name": "Federal Airports Authority of Nigeria",
+      "address": "FAAN Headquarters, Lagos, Nigeria"
+    },
+    "nama": {
+      "id": "nama",
+      "name": "Nigerian Airspace Management Agency",
+      "address": "NAMA Headquarters, Abuja, Nigeria"
+    },
+    "fm_aviation": {
+      "id": "fm_aviation",
+      "name": "Federal Ministry of Aviation",
+      "address": "Federal Ministry of Aviation, Abuja, Nigeria"
+    },
+    "pcc": {
+      "id": "pcc",
+      "name": "Public Complaints Commission",
+      "address": "PCC Headquarters, Abuja, Nigeria"
+    },
+    "fccpc": {
+      "id": "fccpc",
+      "name": "Federal Competition and Consumer Protection Commission",
+      "address": "FCCPC Headquarters, Abuja, Nigeria"
+    },
+    "nhrc": {
+      "id": "nhrc",
+      "name": "National Human Rights Commission",
+      "address": "NHRC Headquarters, Abuja, Nigeria"
+    }
+  }
+}

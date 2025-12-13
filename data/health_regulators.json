@@ -1,0 +1,39 @@
+{
+  "regulators": {
+    "fmoh": {
+      "id": "fmoh",
+      "name": "Federal Ministry of Health",
+      "address": "Federal Ministry of Health, Abuja, Nigeria"
+    },
+    "pcc": {
+      "id": "pcc",
+      "name": "Public Complaints Commission",
+      "address": "PCC Headquarters, Abuja, Nigeria"
+    },
+    "mdcn": {
+      "id": "mdcn",
+      "name": "Medical and Dental Council of Nigeria",
+      "address": "MDCN Secretariat, Abuja, Nigeria"
+    },
+    "nmcn": {
+      "id": "nmcn",
+      "name": "Nursing and Midwifery Council of Nigeria",
+      "address": "NMCN Headquarters, Abuja, Nigeria"
+    },
+    "nhis": {
+      "id": "nhis",
+      "name": "National Health Insurance Scheme",
+      "address": "NHIS Headquarters, Abuja, Nigeria"
+    },
+    "nafdac": {
+      "id": "nafdac",
+      "name": "National Agency for Food and Drug Administration and Control",
+      "address": "NAFDAC Headquarters, Abuja, Nigeria"
+    },
+    "nhrc": {
+      "id": "nhrc",
+      "name": "National Human Rights Commission",
+      "address": "NHRC Headquarters, Abuja, Nigeria"
+    }
+  }
+}

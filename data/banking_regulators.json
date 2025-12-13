@@ -1,0 +1,19 @@
+{
+  "regulators": {
+    "cbn": {
+      "id": "cbn",
+      "name": "Central Bank of Nigeria",
+      "address": "CBN Headquarters, Abuja, Nigeria"
+    },
+    "ndic": {
+      "id": "ndic",
+      "name": "Nigeria Deposit Insurance Corporation",
+      "address": "NDIC Headquarters, Abuja, Nigeria"
+    },
+    "fccpc": {
+      "id": "fccpc",
+      "name": "Federal Competition and Consumer Protection Commission",
+      "address": "FCCPC Headquarters, Abuja, Nigeria"
+    }
+  }
+}

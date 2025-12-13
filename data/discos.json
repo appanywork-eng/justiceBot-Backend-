@@ -1,0 +1,14 @@
+{
+  "discos": [
+    { "id": "aedc", "name": "Abuja Electricity Distribution Company (AEDC)", "states": ["FCT", "Niger", "Kogi", "Nasarawa"] },
+    { "id": "bedc", "name": "Benin Electricity Distribution Company (BEDC)", "states": ["Edo", "Delta", "Ondo", "Ekiti"] },
+    { "id": "ekedc", "name": "Eko Electricity Distribution Company (EKEDC)", "states": ["Lagos"] },
+    { "id": "ikedc", "name": "Ikeja Electricity Distribution Company (IKEDC)", "states": ["Lagos"] },
+    { "id": "ibedc", "name": "Ibadan Electricity Distribution Company (IBEDC)", "states": ["Oyo", "Ogun", "Osun", "Kwara"] },
+    { "id": "jedc", "name": "Jos Electricity Distribution Company (JEDC)", "states": ["Plateau", "Benue", "Bauchi", "Gombe"] },
+    { "id": "kedco", "name": "Kano Electricity Distribution Company (KEDCO)", "states": ["Kano", "Jigawa", "Katsina"] },
+    { "id": "phed", "name": "Port Harcourt Electricity Distribution Company (PHED)", "states": ["Rivers", "Bayelsa", "Akwa Ibom", "Cross River"] },
+    { "id": "eedc", "name": "Enugu Electricity Distribution Company (EEDC)", "states": ["Enugu", "Abia", "Anambra", "Ebonyi", "Imo"] },
+    { "id": "yedc", "name": "Yola Electricity Distribution Company (YEDC)", "states": ["Adamawa", "Borno", "Taraba", "Yobe"] }
+  ]
+}

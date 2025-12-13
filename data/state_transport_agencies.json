@@ -1,0 +1,28 @@
+{
+  "states": [
+    {
+      "state": "Lagos",
+      "agencies": ["LASTMA", "Lagos State Ministry of Transportation"]
+    },
+    {
+      "state": "Abuja",
+      "agencies": ["FCT Transportation Secretariat"]
+    },
+    {
+      "state": "Rivers",
+      "agencies": ["RIVTOM", "Rivers State Ministry of Transport"]
+    },
+    {
+      "state": "Delta",
+      "agencies": ["Delta State Task Force", "Delta State Ministry of Transport"]
+    },
+    {
+      "state": "Oyo",
+      "agencies": ["OYTMA", "Oyo State Ministry of Transport"]
+    },
+    {
+      "state": "Kano",
+      "agencies": ["KAROTA", "Kano State Ministry of Transport"]
+    }
+  ]
+}

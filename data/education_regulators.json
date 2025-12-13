@@ -1,0 +1,49 @@
+{
+  "regulators": {
+    "fme": {
+      "id": "fme",
+      "name": "Federal Ministry of Education",
+      "address": "Federal Ministry of Education, Abuja, Nigeria"
+    },
+    "pcc": {
+      "id": "pcc",
+      "name": "Public Complaints Commission",
+      "address": "PCC Headquarters, Abuja, Nigeria"
+    },
+    "nuc": {
+      "id": "nuc",
+      "name": "National Universities Commission",
+      "address": "NUC Headquarters, Abuja, Nigeria"
+    },
+    "nbte": {
+      "id": "nbte",
+      "name": "National Board for Technical Education",
+      "address": "NBTE Headquarters, Kaduna, Nigeria"
+    },
+    "ncce": {
+      "id": "ncce",
+      "name": "National Commission for Colleges of Education",
+      "address": "NCCE Headquarters, Abuja, Nigeria"
+    },
+    "jamb": {
+      "id": "jamb",
+      "name": "Joint Admissions and Matriculation Board",
+      "address": "JAMB Headquarters, Abuja, Nigeria"
+    },
+    "waec": {
+      "id": "waec",
+      "name": "West African Examinations Council",
+      "address": "WAEC National Office, Lagos, Nigeria"
+    },
+    "neco": {
+      "id": "neco",
+      "name": "National Examinations Council",
+      "address": "NECO Headquarters, Minna, Nigeria"
+    },
+    "nysc": {
+      "id": "nysc",
+      "name": "National Youth Service Corps",
+      "address": "NYSC National Directorate Headquarters, Abuja, Nigeria"
+    }
+  }
+}
