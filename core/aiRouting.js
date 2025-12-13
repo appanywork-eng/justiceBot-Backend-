@@ -1,724 +1,636 @@
 "use strict";
 
 /**
- * PetitionDesk / JusticeBot - Entity-First Routing Engine (PDPS 2.6)
+ * core/aiRouting.js
+ * ENTITY-FIRST AI ROUTING (PDPS 2.6+)
  *
- * Key Rules:
- * 1) USER EXPLICIT TARGETS ALWAYS WIN.
- * 2) ENTITY-FIRST: identify named org/bank/state/country BEFORE sector logic.
- * 3) NO PLACEHOLDER PRIMARIES (no "Bank Branch", "Bank HQ", "Commissioner of Police").
- * 4) PCC IS LAST RESORT ONLY.
- * 5) DO NOT INVENT emails/addresses. Use dataset values; otherwise leave blank or "Nigeria".
+ * Goals:
+ * 1) AI extracts ENTITIES first (institutions, locations, regulators).
+ * 2) AI produces strict JSON routing output.
+ * 3) Logic validates, de-duplicates, fixes "generic placeholders".
+ * 4) Nigeria datasets ENRICH (bank canonicalization, police state command naming)
+ *    but DO NOT destroy AI intent.
+ *
+ * IMPORTANT TRUTH:
+ * - AI cannot "scrape verified" info from the web inside this backend.
+ * - So we enforce: if not sure, leave email/address blank + set needsVerification=true.
+ * - PetitionDesk can later add a human verification step or a separate verified directory service.
  */
 
 const fs = require("fs");
 const path = require("path");
 
-// Optional OpenAI support (never required; never crash)
-let openai = null;
-let isOpenAIReady = () => false;
-try {
-  const client = require("./openaiClient");
-  // support either getOpenAI / isOpenAIReady depending on your file
-  if (typeof client.getOpenAI === "function") openai = client.getOpenAI();
-  if (typeof client.isOpenAIReady === "function") isOpenAIReady = client.isOpenAIReady;
-} catch (e) {
-  // ignore
+const { getOpenAI, isOpenAIReady } = require("./openaiClient");
+
+// ------------------------------------------------------------
+// Small utils
+// ------------------------------------------------------------
+function safeStr(x) {
+  return String(x || "").trim();
 }
 
-// --------------------------------------
-// SAFE JSON LOADERS
-// --------------------------------------
-function readJsonSafe(filePath, fallback) {
-  try {
-    if (!fs.existsSync(filePath)) return fallback;
-    const raw = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(raw);
-  } catch (e) {
-    return fallback;
-  }
+function lc(x) {
+  return safeStr(x).toLowerCase();
 }
 
-function lower(s) {
-  return String(s || "").toLowerCase();
-}
-
-function clean(s) {
-  return String(s || "").trim();
+function textHasAny(text, arr) {
+  const t = lc(text);
+  return (arr || []).some((k) => t.includes(lc(k)));
 }
 
 function uniqByOrg(list) {
   const seen = new Set();
   const out = [];
-  for (const x of Array.isArray(list) ? list : []) {
-    if (!x || !x.org) continue;
-    const k = lower(x.org);
-    if (seen.has(k)) continue;
-    seen.add(k);
-    out.push(x);
+  for (const it of Array.isArray(list) ? list : []) {
+    const key = lc(it?.org || it?.title || "");
+    if (!key) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(it);
   }
   return out;
 }
 
-function normalizeInst(x) {
-  if (!x || typeof x !== "object") return null;
-  const org = clean(x.org || x.name || x.title);
-  if (!org) return null;
+function isObj(x) {
+  return x && typeof x === "object" && !Array.isArray(x);
+}
+
+function looksGenericOrg(org) {
+  const o = lc(org);
+  if (!o) return true;
+  const bad = [
+    "bank branch",
+    "bank head office",
+    "the bank",
+    "telecom company",
+    "telecommunications company",
+    "international human rights body",
+    "government agency",
+    "government ministry",
+    "police command (state)",
+    "commissioner of police (state)",
+    "ministry of foreign affairs",
+    "public complaints commission", // only valid as fallback, not as default for everything
+    "institution",
+    "regulator",
+    "agency",
+  ];
+  return bad.includes(o);
+}
+
+function normalizeInstitution(x, fallbackOrg = "Institution") {
+  if (!isObj(x)) {
+    return { org: fallbackOrg, title: fallbackOrg, address: "", email: "" };
+  }
   return {
-    id: x.id,
-    org,
-    title: clean(x.title || x.org || x.name || "Sir/Madam"),
-    email: clean(x.email || ""),
-    address: clean(x.address || x.location || "Nigeria"),
-    category: clean(x.category || x.sector || ""),
-    state: x.state ? clean(x.state) : undefined,
-    country: x.country ? clean(x.country) : undefined,
+    id: safeStr(x.id || ""),
+    org: safeStr(x.org || fallbackOrg),
+    title: safeStr(x.title || x.org || fallbackOrg),
+    email: safeStr(x.email || ""),
+    address: safeStr(x.address || ""),
+    category: safeStr(x.category || ""),
+    country: safeStr(x.country || ""),
+    state: safeStr(x.state || ""),
+    city: safeStr(x.city || ""),
+    needsVerification: !!x.needsVerification,
   };
 }
 
-function makeInst(org, opts = {}) {
-  const o = clean(org);
-  if (!o) return null;
-  return normalizeInst({
-    org: o,
-    title: opts.title || o,
-    email: opts.email || "",
-    address: opts.address || "Nigeria",
-    category: opts.category || "",
-    state: opts.state,
-    country: opts.country,
-  });
-}
-
-// --------------------------------------
-// PATHS / DATA SOURCES
-// --------------------------------------
-const DATA_ROOT = path.join(__dirname, "..", "data");          // /data/*.json
-const CORE_DATA_ROOT = path.join(__dirname, "data");          // /core/data/*.json (if you use it)
-
-function dataPath(name) {
-  // prefer /data, fallback to /core/data
-  const p1 = path.join(DATA_ROOT, name);
-  if (fs.existsSync(p1)) return p1;
-  return path.join(CORE_DATA_ROOT, name);
-}
-
-// main mega list (if present)
-const institutionsJson = readJsonSafe(dataPath("institutions.json"), {});
-
-// sector datasets
-const banksJson = readJsonSafe(dataPath("banks.json"), { banks: [] });
-const policeStatesJson = readJsonSafe(dataPath("police_states.json"), { police_states: [] });
-
-// optional regulators (only used if entity not found)
-const bankingRegsJson = readJsonSafe(dataPath("banking_regulators.json"), {});
-const powerRegsJson = readJsonSafe(dataPath("power_regulators.json"), {});
-const transportRegsJson = readJsonSafe(dataPath("transport_regulators.json"), {});
-const healthRegsJson = readJsonSafe(dataPath("health_regulators.json"), {});
-const educationRegsJson = readJsonSafe(dataPath("education_regulators.json"), {});
-const aviationRegsJson = readJsonSafe(dataPath("aviation_regulators.json"), {});
-const maritimeRegsJson = readJsonSafe(dataPath("maritime_regulators.json"), {});
-const federalJson = readJsonSafe(dataPath("federal.json"), {});
-
-// --------------------------------------
-// BUILD SEARCH POOL FROM institutions.json
-// --------------------------------------
-function flattenInstitutions(obj) {
-  // institutions.json may contain many keys each as array
-  const pools = [];
-  if (!obj || typeof obj !== "object") return pools;
-
-  for (const k of Object.keys(obj)) {
-    const v = obj[k];
-    if (Array.isArray(v)) {
-      for (const item of v) {
-        const n = normalizeInst(item);
-        if (n) pools.push(n);
-      }
-    } else if (v && typeof v === "object" && Array.isArray(v.institutions)) {
-      for (const item of v.institutions) {
-        const n = normalizeInst(item);
-        if (n) pools.push(n);
-      }
-    }
-  }
-  return pools;
-}
-
-const INSTITUTION_POOL = flattenInstitutions(institutionsJson);
-
-// Find best match by org name substring / keywords
-function bestPoolMatch(text, pool) {
-  const t = lower(text);
-  if (!t || !Array.isArray(pool) || pool.length === 0) return null;
-
-  let best = null;
-  let bestScore = 0;
-
-  for (const inst of pool) {
-    const name = lower(inst.org);
-    if (!name) continue;
-
-    // scoring
-    let score = 0;
-
-    // strong exact include
-    if (t.includes(name)) score += 12;
-
-    // keyword match (split name)
-    const parts = name.split(/[^a-z0-9]+/).filter(Boolean);
-    let hit = 0;
-    for (const p of parts) {
-      if (p.length < 4) continue;
-      if (t.includes(p)) hit += 1;
-    }
-    score += hit;
-
-    // prefer longer official names
-    score += Math.min(3, Math.floor(parts.join("").length / 20));
-
-    if (score > bestScore) {
-      bestScore = score;
-      best = inst;
-    }
-  }
-
-  // require some minimum confidence
-  if (bestScore < 6) return null;
-  return best;
-}
-
-// --------------------------------------
-// GEO: STATE + CITY (basic Nigeria)
-// --------------------------------------
-function extractNigeriaState(text, userAddress) {
-  const src = `${text || ""} ${userAddress || ""}`.toLowerCase();
-
-  // If police_states.json has cities, we try to match that first
-  // expected shape examples:
-  // { state: "Delta", cities: ["Asaba", ...], command_address: "...", ... }
-  for (const s of policeStatesJson.police_states || []) {
-    const stateName = lower(s.state);
-    if (!stateName) continue;
-
-    // if state explicitly mentioned
-    if (src.includes(stateName)) {
-      return { state: s.state, meta: s };
-    }
-
-    // match by any city keyword
-    const cities = Array.isArray(s.cities) ? s.cities : [];
-    for (const c of cities) {
-      const city = lower(c);
-      if (city && src.includes(city)) {
-        return { state: s.state, meta: s, city: c };
-      }
-    }
-  }
-
-  // fallback simple common state list if your file is incomplete
-  // (does not invent anything; only used for naming state command)
-  const commonStates = [
-    "abia","adamawa","akwa ibom","anambra","bauchi","bayelsa","benue","borno","cross river",
-    "delta","ebonyi","edo","ekiti","enugu","gombe","imo","jigawa","kaduna","kano","katsina",
-    "kebbi","kogi","kwara","lagos","nasarawa","niger","ogun","ondo","osun","oyo","plateau",
-    "rivers","sokoto","taraba","yobe","zamfara","fct","abuja"
-  ];
-  for (const st of commonStates) {
-    if (src.includes(st)) {
-      const stateNice = st === "fct" ? "FCT" : st.replace(/\b\w/g, (m) => m.toUpperCase());
-      return { state: stateNice, meta: null };
-    }
-  }
-
-  return null;
-}
-
-// --------------------------------------
-// ENTITY EXTRACTION: BANKS (strong deterministic)
-// --------------------------------------
-function resolveBankEntity(text) {
-  const t = lower(text);
-  const banks = Array.isArray(banksJson.banks) ? banksJson.banks : [];
-  if (!t || banks.length === 0) return null;
-
-  // Known shorthand aliases
-  const aliases = [
-    { key: "gtbank", id: "gtb" },
-    { key: "guaranty trust", id: "gtb" },
-    { key: "guaranty trust bank", id: "gtb" },
-    { key: "zenith", id: "zenith" },
-    { key: "access", id: "access" },
-    { key: "uba", id: "uba" },
-    { key: "firstbank", id: "firstbank" },
-    { key: "first bank", id: "firstbank" },
-    { key: "fidelity", id: "fidelity" },
-    { key: "ecobank", id: "ecobank" },
-    { key: "stanbic", id: "stanbic" },
-    { key: "polaris", id: "polaris" },
-    { key: "keystone", id: "keystone" },
-    { key: "wema", id: "wema" },
-    { key: "heritage", id: "heritage" },
-    { key: "providus", id: "providus" },
-    { key: "suntrust", id: "suntrust" },
-    { key: "jaiz", id: "jaiz" },
-    { key: "taj", id: "taj" },
-  ];
-
-  for (const a of aliases) {
-    if (t.includes(a.key)) {
-      const bank = banks.find((b) => lower(b.id) === lower(a.id)) || null;
-      if (bank) return bank;
-    }
-  }
-
-  // generic match by official names in banks.json
-  for (const b of banks) {
-    const name = lower(b.name);
-    if (name && t.includes(name)) return b;
-  }
-
-  return null;
-}
-
-// --------------------------------------
-// USER EXPLICIT TARGETS: INTERNATIONAL / SPECIFIC BODIES
-// --------------------------------------
-function detectExplicitTargets(description) {
-  const t = lower(description);
-  if (!t) return null;
-
-  // If the user explicitly says "write to" / "petition to" / "address to" and names bodies.
-  const explicitVerbs = ["write to", "petition to", "address to", "submit to", "send to", "complain to"];
-  const hasVerb = explicitVerbs.some((v) => t.includes(v));
-  const hasForeign = ["united states", "u.s.", "us ", "uk", "united kingdom", "eu", "european union", "african union", "ecowas", "un", "united nations", "parliament", "congress", "committee"].some((k) => t.includes(k));
-
-  if (!hasForeign) return null;
-  if (!hasVerb && !t.includes("cc:") && !t.includes("copy")) {
-    // still allow when user just lists targets plainly
-    // e.g. "US House Foreign Affairs Committee, UK Parliament, EU..."
-  }
-
-  // Hard-coded known targets (names only; no invented emails)
-  const targets = [];
-
-  // US
-  if (t.includes("house foreign affairs") || t.includes("house committee on foreign affairs")) {
-    targets.push(makeInst("US House Committee on Foreign Affairs", { address: "United States" }));
-  }
-  if (t.includes("senate foreign relations")) {
-    targets.push(makeInst("US Senate Committee on Foreign Relations", { address: "United States" }));
-  }
-  if (t.includes("u.s. congress") || t.includes("us congress") || t.includes("united states congress")) {
-    targets.push(makeInst("United States Congress", { address: "United States" }));
-  }
-
-  // UK
-  if (t.includes("uk parliament") || t.includes("british parliament") || t.includes("parliament petitions")) {
-    targets.push(makeInst("UK Parliament", { address: "United Kingdom" }));
-  }
-  if (t.includes("uk foreign affairs committee")) {
-    targets.push(makeInst("UK House of Commons Foreign Affairs Committee", { address: "United Kingdom" }));
-  }
-
-  // EU
-  if (t.includes("eu parliament") || t.includes("european parliament")) {
-    targets.push(makeInst("European Parliament", { address: "European Union" }));
-  }
-  if (t.includes("droi") || t.includes("subcommittee on human rights")) {
-    targets.push(makeInst("European Parliament Subcommittee on Human Rights (DROI)", { address: "European Union" }));
-  }
-  if (t.includes("eeas") || t.includes("european external action service")) {
-    targets.push(makeInst("European External Action Service (EEAS) - Human Rights", { address: "European Union" }));
-  }
-
-  // Africa / regional
-  if (t.includes("african union") || t.includes("au ")) {
-    targets.push(makeInst("African Union", { address: "Africa" }));
-  }
-  if (t.includes("african commission") || t.includes("achpr")) {
-    targets.push(makeInst("African Commission on Human and Peoples’ Rights (ACHPR)", { address: "Africa" }));
-  }
-  if (t.includes("ecowas")) {
-    targets.push(makeInst("ECOWAS Commission", { address: "West Africa" }));
-  }
-
-  // UN
-  if (t.includes("united nations") || t.includes("un ")) {
-    targets.push(makeInst("United Nations (UN)", { address: "International" }));
-  }
-
-  // Nigeria add-ons user may include
-  if (t.includes("attorney general") || t.includes("agf")) {
-    targets.push(makeInst("Attorney-General of the Federation (AGF)", { address: "Nigeria" }));
-  }
-  if (t.includes("ministry of foreign affairs")) {
-    targets.push(makeInst("Federal Ministry of Foreign Affairs", { address: "Nigeria" }));
-  }
-  if (t.includes("nhrc") || t.includes("national human rights commission")) {
-    targets.push(makeInst("National Human Rights Commission (NHRC)", { address: "Nigeria" }));
-  }
-  if (t.includes("pcc") || t.includes("public complaints commission")) {
-    targets.push(makeInst("Public Complaints Commission", { address: "Nigeria" }));
-  }
-
-  const cleaned = uniqByOrg(targets).filter(Boolean);
-
-  if (cleaned.length >= 2) {
-    // Primary = first, CC = rest
-    return {
-      mode: "explicit_targets",
-      primary: cleaned[0],
-      through: null,
-      ccList: cleaned.slice(1),
-      sector: "international_explicit",
-      confidence: 0.95,
-      reason: "User explicitly named target bodies",
-    };
-  }
-
-  // If only 1 target, still treat as explicit
-  if (cleaned.length === 1) {
-    return {
-      mode: "explicit_targets",
-      primary: cleaned[0],
-      through: null,
-      ccList: [],
-      sector: "international_explicit",
-      confidence: 0.9,
-      reason: "User explicitly named a target body",
-    };
-  }
-
-  return null;
-}
-
-// --------------------------------------
-// REGULATORS HELPERS
-// --------------------------------------
-function findInPoolByOrgContains(orgContains) {
-  const needle = lower(orgContains);
-  if (!needle) return null;
-  for (const inst of INSTITUTION_POOL) {
-    if (lower(inst.org).includes(needle)) return inst;
-  }
-  return null;
-}
-
-function getCommonCCForBanking() {
-  // Use pool if available, else build generic (no fake emails)
-  const cc = [];
-
-  const cbn = findInPoolByOrgContains("central bank of nigeria") || makeInst("Central Bank of Nigeria (CBN)");
-  const ndic = findInPoolByOrgContains("ndic") || makeInst("Nigeria Deposit Insurance Corporation (NDIC)");
-  const fccpc = findInPoolByOrgContains("fccpc") || makeInst("Federal Competition and Consumer Protection Commission (FCCPC)");
-  const pcc = findInPoolByOrgContains("public complaints commission") || makeInst("Public Complaints Commission (PCC)");
-
-  if (cbn) cc.push(cbn);
-  if (ndic) cc.push(ndic);
-  if (fccpc) cc.push(fccpc);
-  if (pcc) cc.push(pcc);
-
-  return uniqByOrg(cc);
-}
-
-function getCommonCCForPolice() {
-  const cc = [];
-  const psc = findInPoolByOrgContains("police service commission") || makeInst("Police Service Commission (PSC)");
-  const nhrc = findInPoolByOrgContains("national human rights commission") || makeInst("National Human Rights Commission (NHRC)");
-  const pcc = findInPoolByOrgContains("public complaints commission") || makeInst("Public Complaints Commission (PCC)");
-  if (psc) cc.push(psc);
-  if (nhrc) cc.push(nhrc);
-  if (pcc) cc.push(pcc);
-  return uniqByOrg(cc);
-}
-
-function pccFallback() {
-  return makeInst("Public Complaints Commission", { address: "Nigeria", title: "The Honourable Chief Commissioner" });
-}
-
-// --------------------------------------
-// OPTIONAL OPENAI ENTITY CLARIFIER (SAFE)
-// --------------------------------------
-async function openaiExtract(description) {
-  if (!isOpenAIReady || typeof isOpenAIReady !== "function") return null;
-  if (!isOpenAIReady()) return null;
-  if (!openai || !openai.chat || !openai.chat.completions) return null;
-
-  // Keep prompt strict + short; return JSON only
-  const prompt = `
-Extract routing signals from the complaint. Return ONLY strict JSON with:
-{
-  "explicit_targets": [ {"org": "...", "country": "..."} ],
-  "bank_name": "...",
-  "state": "...",
-  "city": "...",
-  "sector_hint": "banking|police|housing|health|education|telecom|aviation|maritime|transport|general"
-}
-Complaint: ${description}
-`.trim();
-
+// ------------------------------------------------------------
+// Load local Nigeria datasets (ENRICHERS only)
+// ------------------------------------------------------------
+function loadJSON(filePath) {
   try {
-    const r = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-      temperature: 0.1,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const txt = r?.choices?.[0]?.message?.content || "";
-    const jsonStart = txt.indexOf("{");
-    const jsonEnd = txt.lastIndexOf("}");
-    if (jsonStart === -1 || jsonEnd === -1) return null;
-
-    const obj = JSON.parse(txt.slice(jsonStart, jsonEnd + 1));
-    return obj && typeof obj === "object" ? obj : null;
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
   } catch (e) {
     return null;
   }
 }
 
-// --------------------------------------
-// SECTOR GUESS (only after entity checks)
-// --------------------------------------
-function guessSector(description) {
-  const t = lower(description);
-  if (!t) return "general";
+const DATA_DIR = path.join(__dirname, "..", "data");
 
-  const bankWords = ["bank", "transfer", "debit", "atm", "pos", "chargeback", "reversal", "account", "gtbank", "zenith", "access", "uba"];
-  if (bankWords.some((w) => t.includes(w))) return "banking";
-
-  const policeWords = ["police", "dpo", "area command", "divisional", "sars", "extortion", "arrest", "detain", "bail", "assault"];
-  if (policeWords.some((w) => t.includes(w))) return "police";
-
-  const telecomWords = ["mtn", "airtel", "glo", "9mobile", "network", "data", "airtime", "sim", "call", "service down"];
-  if (telecomWords.some((w) => t.includes(w))) return "telecom";
-
-  const healthWords = ["hospital", "clinic", "medical", "doctor", "emergency", "treatment", "nhis"];
-  if (healthWords.some((w) => t.includes(w))) return "health";
-
-  const eduWords = ["school", "university", "polytechnic", "waec", "jamb", "student"];
-  if (eduWords.some((w) => t.includes(w))) return "education";
-
-  const aviationWords = ["flight", "airline", "airport", "aviation"];
-  if (aviationWords.some((w) => t.includes(w))) return "aviation";
-
-  const maritimeWords = ["ship", "port", "maritime", "cargo", "shipping"];
-  if (maritimeWords.some((w) => t.includes(w))) return "maritime";
-
-  const transportWords = ["road", "transport", "vehicle", "towing", "park", "traffic", "rail", "train"];
-  if (transportWords.some((w) => t.includes(w))) return "transport";
-
-  const housingWords = ["landlord", "rent", "tenancy", "eviction", "house"];
-  if (housingWords.some((w) => t.includes(w))) return "housing";
-
-  const intlWords = ["united nations", "un ", "congress", "parliament", "eu", "african union", "ecowas", "asylum"];
-  if (intlWords.some((w) => t.includes(w))) return "international";
-
-  return "general";
+function getBanksList() {
+  const p = path.join(DATA_DIR, "banks.json");
+  const j = loadJSON(p);
+  const arr = j?.banks || j?.data || j;
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map((b) => ({
+      id: safeStr(b.id || ""),
+      name: safeStr(b.name || b.org || ""),
+    }))
+    .filter((b) => b.name);
 }
 
-// --------------------------------------
-// MAIN ROUTER
-// --------------------------------------
-async function detectHybrid(description = "", userAddress = "") {
-  const text = clean(description);
-  const addr = clean(userAddress);
-  const combined = `${text} ${addr}`.trim();
+function getPoliceStatesList() {
+  const p = path.join(DATA_DIR, "police_states.json");
+  const j = loadJSON(p);
+  const arr = j?.police_states || j?.states || j?.data || j;
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map((s) => ({
+      id: safeStr(s.id || ""),
+      name: safeStr(s.name || s.state || ""),
+      capital: safeStr(s.capital || s.hq || ""),
+      aliases: Array.isArray(s.aliases) ? s.aliases.map(safeStr).filter(Boolean) : [],
+    }))
+    .filter((s) => s.name);
+}
 
-  // 0) USER EXPLICIT TARGETS ALWAYS WIN (deterministic)
-  const explicit = detectExplicitTargets(text);
-  if (explicit) return explicit;
+// Cached in memory per process
+const BANKS = getBanksList();
+const POLICE_STATES = getPoliceStatesList();
 
-  // 0.5) OpenAI assisted extraction (optional)
-  const aiSignals = await openaiExtract(text);
+// ------------------------------------------------------------
+// Entity extraction (light logic) - used for validation & enrichment
+// ------------------------------------------------------------
+function extractPossibleBank(text) {
+  const t = lc(text);
 
-  // 1) ENTITY-FIRST: BANK
-  const bankEntity =
-    resolveBankEntity(text) ||
-    (aiSignals?.bank_name ? resolveBankEntity(aiSignals.bank_name) : null);
+  // direct matches from dataset
+  for (const b of BANKS) {
+    const n = lc(b.name);
+    if (!n) continue;
 
-  if (bankEntity) {
-    // Build concrete bank route (never "which bank?")
-    const bankName = clean(bankEntity.name || bankEntity.org || "Bank");
-    const primary = makeInst(`${bankName}`, { address: "Nigeria", category: "banking" });
+    // also match short "gtbank", "gtb"
+    const shorthand = [
+      n,
+      n.replace(/plc/g, "").trim(),
+      n.replace(/\(.*?\)/g, "").trim(),
+    ].filter(Boolean);
 
-    // Through: bank head office (named)
-    const through = makeInst(`${bankName} Head Office`, { address: "Nigeria", category: "banking" });
-
-    // CC: regulators
-    const ccList = getCommonCCForBanking();
-
-    // If user explicitly asked to CC additional bodies, add from pool match
-    // (we don't invent; only match what exists)
-    const maybeExtra = bestPoolMatch(text, INSTITUTION_POOL);
-    const extras = maybeExtra ? [maybeExtra] : [];
-
-    return {
-      mode: "entity_bank",
-      primary,
-      through,
-      ccList: uniqByOrg([...ccList, ...extras]),
-      sector: "banking",
-      confidence: 0.92,
-      reason: `Detected bank entity: ${bankName}`,
-      entity: { type: "bank", id: bankEntity.id, name: bankName },
-    };
-  }
-
-  // 2) ENTITY-FIRST: POLICE (state-bound)
-  const policeHint = lower(text).includes("police") || lower(text).includes("dpo") || lower(text).includes("area command");
-  if (policeHint) {
-    const geo = extractNigeriaState(text, addr) || (aiSignals?.state ? { state: aiSignals.state } : null);
-    const stateName = clean(geo?.state);
-
-    // Primary = "<State> State Police Command" (never generic "Commissioner of Police")
-    const primaryOrg = stateName ? `${stateName} State Police Command` : "Nigeria Police Force (State Command)";
-    const primary = makeInst(primaryOrg, {
-      address: (geo?.meta && (geo.meta.command_address || geo.meta.address)) ? (geo.meta.command_address || geo.meta.address) : "Nigeria",
-      category: "police",
-      state: stateName || undefined,
-    });
-
-    // Through = IGP
-    const through = makeInst("Inspector-General of Police (Nigeria Police Force)", {
-      address: "Force Headquarters, Louis Edet House, Abuja, Nigeria",
-      category: "police",
-    });
-
-    const ccList = getCommonCCForPolice();
-
-    return {
-      mode: "entity_police",
-      primary,
-      through,
-      ccList,
-      sector: "police",
-      confidence: stateName ? 0.93 : 0.82,
-      reason: stateName ? `Police complaint with state detected: ${stateName}` : "Police complaint detected (state unclear)",
-      entity: { type: "police", state: stateName || null, city: geo?.city || null },
-    };
-  }
-
-  // 3) ENTITY-FIRST: BEST MATCH FROM INSTITUTION POOL
-  // If user mentions a specific organisation already in institutions.json
-  const poolHit = bestPoolMatch(text, INSTITUTION_POOL);
-  if (poolHit) {
-    return {
-      mode: "entity_pool_match",
-      primary: poolHit,
-      through: null,
-      ccList: [],
-      sector: guessSector(text),
-      confidence: 0.75,
-      reason: `Matched named institution in database: ${poolHit.org}`,
-      entity: { type: "institution", org: poolHit.org },
-    };
-  }
-
-  // 4) SECTOR-BASED ROUTING (ONLY IF NO ENTITY FOUND)
-  const sector =
-    (aiSignals?.sector_hint && clean(aiSignals.sector_hint)) ||
-    guessSector(text);
-
-  // Helper to pick first from a dataset object if it has "institutions" or arrays
-  function firstFromDataset(ds) {
-    if (!ds) return null;
-    if (Array.isArray(ds)) return normalizeInst(ds[0]);
-    if (Array.isArray(ds.institutions)) return normalizeInst(ds.institutions[0]);
-    // if ds has multiple keys
-    for (const k of Object.keys(ds)) {
-      if (Array.isArray(ds[k]) && ds[k].length) return normalizeInst(ds[k][0]);
-      if (ds[k] && Array.isArray(ds[k].institutions) && ds[k].institutions.length) return normalizeInst(ds[k].institutions[0]);
+    for (const s of shorthand) {
+      if (s && s.length >= 4 && t.includes(s)) return b;
     }
+  }
+
+  // common keywords (if dataset doesn't catch)
+  const common = [
+    { id: "gtb", name: "Guaranty Trust Bank Plc (GTBank)", keys: ["gtbank", "gtb", "guaranty trust"] },
+    { id: "access", name: "Access Bank Plc", keys: ["access bank"] },
+    { id: "uba", name: "United Bank for Africa (UBA)", keys: ["uba", "united bank for africa"] },
+    { id: "zenith", name: "Zenith Bank Plc", keys: ["zenith bank"] },
+    { id: "firstbank", name: "First Bank of Nigeria Ltd", keys: ["firstbank", "first bank"] },
+    { id: "ecobank", name: "Ecobank Nigeria", keys: ["ecobank"] },
+  ];
+  for (const c of common) {
+    if (textHasAny(t, c.keys)) return { id: c.id, name: c.name };
+  }
+
+  return null;
+}
+
+function extractNigeriaState(text) {
+  const t = lc(text);
+
+  for (const s of POLICE_STATES) {
+    const name = lc(s.name);
+    if (name && t.includes(name)) return s;
+
+    // aliases e.g. "fct", "abuja"
+    for (const a of s.aliases || []) {
+      const aa = lc(a);
+      if (aa && t.includes(aa)) return s;
+    }
+
+    // capital mention e.g. "asaba" => Delta
+    const cap = lc(s.capital);
+    if (cap && cap.length >= 4 && t.includes(cap)) return s;
+  }
+  return null;
+}
+
+// ------------------------------------------------------------
+// OpenAI call - STRICT JSON contract
+// ------------------------------------------------------------
+async function callAIRouter(description, userAddress) {
+  const openai = getOpenAI();
+  if (!openai) return null;
+
+  const sys = `
+You are PetitionDesk Routing AI.
+You MUST output ONE valid JSON object ONLY (no markdown, no explanations).
+You are routing a complaint/petition to the correct institution(s) globally.
+
+CORE RULES:
+1) Entity-first: identify any explicitly named institution(s), branch names, ministries, regulators, parliaments, courts, police commands, hospitals, telecoms, airlines, etc.
+2) If user explicitly says "write to X" or "copy Y", obey it exactly as explicitTargets.
+3) Never output generic placeholders like "Bank Branch" or "International Human Rights Body".
+4) If you are not 100% sure of an email/address, leave it blank and set needsVerification=true.
+5) Do NOT hallucinate verified emails/addresses.
+
+OUTPUT SCHEMA (must match):
+{
+  "sector": "banking|police|telecom|housing|health|education|aviation|maritime|transport|immigration|human_rights|general",
+  "summary": "short one-line summary",
+  "location": { "country": "", "state": "", "city": "" },
+  "entities": {
+    "namedInstitutions": [ "..." ],
+    "banks": [ "..." ],
+    "governmentBodies": [ "..." ],
+    "lawEnforcement": [ "..." ],
+    "telecoms": [ "..." ],
+    "hospitals": [ "..." ]
+  },
+  "explicitTargets": {
+    "primary": { "org": "", "title": "", "address": "", "email": "", "country": "", "state": "", "city": "", "needsVerification": true/false },
+    "through": { "org": "", "title": "", "address": "", "email": "", "country": "", "state": "", "city": "", "needsVerification": true/false } | null,
+    "ccList": [ { "org": "", "title": "", "address": "", "email": "", "country": "", "state": "", "city": "", "needsVerification": true/false } ]
+  },
+  "routing": {
+    "primary": { ...same as above... },
+    "through": { ...same as above... } | null,
+    "ccList": [ ...same as above... ]
+  },
+  "confidence": 0.0 to 1.0,
+  "flags": { "needsVerification": true/false, "explicitUserTargets": true/false }
+}
+`;
+
+  const user = `
+Complaint: ${description}
+
+User address/context (optional): ${userAddress || ""}
+
+Return JSON now.
+`;
+
+  try {
+    // Using Responses API style via openai sdk is model dependent.
+    // Your openaiClient.js returns OpenAI instance; we will use chat.completions for compatibility.
+    const resp = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      temperature: 0.1,
+      messages: [
+        { role: "system", content: sys.trim() },
+        { role: "user", content: user.trim() },
+      ],
+    });
+
+    const txt = resp?.choices?.[0]?.message?.content || "";
+    const raw = txt.trim();
+
+    // Strict parse: find first { and last }
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start < 0 || end < 0 || end <= start) return null;
+
+    const jsonStr = raw.slice(start, end + 1);
+    const parsed = JSON.parse(jsonStr);
+    return parsed;
+  } catch (e) {
+    console.error("[aiRouting] OpenAI routing error:", e?.message || e);
     return null;
   }
+}
 
-  function allFromDataset(ds, limit = 6) {
-    const out = [];
-    if (!ds) return out;
+// ------------------------------------------------------------
+// Post-AI validation & enrichment (logic guardrails)
+// ------------------------------------------------------------
+function ensureNigeriaRegulatorsIfNeeded(route, bankDetected) {
+  // Only apply Nigeria regulators if Nigeria is very likely
+  const country = lc(route?.location?.country || route?.routing?.primary?.country || "");
+  const isNigeria = country === "nigeria" || /nigeria/.test(lc(route?.summary || ""));
 
-    const pushMany = (arr) => {
-      for (const it of arr || []) {
-        const n = normalizeInst(it);
-        if (n) out.push(n);
-      }
-    };
+  if (!isNigeria) return route;
 
-    if (Array.isArray(ds)) pushMany(ds);
-    else if (Array.isArray(ds.institutions)) pushMany(ds.institutions);
-    else {
-      for (const k of Object.keys(ds)) {
-        const v = ds[k];
-        if (Array.isArray(v)) pushMany(v);
-        else if (v && Array.isArray(v.institutions)) pushMany(v.institutions);
-      }
-    }
+  // if banking and bank is detected, add CBN + NDIC (unless already present)
+  const sector = lc(route?.sector || "");
+  if (sector !== "banking") return route;
 
-    return uniqByOrg(out).slice(0, limit);
+  const cc = Array.isArray(route?.routing?.ccList) ? route.routing.ccList : [];
+  const add = (org, title) => {
+    if (cc.some((x) => lc(x?.org) === lc(org))) return;
+    cc.push({
+      org,
+      title: title || org,
+      address: "Nigeria",
+      email: "",
+      country: "Nigeria",
+      needsVerification: true,
+    });
+  };
+
+  if (bankDetected) {
+    add("Central Bank of Nigeria (CBN)", "The Governor, Central Bank of Nigeria");
+    add("Nigeria Deposit Insurance Corporation (NDIC)", "The Managing Director/CEO, NDIC");
   }
 
-  // Pick sector primary + cc (never placeholders)
-  let primary = null;
+  route.routing.ccList = cc;
+  return route;
+}
+
+function canonizeBankIfGenericPrimary(route, bankDetected) {
+  if (!bankDetected) return route;
+
+  const primaryOrg = safeStr(route?.routing?.primary?.org || "");
+  if (!primaryOrg || looksGenericOrg(primaryOrg)) {
+    // Replace with the detected bank
+    route.routing.primary = {
+      org: bankDetected.name,
+      title: bankDetected.name,
+      address: "Nigeria",
+      email: "",
+      country: "Nigeria",
+      needsVerification: true,
+    };
+  }
+
+  // If primary already contains the bank name but messy, canonicalize
+  const pOrgLc = lc(route.routing.primary.org || "");
+  const bLc = lc(bankDetected.name);
+  if (pOrgLc && bLc && (pOrgLc.includes("gtb") || pOrgLc.includes("gtbank") || pOrgLc.includes(bLc.split(" ")[0]))) {
+    route.routing.primary.org = bankDetected.name;
+    route.routing.primary.title = safeStr(route.routing.primary.title || bankDetected.name);
+  }
+
+  // If user mentioned "branch", set through as head office (Nigeria only)
+  const desc = lc(route?.__desc || "");
+  const wantsBranch = desc.includes("branch");
+
+  if (wantsBranch) {
+    if (!route.routing.through || looksGenericOrg(route.routing.through.org || "")) {
+      route.routing.through = {
+        org: `${bankDetected.name} Head Office`,
+        title: `${bankDetected.name} Head Office`,
+        address: "Nigeria",
+        email: "",
+        country: "Nigeria",
+        needsVerification: true,
+      };
+    }
+  }
+
+  return route;
+}
+
+function fixPoliceStateIfNeeded(route, detectedState) {
+  const sector = lc(route?.sector || "");
+  if (sector !== "police") return route;
+
+  if (!detectedState) return route;
+
+  const stateName = detectedState.name;
+  const capital = detectedState.capital || "";
+
+  // Replace generic police orgs
+  const p = route?.routing?.primary || {};
+  const orgLc = lc(p.org || "");
+
+  if (!p.org || looksGenericOrg(p.org) || orgLc.includes("commissioner of police (state)") || orgLc.includes("police command (state)")) {
+    route.routing.primary = {
+      org: `Commissioner of Police, ${stateName} State Command`,
+      title: `The Commissioner of Police, ${stateName} State Command`,
+      address: capital
+        ? `${stateName} State Police Command Headquarters, ${capital}, ${stateName} State, Nigeria`
+        : `${stateName} State Police Command, Nigeria`,
+      email: "",
+      country: "Nigeria",
+      state: stateName,
+      city: capital,
+      needsVerification: true,
+    };
+  }
+
+  // Through: IGP (only if missing or generic)
+  const thr = route?.routing?.through;
+  if (!thr || looksGenericOrg(thr.org || "")) {
+    route.routing.through = {
+      org: "Inspector-General of Police, Nigeria Police Force",
+      title: "The Inspector-General of Police",
+      address: "Force Headquarters, Louis Edet House, Abuja, Nigeria",
+      email: "",
+      country: "Nigeria",
+      needsVerification: true,
+    };
+  }
+
+  // CC default (PSC + NHRC) if not present
+  const cc = Array.isArray(route?.routing?.ccList) ? route.routing.ccList : [];
+  const add = (org, title) => {
+    if (cc.some((x) => lc(x?.org) === lc(org))) return;
+    cc.push({
+      org,
+      title: title || org,
+      address: "Nigeria",
+      email: "",
+      country: "Nigeria",
+      needsVerification: true,
+    });
+  };
+
+  add("Police Service Commission", "The Chairman, Police Service Commission");
+  add("National Human Rights Commission", "The Executive Secretary, NHRC");
+
+  route.routing.ccList = cc;
+  return route;
+}
+
+function finalValidate(route) {
+  route = route || {};
+  route.routing = route.routing || {};
+  route.flags = route.flags || {};
+  route.entities = route.entities || {};
+  route.location = route.location || {};
+
+  // Normalize primary/through/cc
+  route.routing.primary = normalizeInstitution(route.routing.primary, "Institution");
+  route.routing.through = route.routing.through ? normalizeInstitution(route.routing.through, "Institution") : null;
+  route.routing.ccList = uniqByOrg((route.routing.ccList || []).map((x) => normalizeInstitution(x, "Institution")));
+
+  // Never allow totally generic primary
+  if (!route.routing.primary?.org || looksGenericOrg(route.routing.primary.org)) {
+    // ultimate safe fallback: PCC (only as last resort)
+    route.routing.primary = {
+      org: "Public Complaints Commission",
+      title: "The Honourable Chief Commissioner",
+      address: "Nigeria",
+      email: "",
+      country: "Nigeria",
+      needsVerification: true,
+    };
+    route.flags.needsVerification = true;
+  }
+
+  // if AI gave explicitTargets, prefer those (but still validate)
+  if (route.explicitTargets && route.flags?.explicitUserTargets) {
+    const ep = normalizeInstitution(route.explicitTargets.primary, route.routing.primary.org);
+    if (ep?.org && !looksGenericOrg(ep.org)) route.routing.primary = ep;
+
+    const et = route.explicitTargets.through ? normalizeInstitution(route.explicitTargets.through, "Institution") : null;
+    if (et?.org && !looksGenericOrg(et.org)) route.routing.through = et;
+
+    const ecc = Array.isArray(route.explicitTargets.ccList) ? route.explicitTargets.ccList : [];
+    route.routing.ccList = uniqByOrg([...route.routing.ccList, ...ecc.map((x) => normalizeInstitution(x, "Institution"))]);
+  }
+
+  // Cap confidence
+  const c = Number(route.confidence);
+  route.confidence = Number.isFinite(c) ? Math.max(0, Math.min(1, c)) : 0.5;
+
+  // Needs verification flag
+  const nv =
+    !!route.flags?.needsVerification ||
+    !!route.routing.primary?.needsVerification ||
+    !!route.routing.through?.needsVerification ||
+    (route.routing.ccList || []).some((x) => !!x.needsVerification);
+
+  route.flags.needsVerification = nv;
+
+  return route;
+}
+
+// ------------------------------------------------------------
+// Minimal fallback routing (ONLY when AI fails)
+// ------------------------------------------------------------
+function fallbackRoute(description, userAddress) {
+  const desc = safeStr(description);
+  const t = lc(desc);
+
+  const bankDetected = extractPossibleBank(desc);
+  const stateDetected = extractNigeriaState(desc);
+
+  // Basic sector guess
+  let sector = "general";
+  if (bankDetected || textHasAny(t, ["bank", "transfer", "reversed", "debit", "atm", "pos", "chargeback"])) sector = "banking";
+  else if (textHasAny(t, ["police", "arrest", "detained", "detention", "dpo", "sars"])) sector = "police";
+  else if (textHasAny(t, ["mtn", "airtel", "glo", "9mobile", "network", "data", "airtime"])) sector = "telecom";
+  else if (textHasAny(t, ["landlord", "tenant", "evicted", "rent", "house"])) sector = "housing";
+  else if (textHasAny(t, ["hospital", "clinic", "refused", "treatment", "emergency"])) sector = "health";
+
+  // Build fallback institutions (safe)
+  let primary = { org: "Public Complaints Commission", title: "The Honourable Chief Commissioner", address: "Nigeria", email: "", needsVerification: true };
   let through = null;
   let ccList = [];
 
-  if (sector === "telecom") {
-    // Try match NCC from pool
-    primary = findInPoolByOrgContains("nigerian communications commission") || makeInst("Nigerian Communications Commission (NCC)");
+  if (sector === "banking" && bankDetected) {
+    primary = { org: bankDetected.name, title: bankDetected.name, address: "Nigeria", email: "", needsVerification: true };
+    through = { org: `${bankDetected.name} Head Office`, title: `${bankDetected.name} Head Office`, address: "Nigeria", email: "", needsVerification: true };
     ccList = [
-      findInPoolByOrgContains("fccpc") || makeInst("Federal Competition and Consumer Protection Commission (FCCPC)"),
-      findInPoolByOrgContains("public complaints commission") || makeInst("Public Complaints Commission (PCC)"),
+      { org: "Central Bank of Nigeria (CBN)", title: "The Governor, Central Bank of Nigeria", address: "Nigeria", email: "", needsVerification: true },
+      { org: "Nigeria Deposit Insurance Corporation (NDIC)", title: "The Managing Director/CEO, NDIC", address: "Nigeria", email: "", needsVerification: true },
     ];
-  } else if (sector === "health") {
-    // Use dataset if present else fallback to pool
-    primary = firstFromDataset(healthRegsJson) || findInPoolByOrgContains("federal ministry of health") || makeInst("Federal Ministry of Health");
-    ccList = [
-      findInPoolByOrgContains("nhrc") || makeInst("National Human Rights Commission (NHRC)"),
-      findInPoolByOrgContains("pcc") || makeInst("Public Complaints Commission (PCC)"),
-    ];
-  } else if (sector === "education") {
-    primary = firstFromDataset(educationRegsJson) || makeInst("Federal Ministry of Education");
-    ccList = [findInPoolByOrgContains("pcc") || makeInst("Public Complaints Commission (PCC)")];
-  } else if (sector === "aviation") {
-    primary = firstFromDataset(aviationRegsJson) || makeInst("Nigerian Civil Aviation Authority (NCAA)");
-    ccList = [findInPoolByOrgContains("fccpc") || makeInst("Federal Competition and Consumer Protection Commission (FCCPC)")];
-  } else if (sector === "maritime") {
-    primary = firstFromDataset(maritimeRegsJson) || makeInst("Nigerian Ports Authority (NPA)");
-    ccList = [findInPoolByOrgContains("pcc") || makeInst("Public Complaints Commission (PCC)")];
-  } else if (sector === "transport") {
-    primary = firstFromDataset(transportRegsJson) || makeInst("Federal Ministry of Transportation");
-    ccList = [findInPoolByOrgContains("pcc") || makeInst("Public Complaints Commission (PCC)")];
-  } else if (sector === "banking") {
-    // if sector guessed but no bank entity found, go to regulators, not "bank branch"
-    primary = firstFromDataset(bankingRegsJson) || makeInst("Central Bank of Nigeria (CBN)");
-    ccList = allFromDataset(bankingRegsJson, 6);
-  } else if (sector === "international") {
-    // If user said UN/asylum but did not name explicit bodies clearly, route to MFA + NHRC (Nigeria)
-    primary = makeInst("Federal Ministry of Foreign Affairs", { address: "Nigeria", category: "international" });
-    ccList = [
-      makeInst("National Human Rights Commission (NHRC)", { address: "Nigeria" }),
-      makeInst("Public Complaints Commission (PCC)", { address: "Nigeria" }),
-    ];
-  } else {
-    // general government / federal
-    primary = firstFromDataset(federalJson) || pccFallback();
   }
 
-  // 5) FINAL SAFETY: PCC ONLY IF NOTHING
-  if (!primary) primary = pccFallback();
+  if (sector === "police" && stateDetected) {
+    primary = {
+      org: `Commissioner of Police, ${stateDetected.name} State Command`,
+      title: `The Commissioner of Police, ${stateDetected.name} State Command`,
+      address: stateDetected.capital
+        ? `${stateDetected.name} State Police Command Headquarters, ${stateDetected.capital}, ${stateDetected.name} State, Nigeria`
+        : `${stateDetected.name} State Police Command, Nigeria`,
+      email: "",
+      needsVerification: true,
+    };
+    through = { org: "Inspector-General of Police, Nigeria Police Force", title: "The Inspector-General of Police", address: "Force Headquarters, Louis Edet House, Abuja, Nigeria", email: "", needsVerification: true };
+    ccList = [
+      { org: "Police Service Commission", title: "The Chairman, Police Service Commission", address: "Nigeria", email: "", needsVerification: true },
+      { org: "National Human Rights Commission", title: "The Executive Secretary, NHRC", address: "Nigeria", email: "", needsVerification: true },
+    ];
+  }
 
+  return finalValidate({
+    sector,
+    summary: "Fallback routing used (AI unavailable or failed).",
+    location: { country: "Nigeria" },
+    entities: {
+      namedInstitutions: bankDetected ? [bankDetected.name] : [],
+      banks: bankDetected ? [bankDetected.name] : [],
+      lawEnforcement: sector === "police" ? ["Nigeria Police Force"] : [],
+    },
+    routing: { primary, through, ccList },
+    confidence: 0.35,
+    flags: { needsVerification: true, explicitUserTargets: false },
+    __desc: desc,
+  });
+}
+
+// ------------------------------------------------------------
+// Main exported function: detectHybrid()
+// ------------------------------------------------------------
+async function detectHybrid(description = "", userAddress = "") {
+  const desc = safeStr(description);
+  const addr = safeStr(userAddress);
+
+  // Always keep original description available for enrichers
+  const bankDetected = extractPossibleBank(desc);
+  const stateDetected = extractNigeriaState(desc);
+
+  // If OpenAI is not ready, fallback
+  if (!isOpenAIReady || typeof isOpenAIReady !== "function" || !isOpenAIReady()) {
+    return fallbackRoute(desc, addr).routing
+      ? {
+          sector: fallbackRoute(desc, addr).sector,
+          primary: fallbackRoute(desc, addr).routing.primary,
+          through: fallbackRoute(desc, addr).routing.through,
+          ccList: fallbackRoute(desc, addr).routing.ccList,
+          confidence: fallbackRoute(desc, addr).confidence,
+          flags: fallbackRoute(desc, addr).flags,
+          entities: fallbackRoute(desc, addr).entities,
+          location: fallbackRoute(desc, addr).location,
+        }
+      : {};
+  }
+
+  // 1) AI-first routing
+  const ai = await callAIRouter(desc, addr);
+
+  // If AI failed, fallback
+  if (!ai || !isObj(ai)) {
+    const fb = fallbackRoute(desc, addr);
+    return {
+      sector: fb.sector,
+      primary: fb.routing.primary,
+      through: fb.routing.through,
+      ccList: fb.routing.ccList,
+      confidence: fb.confidence,
+      flags: fb.flags,
+      entities: fb.entities,
+      location: fb.location,
+    };
+  }
+
+  // Normalize AI into our internal object
+  let route = {
+    sector: safeStr(ai.sector || "general"),
+    summary: safeStr(ai.summary || ""),
+    location: isObj(ai.location) ? ai.location : {},
+    entities: isObj(ai.entities) ? ai.entities : {},
+    explicitTargets: isObj(ai.explicitTargets) ? ai.explicitTargets : null,
+    routing: isObj(ai.routing) ? ai.routing : {},
+    confidence: Number(ai.confidence),
+    flags: isObj(ai.flags) ? ai.flags : {},
+    __desc: desc,
+  };
+
+  // 2) Validate baseline (no generics, normalize shapes)
+  route = finalValidate(route);
+
+  // 3) ENTITY-FIRST ENRICHMENT (only fix broken/generic output)
+  // Banking: if bank was detected locally, fix generic primary/through & add Nigeria regulators
+  route = canonizeBankIfGenericPrimary(route, bankDetected);
+  route = ensureNigeriaRegulatorsIfNeeded(route, bankDetected);
+
+  // Police: if state detected, fix generic police output
+  route = fixPoliceStateIfNeeded(route, stateDetected);
+
+  // 4) Final validate again after enrichments
+  route = finalValidate(route);
+
+  // 5) Return shape expected by server.cjs
   return {
-    mode: "sector_fallback",
-    primary,
-    through,
-    ccList: uniqByOrg(ccList.filter(Boolean)),
-    sector: clean(sector || "general"),
-    confidence: 0.55,
-    reason: "No explicit/strong entity found; sector fallback used",
+    sector: route.sector || "general",
+    primary: normalizeInstitution(route.routing.primary, "Institution"),
+    through: route.routing.through ? normalizeInstitution(route.routing.through, "Institution") : null,
+    ccList: uniqByOrg((route.routing.ccList || []).map((x) => normalizeInstitution(x, "Institution"))),
+    confidence: route.confidence,
+    flags: route.flags,
+    entities: route.entities,
+    location: route.location,
+    summary: route.summary,
   };
 }
 
-// Export
 module.exports = {
   detectHybrid,
 };
