@@ -16,40 +16,47 @@ function safeRequire(path, fallback = {}) {
   try {
     return require(path);
   } catch (e) {
-    console.error(`⚠️ Failed to load ${path} – using fallback`, e.message);
+    console.warn(`⚠️ Failed to load ${path} – using fallback`);
     return fallback;
   }
 }
 
 // ================================
-// IMPORTS (SAFE)
+// IMPORTS (CORRECTED)
 // ================================
 const { detectHybrid } =
   safeRequire("./core/aiRouting", { detectHybrid: async () => ({}) });
 
+// helpers.js EXISTS
 const {
   applyWatchdogs,
   applySectorSupervisors,
-} = safeRequire("./core/routingHelpers", {});
+} = safeRequire("./core/helpers", {});
 
+// police.js EXISTS
 const {
   refinePoliceInstitutions,
 } = safeRequire("./core/police", {});
 
+// petitions.js EXISTS
 const {
   buildPetition,
   fallbackPetition,
-} = safeRequire("./core/petitionBuilder", {
-  buildPetition: async () => "Petition processing temporarily unavailable.",
-  fallbackPetition: () => "Petition processing temporarily unavailable.",
+} = safeRequire("./core/petitions", {
+  buildPetition: async () =>
+    "Petition processing temporarily unavailable.",
+  fallbackPetition: () =>
+    "Petition processing temporarily unavailable.",
 });
 
+// payments.js EXISTS
 const {
   startFlutterwavePayment,
   verifyFlutterwavePayment,
   isVerified,
 } = safeRequire("./core/payments", {});
 
+// openaiClient.js EXISTS
 const { isOpenAIReady } =
   safeRequire("./core/openaiClient", { isOpenAIReady: () => false });
 
@@ -129,6 +136,7 @@ app.post("/generate-petition", async (req, res) => {
     try {
       if (typeof applyWatchdogs === "function")
         inst = applyWatchdogs(inst, route);
+
       if (typeof applySectorSupervisors === "function")
         inst = applySectorSupervisors(inst, route);
 
