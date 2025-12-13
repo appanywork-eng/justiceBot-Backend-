@@ -9,40 +9,62 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-// ===============================
-// IMPORTS
-// ===============================
-const { detectHybrid } = require("./core/aiRouting");
+// ================================
+// SAFE IMPORT WRAPPER
+// ================================
+function safeRequire(path, fallback = {}) {
+  try {
+    return require(path);
+  } catch (e) {
+    console.error(`⚠️ Failed to load ${path} – using fallback`, e.message);
+    return fallback;
+  }
+}
 
-const { applyWatchdogs, applySectorSupervisors } = require("./core/watchdogs");
+// ================================
+// IMPORTS (SAFE)
+// ================================
+const { detectHybrid } =
+  safeRequire("./core/aiRouting", { detectHybrid: async () => ({}) });
 
 const {
-  detectSector: detectSectorLegacy, // kept for future use if you need it
-  refinePoliceInstitutions,
-} = require("./core/police");
+  applyWatchdogs,
+  applySectorSupervisors,
+} = safeRequire("./core/routingHelpers", {});
 
-const { buildPetition, fallbackPetition } = require("./core/petitions");
+const {
+  refinePoliceInstitutions,
+} = safeRequire("./core/police", {});
+
+const {
+  buildPetition,
+  fallbackPetition,
+} = safeRequire("./core/petitionBuilder", {
+  buildPetition: async () => "Petition processing temporarily unavailable.",
+  fallbackPetition: () => "Petition processing temporarily unavailable.",
+});
 
 const {
   startFlutterwavePayment,
   verifyFlutterwavePayment,
   isVerified,
-} = require("./core/payments");
+} = safeRequire("./core/payments", {});
 
-const { isOpenAIReady } = require("./core/openaiClient");
+const { isOpenAIReady } =
+  safeRequire("./core/openaiClient", { isOpenAIReady: () => false });
 
-// ===============================
+// ================================
 // EXPRESS SETUP
-// ===============================
+// ================================
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 
-// ===============================
+// ================================
 // BASIC ROUTES
-// ===============================
+// ================================
 app.get("/", (req, res) => {
   res.send("PetitionDesk PDPS-2.5 PRO Backend is running.");
 });
@@ -55,14 +77,13 @@ app.get("/health", (req, res) => {
   });
 });
 
-// ===============================
-// GENERATE PETITION (MAIN ENDPOINT)
-// ===============================
+// ================================
+// GENERATE PETITION (MAIN)
+// ================================
 app.post("/generate-petition", async (req, res) => {
   try {
-    const description = (req.body && req.body.description) ? String(req.body.description) : "";
-
-    if (!description.trim()) {
+    const description = String(req.body?.description || "").trim();
+    if (!description) {
       return res.status(200).json({
         ok: false,
         error: "Please describe your complaint.",
@@ -72,81 +93,81 @@ app.post("/generate-petition", async (req, res) => {
     }
 
     const complainant = {
-      fullName: (req.body && req.body.fullName) ? String(req.body.fullName) : "",
-      email: (req.body && req.body.email) ? String(req.body.email) : "",
-      phone: (req.body && req.body.phone) ? String(req.body.phone) : "",
-      address: (req.body && req.body.address) ? String(req.body.address) : "",
+      fullName: String(req.body?.fullName || ""),
+      email: String(req.body?.email || ""),
+      phone: String(req.body?.phone || ""),
+      address: String(req.body?.address || ""),
       description,
     };
 
-    // ===============================
-    // 🔒 AI ROUTING — SINGLE SOURCE OF TRUTH
-    // ===============================
-    const route = await detectHybrid(
-      complainant.description || "",
-      complainant.address || ""
-    );
-
-    const sector = (route && route.sector) ? route.sector : "general";
-
-    // Default primary institution (safe fallback)
-    const defaultPrimary = {
-      org: "Public Complaints Commission",
-      title: "The Honourable Chief Commissioner",
-      address: "Nigeria.",
-      category: "government",
-      sector,
-    };
-
-    // Build inst object in the format your petition builder expects
-    let inst = {
-      primary: (route && route.primary) ? route.primary : defaultPrimary,
-      through: (route && route.through) ? route.through : null,
-      ccList: Array.isArray(route && route.ccList) ? route.ccList : [],
-    };
-
-    // Apply your extra routing rules
+    // 🔐 AI routing (never crash)
+    let route = {};
     try {
-      inst = (typeof applyWatchdogs === "function" ? (applyWatchdogs(description, inst) || inst) : inst);
-      inst = (typeof applySectorSupervisors === "function" ? (applySectorSupervisors(description, inst) || inst) : inst);
+      route = await detectHybrid(
+        complainant.description,
+        complainant.address
+      );
+    } catch (e) {
+      console.error("AI routing failed:", e);
+    }
 
-      if (sector === "police" && typeof refinePoliceInstitutions === "function") {
-        inst = refinePoliceInstitutions(description, inst, complainant.address) || inst;
+    const sector = route?.sector || "general";
+
+    // Default institution fallback
+    let inst = {
+      primary: {
+        org: "Public Complaints Commission",
+        title: "The Honourable Chief Commissioner",
+        address: "Nigeria",
+        category: "government",
+      },
+      through: null,
+      ccList: [],
+    };
+
+    // Apply routing helpers safely
+    try {
+      if (typeof applyWatchdogs === "function")
+        inst = applyWatchdogs(inst, route);
+      if (typeof applySectorSupervisors === "function")
+        inst = applySectorSupervisors(inst, route);
+
+      if (
+        sector === "police" &&
+        typeof refinePoliceInstitutions === "function"
+      ) {
+        inst = refinePoliceInstitutions(description, inst);
       }
     } catch (e) {
-      // never block petition generation because of routing helpers
       console.error("Routing helpers error (ignored):", e);
     }
 
-    // Filter CC list to only valid entries
+    // Clean CC list
     inst.ccList = (inst.ccList || []).filter(
       (c) => c && c.org && String(c.org).trim()
     );
 
-    // Generate petition text (SAN-grade via buildPetition, fallback if needed)
+    // Build petition text
     let petitionText;
     try {
-      petitionText = await buildPetition(complainant, inst, sector);
-    } catch (innerErr) {
-      console.error("AI petition generation failed, using fallback:", innerErr);
+      petitionText = await buildPetition(complainant, inst);
+    } catch (e) {
+      console.error("AI petition failed, using fallback:", e);
       petitionText = fallbackPetition(complainant, inst);
     }
 
-    // Build petition ID
-    const randomPart = Math.floor(Math.random() * 1000000)
-      .toString()
-      .padStart(6, "0");
-    const petitionId = "PD-" + Date.now() + "-" + randomPart;
+    const petitionId =
+      "PD-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
 
     return res.status(200).json({
       ok: true,
+      petitionId,
       petitionText,
       primaryInstitution: inst.primary,
       throughInstitution: inst.through,
       ccList: inst.ccList,
-      petitionId,
-      verified: false,
       sector,
+      verified: false,
     });
   } catch (err) {
     console.error("Error generating petition:", err);
@@ -159,59 +180,43 @@ app.post("/generate-petition", async (req, res) => {
   }
 });
 
-// ===============================
-// PAYMENT — requires petitionId
-// ===============================
+// ================================
+// PAYMENT
+// ================================
 app.post("/pay", async (req, res) => {
   try {
-    const body = req.body || {};
-    const amount = Number(body.amount);
-    const fullName = body.fullName ? String(body.fullName) : "";
-    const email = body.email ? String(body.email) : "";
-    const petitionId = body.petitionId ? String(body.petitionId) : "";
+    const amount = Number(req.body?.amount);
+    const petitionId = String(req.body?.petitionId || "");
 
-    if (!petitionId) {
-      return res.status(400).json({
-        ok: false,
-        error: "Missing petitionId.",
-      });
-    }
+    if (!petitionId)
+      return res.status(400).json({ ok: false, error: "Missing petitionId." });
 
-    if (!amount || amount < 1000) {
-      return res.status(400).json({
-        ok: false,
-        error: "Minimum petition fee is ₦1000.",
-      });
-    }
+    if (!amount || amount < 1000)
+      return res
+        .status(400)
+        .json({ ok: false, error: "Minimum petition fee is ₦1000." });
 
-    const baseRedirect = process.env.FLW_REDIRECT_URL || "";
+    if (typeof startFlutterwavePayment !== "function")
+      throw new Error("Payment service unavailable");
+
     const redirectUrl =
-      baseRedirect +
-      (baseRedirect.includes("?") ? "&" : "?") +
-      "petitionId=" +
+      (process.env.FLW_REDIRECT_URL || "") +
+      "?petitionId=" +
       encodeURIComponent(petitionId);
 
     const result = await startFlutterwavePayment({
       amount,
+      fullName: req.body?.fullName || "Petitioner",
+      email: req.body?.email || "",
+      redirectUrl,
       currency: "NGN",
-      fullName,
-      email,
       description: "PetitionDesk - Petition Payment",
-      redirect_url: redirectUrl,
     });
-
-    if (!result || !result.ok) {
-      console.error("Flutterwave payment init failed:", result);
-      return res.status(500).json({
-        ok: false,
-        error: "Unable to start payment. Please try again.",
-      });
-    }
 
     return res.json({
       ok: true,
-      paymentLink: result.paymentLink,
-      txRef: result.txRef,
+      paymentLink: result?.paymentLink,
+      txRef: result?.txRef,
       petitionId,
     });
   } catch (err) {
@@ -223,27 +228,26 @@ app.post("/pay", async (req, res) => {
   }
 });
 
-// ===============================
+// ================================
 // VERIFY PAYMENT
-// ===============================
+// ================================
 app.get("/verify-payment", async (req, res) => {
-  const txRef = req.query && req.query.txRef ? String(req.query.txRef) : "";
-
-  if (!txRef) {
+  const txRef = String(req.query?.txRef || "");
+  if (!txRef)
     return res.status(400).json({
       verified: false,
       error: "Missing txRef.",
     });
-  }
 
   try {
-    // quick in-memory / cache check if implemented
-    if (typeof isVerified === "function" && isVerified(txRef)) {
+    if (typeof isVerified === "function" && isVerified(txRef))
       return res.json({ verified: true });
-    }
+
+    if (typeof verifyFlutterwavePayment !== "function")
+      throw new Error("Verification unavailable");
 
     const v = await verifyFlutterwavePayment(txRef);
-    return res.json({ verified: !!(v && v.verified) });
+    return res.json({ verified: !!v?.verified });
   } catch (err) {
     console.error("Verify payment error:", err);
     return res.status(500).json({
@@ -253,9 +257,9 @@ app.get("/verify-payment", async (req, res) => {
   }
 });
 
-// ===============================
+// ================================
 // START SERVER
-// ===============================
+// ================================
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`PDPS-2.5 PRO Backend running on port ${PORT}`);
 });
