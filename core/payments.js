@@ -1,6 +1,11 @@
 // core/payments.js
-// Flutterwave payment initialisation.
+// Flutterwave payment initialisation + verification
 
+const fetch = require("node-fetch");
+
+/**
+ * START PAYMENT
+ */
 async function startFlutterwavePayment(body) {
   try {
     const secret = process.env.FLW_SECRET_KEY;
@@ -12,7 +17,7 @@ async function startFlutterwavePayment(body) {
     }
 
     const {
-      amount = 1500, // default amount in NGN
+      amount = 1150, // flat rate ₦1,150
       currency,
       fullName,
       email,
@@ -22,7 +27,7 @@ async function startFlutterwavePayment(body) {
     const baseCurrency =
       currency || process.env.BASE_PAYMENT_CURRENCY || "NGN";
 
-    const txRef = `PDK-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+    const txRef = `PDK-${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
 
     const payload = {
       tx_ref: txRef,
@@ -43,14 +48,17 @@ async function startFlutterwavePayment(body) {
       },
     };
 
-    const fwRes = await fetch("https://api.flutterwave.com/v3/payments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${secret}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const fwRes = await fetch(
+      "https://api.flutterwave.com/v3/payments",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${secret}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     const data = await fwRes.json().catch(() => ({}));
 
@@ -76,6 +84,42 @@ async function startFlutterwavePayment(body) {
   }
 }
 
+/**
+ * VERIFY PAYMENT
+ */
+async function verifyFlutterwavePayment(txRef) {
+  if (!txRef) {
+    return { verified: false };
+  }
+
+  const secret = process.env.FLW_SECRET_KEY;
+  if (!secret) {
+    throw new Error("FLW_SECRET_KEY not set");
+  }
+
+  const res = await fetch(
+    `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(
+      txRef
+    )}`,
+    {
+      headers: {
+        Authorization: `Bearer ${secret}`,
+      },
+    }
+  );
+
+  const json = await res.json().catch(() => ({}));
+  const data = json?.data;
+
+  return {
+    verified: data?.status === "successful",
+    amount: data?.amount,
+    currency: data?.currency,
+    txRef,
+  };
+}
+
 module.exports = {
   startFlutterwavePayment,
+  verifyFlutterwavePayment,
 };

@@ -1,0 +1,98 @@
+{
+  "state_signals": ["state", "ministry of", "commissioner", "state hospital", "state secretariat", "local government", "lga", "local council"],
+  "federal_signals": ["federal", "minister", "abuja", "national", "fct", "agency", "commission", "authority", "council", "headquarters"],
+
+  "sectors": [
+    {
+      "sector": "health",
+      "keywords": ["hospital","clinic","doctor","nurse","patient","medical","midwife","pharmacy","malpractice","negligence"],
+      "federal_primary": "Federal Ministry of Health Nigeria",
+      "state_through": "State Ministry of Health",
+      "mandatory_cc": ["Medical and Dental Council of Nigeria", "National Human Rights Commission Nigeria", "Public Complaints Commission"]
+    },
+    {
+      "sector": "police_security",
+      "keywords": ["police","dpo","ipob","army","navy","air force","security","detention","arrest","torture","bail","extortion","custody"],
+      "federal_primary": "Nigeria Police Force (Force Headquarters)",
+      "state_through": "State Police Command / Commissioner of Police",
+      "mandatory_cc": ["Police Service Commission", "National Human Rights Commission Nigeria", "Public Complaints Commission"]
+    },
+    {
+      "sector": "electricity_power",
+      "keywords": ["disco","meter","estimated billing","transformer","aedc","ikeja electric","phcn","nepa","electricity","power","tariff"],
+      "federal_primary": "Nigerian Electricity Regulatory Commission (NERC)",
+      "state_through": "",
+      "mandatory_cc": ["Public Complaints Commission"]
+    },
+    {
+      "sector": "banking_finance",
+      "keywords": ["bank","atm","pos","transfer","chargeback","loan","fraud","kyc","bvn","account","debit","credit"],
+      "federal_primary": "Central Bank of Nigeria (CBN)",
+      "state_through": "",
+      "mandatory_cc": ["Public Complaints Commission"]
+    },
+    {
+      "sector": "telecoms",
+      "keywords": ["mtn","airtel","glo","9mobile","sim","network","data","ussd","ncc","call","sms"],
+      "federal_primary": "Nigerian Communications Commission (NCC)",
+      "state_through": "",
+      "mandatory_cc": ["Public Complaints Commission"]
+    },
+    {
+      "sector": "education",
+      "keywords": ["school","university","polytechnic","college","waec","jamb","exam","admission","lecturer","student"],
+      "federal_primary": "Federal Ministry of Education Nigeria",
+      "state_through": "State Ministry of Education",
+      "mandatory_cc": ["Public Complaints Commission"]
+    },
+    {
+      "sector": "aviation",
+      "keywords": ["airport","flight","airline","aviation","ncaa","faaan","nimet","delay","cancellation","luggage"],
+      "federal_primary": "Nigerian Civil Aviation Authority (NCAA)",
+      "state_through": "",
+      "mandatory_cc": ["Public Complaints Commission"]
+    },
+    {
+      "sector": "transport_roads_rail",
+      "keywords": ["road","highway","transport","bus","taxi","keke","okada","train","rail","nrc","frsc","accident"],
+      "federal_primary": "Federal Ministry of Transportation Nigeria",
+      "state_through": "State Ministry of Transportation",
+      "mandatory_cc": ["Federal Road Safety Corps (FRSC)", "Public Complaints Commission"]
+    },
+    {
+      "sector": "maritime_ports",
+      "keywords": ["port","ship","maritime","customs","clearing","npa","nimasa","container","seaport"],
+      "federal_primary": "Nigerian Ports Authority (NPA)",
+      "state_through": "",
+      "mandatory_cc": ["Nigeria Customs Service", "Public Complaints Commission"]
+    },
+    {
+      "sector": "housing_land",
+      "keywords": ["land","title","c of o","certificate of occupancy","rent","eviction","estate","housing","property","development control"],
+      "federal_primary": "Federal Ministry of Housing and Urban Development Nigeria",
+      "state_through": "State Ministry of Lands / Housing",
+      "mandatory_cc": ["Public Complaints Commission"]
+    },
+    {
+      "sector": "immigration_passport",
+      "keywords": ["passport","immigration","visa","nis","border","residence permit"],
+      "federal_primary": "Nigeria Immigration Service (NIS)",
+      "state_through": "",
+      "mandatory_cc": ["Public Complaints Commission"]
+    },
+    {
+      "sector": "courts_judiciary",
+      "keywords": ["court","judge","magistrate","bail","trial","judiciary","justice","ruling","injunction"],
+      "federal_primary": "National Judicial Council (NJC)",
+      "state_through": "",
+      "mandatory_cc": ["National Human Rights Commission Nigeria", "Public Complaints Commission"]
+    },
+    {
+      "sector": "anti_corruption",
+      "keywords": ["efcc","icpc","corruption","bribe","fraud","embezzlement","misappropriation"],
+      "federal_primary": "Independent Corrupt Practices Commission (ICPC)",
+      "state_through": "",
+      "mandatory_cc": ["Public Complaints Commission"]
+    }
+  ]
+}

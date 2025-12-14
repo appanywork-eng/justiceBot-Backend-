@@ -1,8 +1,15 @@
-node_modules/
+# Environment
 .env
-.env.*
-*.log
+
+# Backups
 *.bak
-*.backup
-*.tmp
-.DS_Store
+*.bak_*
+a8Engine.js.bak*
+server.cjs.bak*
+
+# Node
+node_modules/
+
+# Logs
+npm-debug.log*
+node_modules/
