@@ -1,31 +1,26 @@
-"use strict";
-
 /**
- * PetitionDesk Backend (PDPS-2.5 PRO)
- * Stable • Secure • Paid-Lock Enabled
+ * PetitionDesk / JusticeBot Backend (PDPS-2.5 PRO)
+ * Single petition generator flow:
+ *   /generate-petition  --> a8Engine.generatePetitionA8()
+ *
+ * No core/builder.js fallback. No duplicate paths.
  */
 
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-/* =========================
-   CONFIG
-========================= */
 const PORT = process.env.PORT || 5000;
 const PRICE_NGN = Number(process.env.PRICE_NGN || 1150);
 const CURRENCY = "NGN";
 const REDIRECT_BASE = String(process.env.FLW_REDIRECT_URL || "").trim();
 
-/* =========================
-   EXPRESS SETUP
-========================= */
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 
 /* =========================
-   PAYMENT MEMORY STORE
+   Payment Memory Store
 ========================= */
 const VERIFIED_TXREF = new Set();
 const TXREF_TO_PETITION = new Map();
@@ -33,21 +28,18 @@ const TXREF_TO_PETITION = new Map();
 function markVerified(txRef) {
   if (txRef) VERIFIED_TXREF.add(String(txRef));
 }
-
 function isVerified(txRef) {
-  return txRef && VERIFIED_TXREF.has(String(txRef));
+  return !!(txRef && VERIFIED_TXREF.has(String(txRef)));
 }
 
 /* =========================
    HARD REQUIRE PAYMENTS
-   (NO FALLBACK — EVER)
 ========================= */
 let startFlutterwavePayment;
 let verifyFlutterwavePayment;
 
 try {
-  ({ startFlutterwavePayment, verifyFlutterwavePayment } =
-    require("./core/payments.js"));
+  ({ startFlutterwavePayment, verifyFlutterwavePayment } = require("./core/payments.js"));
   console.log("✅ Payments module loaded");
 } catch (err) {
   console.error("❌ Payments module FAILED to load");
@@ -56,69 +48,30 @@ try {
 }
 
 /* =========================
-   SAFE IMPORT WRAPPER
+   Petition Engine (A8)
 ========================= */
-function safeRequire(p, fallback = {}) {
-  try {
-    return require(p);
-  } catch (e) {
-    console.warn(`⚠️ Failed to load ${p} — fallback used`);
-    return fallback;
-  }
-}
+const { generatePetitionA8 } = require("./a8Engine");
 
 /* =========================
-   CORE IMPORTS
+   Basic Routes
 ========================= */
-const { detectHybrid } = safeRequire("./core/aiRouting", {
-  detectHybrid: async () => ({}),
-});
-
-const { applyWatchdogs, applySectorSupervisors } =
-  safeRequire("./core/watchdogs", {});
-
-const { refinePoliceInstitutions } =
-  safeRequire("./core/police", {});
-
-const { buildPetition, fallbackPetition } =
-  safeRequire("./core/builder", {
-    buildPetition: async () => "Petition processing temporarily unavailable.",
-    fallbackPetition: () => "Petition processing temporarily unavailable.",
-  });
-
-const { generatePetitionA8 } =
-  safeRequire("./a8Engine", {});
-
-/* =========================
-   HELPERS
-========================= */
-function newPetitionId() {
-  return "PD-" + Date.now() + "-" + Math.floor(Math.random() * 100000);
-}
-
-/* =========================
-   BASIC ROUTES
-========================= */
-app.get("/", (_, res) => {
-  res.send("PetitionDesk PDPS-2.5 PRO Backend is running.");
-});
-
-app.get("/health", (_, res) => {
+app.get("/", (_, res) => res.send("PetitionDesk PDPS-2.5 PRO Backend is running."));
+app.get("/health", (_, res) =>
   res.json({
     status: "ok",
     price: PRICE_NGN,
     currency: CURRENCY,
     time: new Date().toISOString(),
-  });
-});
+  })
+);
 
 /* =========================
-   PAYMENT — START
+   PAYMENT - START
 ========================= */
 app.post("/pay", async (req, res) => {
   try {
-    const petitionId = String(req.body?.petitionId || newPetitionId());
-    const fullName = String(req.body?.fullName || "PetitionDesk User");
+    const petitionId = String(req.body?.petitionId || `PD-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
+    const fullName = String(req.body?.fullName || "Petitioner");
     const email = String(req.body?.email || "").trim();
 
     const redirectUrl = REDIRECT_BASE
@@ -127,11 +80,11 @@ app.post("/pay", async (req, res) => {
 
     const result = await startFlutterwavePayment({
       amount: PRICE_NGN,
+      currency: CURRENCY,
       fullName,
       email,
       redirectUrl,
-      currency: CURRENCY,
-      description: "PetitionDesk – Petition Unlock Payment",
+      description: "PetitionDesk - Petition Unlock Payment",
     });
 
     const txRef = String(result.txRef);
@@ -152,15 +105,12 @@ app.post("/pay", async (req, res) => {
 });
 
 /* =========================
-   PAYMENT — VERIFY
+   PAYMENT - VERIFY
 ========================= */
 app.get("/verify-payment", async (req, res) => {
   const txRef = String(req.query?.txRef || "").trim();
   if (!txRef) {
-    return res.status(400).json({
-      verified: false,
-      error: "Missing txRef.",
-    });
+    return res.status(400).json({ verified: false, error: "Missing txRef." });
   }
 
   if (isVerified(txRef)) {
@@ -174,7 +124,6 @@ app.get("/verify-payment", async (req, res) => {
   try {
     const v = await verifyFlutterwavePayment(txRef);
     const verified = !!v?.verified;
-
     if (verified) markVerified(txRef);
 
     res.json({
@@ -185,73 +134,58 @@ app.get("/verify-payment", async (req, res) => {
     });
   } catch (err) {
     console.error("Verify payment error:", err);
-    res.status(500).json({
-      verified: false,
-      error: "Verification error.",
-    });
+    res.status(500).json({ verified: false, error: "Verification error." });
   }
 });
 
 /* =========================
-   GENERATE PETITION
+   GENERATE PETITION (ONLY PATH)
 ========================= */
 app.post("/generate-petition", async (req, res) => {
   try {
     const description = String(req.body?.description || "").trim();
     if (!description) {
-      return res.json({
-        ok: false,
-        error: "Please describe your complaint.",
-        verified: false,
-      });
+      return res.json({ ok: false, error: "Please describe your complaint.", verified: false });
     }
 
-    const petitionId = String(req.body?.petitionId || newPetitionId());
+    const petitionId = String(req.body?.petitionId || `PD-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
     const txRef = String(req.body?.txRef || "").trim();
     const paid = isVerified(txRef);
 
-    if (typeof generatePetitionA8 === "function") {
-      const out = await generatePetitionA8({
-        description,
-        paid,
-      });
+    const complainant = {
+      fullName: String(req.body?.fullName || "").trim(),
+      email: String(req.body?.email || "").trim(),
+      phone: String(req.body?.phone || "").trim(),
+      address: String(req.body?.address || "").trim(),
+    };
 
-      return res.json({
-        ok: true,
-        petitionId,
-        verified: paid,
-        ...out,
-        access: {
-          paid,
-          price: PRICE_NGN,
-          currency: CURRENCY,
-          canViewFull: paid,
-          canCopy: paid,
-          canDownloadPdf: paid,
-          canEmail: paid,
-        },
-      });
-    }
+    const intl = req.body?.intl || null; // optional international escalation
 
-    const text = await buildPetition({}, {}, description);
+    const out = await generatePetitionA8({
+      description,
+      complainant,
+      paid,
+      intl,
+    });
 
-    res.json({
+    return res.json({
       ok: true,
       petitionId,
-      petitionText: text,
-      verified: false,
+      verified: paid,
+      ...out,
       access: {
-        paid: false,
+        paid,
         price: PRICE_NGN,
         currency: CURRENCY,
+        canViewFull: paid,
+        canCopy: paid,
+        canDownloadPdf: paid,
+        canEmail: paid,
       },
     });
   } catch (err) {
     console.error("Petition error:", err);
-    res.status(500).json({
-      ok: false,
-      error: "Internal error.",
-    });
+    res.status(500).json({ ok: false, error: err?.message || "Internal error." });
   }
 });
 
@@ -260,4 +194,5 @@ app.post("/generate-petition", async (req, res) => {
 ========================= */
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`PDPS-2.5 PRO Backend running on port ${PORT}`);
+  console.log("==> Your service is live 🎉");
 });
