@@ -17,7 +17,7 @@ async function startFlutterwavePayment(body) {
     }
 
     const {
-      amount = 1150, // flat rate ₦1,150
+      amount = 1150, // FLAT RATE ₦1,150
       currency,
       fullName,
       email,
@@ -41,24 +41,21 @@ async function startFlutterwavePayment(body) {
         name: fullName || "PetitionDesk User",
       },
       customizations: {
-        title: "PetitionDesk – Petition Draft",
+        title: "PetitionDesk - Petition Draft",
         description:
           (description && description.slice(0, 200)) ||
           "Payment for petition drafting service.",
       },
     };
 
-    const fwRes = await fetch(
-      "https://api.flutterwave.com/v3/payments",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${secret}`,
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+    const fwRes = await fetch("https://api.flutterwave.com/v3/payments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${secret}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
     const data = await fwRes.json().catch(() => ({}));
 
@@ -86,37 +83,52 @@ async function startFlutterwavePayment(body) {
 
 /**
  * VERIFY PAYMENT
+ * Uses Flutterwave OFFICIAL verification endpoint
  */
-async function verifyFlutterwavePayment(txRef) {
-  if (!txRef) {
+async function verifyFlutterwavePayment(transactionId) {
+  try {
+    if (!transactionId) {
+      return { verified: false };
+    }
+
+    const secret = process.env.FLW_SECRET_KEY;
+    if (!secret) {
+      return { verified: false, error: "FLW_SECRET_KEY not set" };
+    }
+
+    const res = await fetch(
+      `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${secret}`,
+        },
+      }
+    );
+
+    const json = await res.json().catch(() => ({}));
+    const data = json?.data;
+
+    if (
+      !res.ok ||
+      json.status !== "success" ||
+      data?.status !== "successful" ||
+      Number(data?.amount) !== 1150 ||
+      data?.currency !== "NGN"
+    ) {
+      return { verified: false };
+    }
+
+    return {
+      verified: true,
+      amount: data.amount,
+      currency: data.currency,
+      txRef: data.tx_ref,
+    };
+  } catch (err) {
+    console.error("Flutterwave verification error:", err);
     return { verified: false };
   }
-
-  const secret = process.env.FLW_SECRET_KEY;
-  if (!secret) {
-    throw new Error("FLW_SECRET_KEY not set");
-  }
-
-  const res = await fetch(
-    `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(
-      txRef
-    )}`,
-    {
-      headers: {
-        Authorization: `Bearer ${secret}`,
-      },
-    }
-  );
-
-  const json = await res.json().catch(() => ({}));
-  const data = json?.data;
-
-  return {
-    verified: data?.status === "successful",
-    amount: data?.amount,
-    currency: data?.currency,
-    txRef,
-  };
 }
 
 module.exports = {

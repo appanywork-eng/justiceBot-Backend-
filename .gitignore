@@ -3,7 +3,7 @@
 
 # Backups
 *.bak
-*.bak_*
+*.bak.*
 a8Engine.js.bak*
 server.cjs.bak*
 
@@ -12,4 +12,6 @@ node_modules/
 
 # Logs
 npm-debug.log*
-node_modules/
+
+internationalEscalation.js
+utils/
