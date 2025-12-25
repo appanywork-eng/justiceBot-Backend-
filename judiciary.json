@@ -1,0 +1,109 @@
+{
+  "sector": "judiciary",
+  "version": "1.0.0",
+  "country": "Nigeria",
+  "last_updated": "2025-12-25",
+  "oversight": {
+    "constitutional_bodies_note": "Judiciary has constitutional independence; escalation focuses on NJC, courts, and judicial service bodies as applicable.",
+    "federal_ministry_of_justice": {
+      "name": "Federal Ministry of Justice",
+      "role": "Federal legal policy, prosecutions (through AGF), justice sector coordination",
+      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
+      "how_to_address_head": { "head_title": "Honourable Attorney-General of the Federation and Minister of Justice", "through_title": "Permanent Secretary, Federal Ministry of Justice", "salutation": "Dear Honourable Attorney-General" }
+    }
+  },
+  "core_institutions": [
+    {
+      "name": "National Judicial Council (NJC)",
+      "type": "Judicial Oversight (appointments/discipline as applicable)",
+      "how_to_address_head": { "head_title": "Chairman, National Judicial Council", "salutation": "Dear Chairman" },
+      "contact": {
+        "emails": ["info@njc.gov.ng"],
+        "phones": ["09-4603190"],
+        "address": "Three Arms Zone, Abuja, FCT, Nigeria",
+        "website_hint": "njc.gov.ng"
+      }
+    },
+    {
+      "name": "Supreme Court of Nigeria",
+      "type": "Court",
+      "how_to_address_head": { "head_title": "Chief Justice of Nigeria", "salutation": "Dear My Lord, The Chief Justice of Nigeria" },
+      "contact": {
+        "emails": ["info@supremecourt.gov.ng"],
+        "phones": ["(+234) 7039983117"],
+        "address": "Three Arms Zone, Abuja, Nigeria",
+        "website_hint": "supremecourt.gov.ng"
+      }
+    },
+    {
+      "name": "Court of Appeal of Nigeria",
+      "type": "Court",
+      "how_to_address_head": { "head_title": "President, Court of Appeal", "salutation": "Dear My Lord, The President of the Court of Appeal" },
+      "contact": {
+        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE",
+        "divisions_contact_registry_hint": "Court of Appeal official contact page lists divisions and emails."
+      }
+    },
+    {
+      "name": "Federal Judicial Service Commission (FJSC)",
+      "type": "Judicial Service Body",
+      "how_to_address_head": { "head_title": "Chairman, Federal Judicial Service Commission", "salutation": "Dear Chairman" },
+      "contact": {
+        "emails": ["info@fjsc.gov.ng"],
+        "phones": ["+234 908 000 3575", "+234 908 111 3575"],
+        "address": "Supreme Court Complex, Three Arms Zone, Central District, PMB 484, Abuja, Nigeria",
+        "website_hint": "fjsc.gov.ng"
+      }
+    },
+    {
+      "name": "Body of Benchers (BOB)",
+      "type": "Legal Profession Governance (as applicable)",
+      "how_to_address_head": { "head_title": "Chairman, Body of Benchers", "salutation": "Dear Chairman" },
+      "contact": {
+        "emails": ["info@bob.gov.ng"],
+        "phones": ["+234 090 640 83585"],
+        "address": "Plot 688, Institute & Research District, FCC, Phase III, Abuja, FCT, Nigeria",
+        "website_hint": "bob.gov.ng"
+      }
+    }
+  ],
+  "complaint_and_escalation_flow": {
+    "step_1": "If complaint is about a court process/order: consult legal counsel; file appropriate motion/appeal within rules and timelines.",
+    "step_2": "If complaint is about judicial misconduct: petition NJC with case identifiers, evidence, and specific allegations (avoid contempt).",
+    "step_3": "If complaint is administrative (court registry delays): complain to the relevant court administration and copy NJC if systemic.",
+    "step_4": "For rights violations in detention/justice chain: copy NHRC and legal aid bodies."
+  },
+  "how_to_address_templates": {
+    "judicial_titles": [
+      "My Lord / My Lady (for Justices/Judges)",
+      "The Honourable Chief Justice of Nigeria",
+      "The President, Court of Appeal",
+      "The Chief Judge (Federal High Court / State High Court)",
+      "The Grand Kadi (Sharia Court of Appeal) / President (Customary Court of Appeal)"
+    ],
+    "default_salutation": "My Lord/My Lady"
+  },
+  "routing_keywords": [
+    "delay of justice",
+    "court registry delay",
+    "missing case file",
+    "bail denial",
+    "unlawful detention",
+    "contempt issue",
+    "judicial misconduct",
+    "injunction abuse",
+    "ex parte order abuse",
+    "order enforcement failure",
+    "police disobedience of court order"
+  ],
+  "evidence_checklist": [
+    "Suit number/case ID",
+    "Court division and parties",
+    "Copies of processes/orders",
+    "Proof of filings/payments",
+    "Chronology/timeline",
+    "Witness statements"
+  ]
+}
