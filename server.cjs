@@ -1,54 +1,63 @@
-// server.cjs
-const express = require('express');
-const cors = require('cors');
-const { OpenAI } = require('openai');
-
+const express = require("express");
 const app = express();
-app.use(cors());
+
 app.use(express.json());
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-// Hybrid dynamic routing endpoint
-app.post('/route', async (req, res) => {
+// Hybrid routing using OpenAI
+app.post("/route", async (req, res) => {
   try {
     const { complaint, sector } = req.body;
+
     if (!complaint) {
       return res.status(400).json({ error: "Complaint text is required" });
     }
 
-    // Load sector JSON dynamically
-    const sectorData = require(`./data/${sector}.json`);
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "OpenAI API key not configured" });
+    }
 
-    // AI decision layer
-    const aiResponse = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are a routing assistant for petitions." },
-        { role: "user", content: `Route this complaint in ${sector} sector: ${complaint}` }
-      ]
+    const OpenAI = require("openai");
+    const client = new OpenAI({ apiKey });
+
+    // Dynamic institution routing decision
+    const prompt = `
+      You are a legal-grade ombudsman routing AI.
+      Decide the most accurate Nigerian institution to route this complaint to.
+      Complaint: "${complaint}"
+      Sector: "${sector || "general"}"
+      Return ONLY JSON in this format:
+      { "institution": "", "reason": "" }
+    `;
+
+    const completion = await client.chat.completions.create({
+      model: "gpt-5.1",
+      messages: [{ role: "user", content: prompt }],
     });
 
-    const routeDecision = aiResponse.choices[0].message.content;
+    const aiResponse = completion.choices[0].message.content.trim();
 
-    // Logic validation layer
-    const regulators = sectorData.core_regulators || [];
-    const ccList = regulators.map(r => r.emails).flat();
+    // Ensure valid JSON output
+    let routeDecision;
+    try {
+      routeDecision = JSON.parse(aiResponse);
+    } catch {
+      return res.status(500).json({ error: "AI returned invalid routing JSON", raw: aiResponse });
+    }
 
-    res.json({
-      sector,
-      routeDecision,
-      cc: ccList,
-      regulators
+    return res.json({
+      sector: sector || "general",
+      routeDecision: routeDecision.institution,
+      reason: routeDecision.reason,
     });
 
   } catch (err) {
-    res.status(500).json({ error: "Routing failed", details: err.message });
+    return res.status(500).json({ error: "Routing failed", details: err.message });
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`JusticeBot Hybrid Routing Server running on port ${PORT}`);
 });
