@@ -1,0 +1,19 @@
+{
+  "sector": "security",
+  "to": "The Inspector-General of Police, Nigeria Police Force (NPF)",
+  "through": "Police Service Commission (PSC)",
+  "cc": [
+    "National Human Rights Commission (NHRC)",
+    "Public Complaints Commission (PCC)",
+    "Office of the Attorney-General of the Federation (AGF), Federal Ministry of Justice"
+  ],
+  "tone": "SAN lawyer-grade, formal, factual, non-inflammatory",
+  "must_include": [
+    "Incident summary",
+    "Dates/locations",
+    "Officers/units if known",
+    "Rights concerns",
+    "Reliefs sought",
+    "Request for investigation and written response"
+  ]
+}

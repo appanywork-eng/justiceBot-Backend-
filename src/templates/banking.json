@@ -1,0 +1,19 @@
+{
+  "sector": "banking",
+  "to": "The Governor, Central Bank of Nigeria (CBN)",
+  "through": "Director, Consumer Protection Department (CPD), CBN",
+  "cc": [
+    "Nigeria Inter-Bank Settlement System (NIBSS)",
+    "EFCC (if fraud suspected)",
+    "FCCPC",
+    "Public Complaints Commission (PCC)"
+  ],
+  "tone": "SAN lawyer-grade, formal, structured, specific",
+  "must_include": [
+    "Account/bank details (masked)",
+    "Transaction references",
+    "Timeline",
+    "Prior complaint to bank",
+    "Reliefs: reversal/refund, investigation, penalties"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "sector": "international_escalation",
+  "to": "Relevant International Body (context-dependent)",
+  "through": "Relevant Nigerian Authority (context-dependent)",
+  "cc": [
+    "National Human Rights Commission (NHRC)",
+    "Public Complaints Commission (PCC)"
+  ],
+  "tone": "Formal, factual, careful, avoids sensational claims",
+  "must_include": [
+    "Facts summary",
+    "Domestic remedies attempted",
+    "Specific relief requested",
+    "Evidence references"
+  ]
+}

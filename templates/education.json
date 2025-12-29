@@ -1,0 +1,18 @@
+{
+  "sector": "education",
+  "to": "The Executive Secretary, National Universities Commission (NUC)",
+  "through": "Federal Ministry of Education",
+  "cc": [
+    "NBTE (if polytechnic-related)",
+    "NCCE (if college of education-related)",
+    "Public Complaints Commission (PCC)"
+  ],
+  "tone": "SAN lawyer-grade, formal",
+  "must_include": [
+    "Institution details",
+    "Administrative issue summary",
+    "Evidence references",
+    "Reliefs sought",
+    "Request for investigation and compliance directive"
+  ]
+}

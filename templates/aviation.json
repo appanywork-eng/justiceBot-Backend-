@@ -1,0 +1,19 @@
+{
+  "sector": "aviation",
+  "to": "The Director-General, Nigerian Civil Aviation Authority (NCAA)",
+  "through": "Federal Ministry of Aviation and Aerospace Development",
+  "cc": [
+    "Consumer Protection Council / FCCPC",
+    "Federal Airports Authority of Nigeria (FAAN)",
+    "Public Complaints Commission (PCC)"
+  ],
+  "tone": "SAN lawyer-grade, formal, concise, evidence-driven",
+  "must_include": [
+    "Flight details",
+    "Ticket evidence reference",
+    "Conduct complained of",
+    "Applicable passenger rights request",
+    "Refund/compensation request",
+    "Request for enforcement action"
+  ]
+}
