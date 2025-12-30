@@ -1,0 +1,129 @@
+
+{
+  "sector": "international_escalation",
+  "version": "1.0.4",
+  "scope": "Maximum Global Scope",
+  "last_updated": "2025-12-29",
+
+  "purpose": [
+    "International escalation after all domestic remedies have failed",
+    "Peaceful mass petitioning for global diplomatic and legislative attention",
+    "Human rights, security failures, financial abuse, and systemic injustice"
+  ],
+
+  "United_States": {
+    "name": "U.S. Foreign Policy & Human Rights Legislative Escalation",
+    "emails": [
+      "Web_Inquiry@foreign.senate.gov",
+      "TLHRC@mail.house.gov",
+      "Web_Inquiry@foreign.senate.gov"
+    ],
+    "phones": ["+1 202 224 4651"],
+    "committee": "Senate Committee on Foreign Relations + Tom Lantos Human Rights Commission",
+    "address": "U.S. Senate, Washington DC, USA",
+    "how_to_address_head": {
+      "title": "Chair, U.S. Senate Committee on Foreign Relations",
+      "salutation": "Dear Chair"
+    }
+  },
+
+  "United_Kingdom": {
+    "name": "UK Parliamentary & Diplomatic Escalation",
+    "emails": [
+      "fac@parliament.uk",
+      "facmedia@parliament.uk",
+      "fcdo.correspondence@fcdo.gov.uk"
+    ],
+    "committee": "UK Parliament Foreign Affairs Committees",
+    "address": "London, United Kingdom",
+    "how_to_address_head": {
+      "title": "Chair, UK House of Commons Foreign Affairs Committee",
+      "salutation": "Dear Chair"
+    }
+  },
+
+  "European_Union": {
+    "name": "EU Parliament & Diplomatic Escalation",
+    "emails": [
+      "droi-secretariat@europarl.europa.eu",
+      "peti-secretariat@europarl.europa.eu",
+      "delegation-nigeria@eeas.europa.eu"
+    ],
+    "bodies": "European Parliament (DROI, PETI) + EEAS Delegation to Nigeria",
+    "address": "Brussels, European Union",
+    "how_to_address_head": {
+      "title": "Chair, EU Subcommittee on Human Rights (DROI)",
+      "salutation": "Dear Chair"
+    }
+  },
+
+  "International_Criminal_Court": {
+    "name": "International Criminal Court (ICC)",
+    "emails": ["ICCVisits@icc-cpi.int"],
+    "address": "The Hague, Netherlands",
+    "mandate": "Rome Statute crimes, preliminary examinations and investigations",
+    "how_to_address_head": {
+      "title": "Prosecutor, International Criminal Court (Office of the Prosecutor - OTP)",
+      "salutation": "Dear Prosecutor"
+    }
+  },
+
+  "Canada": {
+    "name": "Canada Parliamentary & Diplomatic Escalation",
+    "emails": ["info@international.gc.ca", "FAAE@parl.gc.ca"],
+    "bodies": "FAAE (Foreign Affairs and International Development Committee) + FAAE (House of Commons)",
+    "address": "Ottawa, Canada",
+    "how_to_address_head": {
+      "title": "Chair, Canada House of Commons Standing Committee on Foreign Affairs & International Development",
+      "salutation": "Dear Chair"
+    }
+  },
+
+  "United_Nations": {
+    "name": "UN Human Rights & Global Escalation",
+    "emails": [
+      "ohchr-InfoDesk@un.org",
+      "ohchr-petitions@un.org",
+      "spdinfo@ohchr.org",
+      "urgent-action@ohchr.org"
+    ],
+    "bodies": "OHCHR + Human Rights Council + Special Procedures Branch",
+    "address": "Geneva, Switzerland",
+    "how_to_address_head": {
+      "title": "High Commissioner for Human Rights",
+      "salutation": "Dear High Commissioner"
+    }
+  },
+
+  "routing_rules": {
+    "MASS_DEVICE_PROTEST_ENABLED": true,
+    "max_email_batch": 10,
+    "note": "Use priority-first routing for maximum diplomatic impact"
+  },
+
+  "routing_keywords": [
+    "unlawful conviction",
+    "illegal arrest",
+    "forced disappearance",
+    "political detention",
+    "financial abuse",
+    "rights violations",
+    "terror negligence",
+    "genocide risk",
+    "war crimes allegation",
+    "media repression",
+    "systemic corruption",
+    "torture allegation",
+    "arbitrary detention",
+    "passport blockade",
+    "attack on journalists"
+  ],
+
+  "minimum_petition_pack": [
+    "Summary cover letter",
+    "Chronological statement of facts",
+    "Evidence bundle",
+    "Requested remedy",
+    "Copies to international bodies by title"
+  ]
+}

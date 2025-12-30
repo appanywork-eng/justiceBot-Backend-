@@ -1,0 +1,195 @@
+{
+  "sector": "aviation",
+  "version": "1.0.0",
+  "country": "Nigeria",
+  "last_updated": "2025-12-25",
+  "data_quality_rules": {
+    "no_invented_contacts": true,
+    "allow_webforms_when_no_email": true,
+    "unknown_contact_placeholder": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
+  },
+  "oversight": {
+    "federal_ministry": {
+      "name": "Federal Ministry of Aviation and Aerospace Development",
+      "oversight_powers": [
+        "Sector policy formulation",
+        "Supervision of aviation parastatals/agencies",
+        "National aviation planning and coordination"
+      ],
+      "contact": {
+        "emails": ["info@aviation.gov.ng"],
+        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "address": "Federal Secretariat Complex (Phase 1), Shehu Shagari Way, Abuja, FCT, Nigeria",
+        "website_hint": "aviation.gov.ng"
+      },
+      "how_to_address_head": {
+        "head_title": "Honourable Minister, Federal Ministry of Aviation and Aerospace Development",
+        "through_title": "Permanent Secretary, Federal Ministry of Aviation and Aerospace Development",
+        "salutation": "Dear Honourable Minister"
+      }
+    }
+  },
+  "core_regulators_and_agencies": [
+    {
+      "name": "Nigerian Civil Aviation Authority (NCAA)",
+      "type": "Regulator",
+      "mandate": [
+        "Aviation safety regulation and oversight",
+        "Economic regulation (as applicable)",
+        "Consumer protection in aviation"
+      ],
+      "how_to_address_head": {
+        "head_title": "Director-General, Nigerian Civil Aviation Authority (NCAA)",
+        "salutation": "Dear Director-General"
+      },
+      "contact": {
+        "emails": ["info@ncaa.gov.ng"],
+        "phones": ["09162011222"],
+        "address": "Nnamdi Azikiwe International Airport, FCT, Abuja, Nigeria",
+        "website_hint": "ncaa.gov.ng"
+      },
+      "consumer_channels": [
+        "Submit complaint to airline/airport first, obtain ticket/reference",
+        "Escalate to NCAA Consumer Protection"
+      ]
+    },
+    {
+      "name": "Federal Airports Authority of Nigeria (FAAN)",
+      "type": "Airport Operator (Federal Airports)",
+      "mandate": [
+        "Management/operations of federal airports",
+        "Airport service delivery/servicom complaints handling"
+      ],
+      "how_to_address_head": {
+        "head_title": "Managing Director/Chief Executive, Federal Airports Authority of Nigeria (FAAN)",
+        "salutation": "Dear Managing Director/Chief Executive"
+      },
+      "contact": {
+        "emails": ["info@faan.gov.ng", "contact@faan.gov.ng"],
+        "phones": ["01-2800833", "01-2800830"],
+        "address": "FAAN HQ, Murtala Muhammed Airport, P.M.B. 21607, Ikeja, Lagos, Nigeria",
+        "website_hint": "faan.gov.ng"
+      },
+      "servicom_complaints_contacts": [
+        {
+          "location": "FAAN HQ Complaints Desk (Customer Service/SERVICOM)",
+          "phones": ["08033011334", "08029368609"]
+        },
+        {
+          "location": "Abuja Airport Help Desk (WhatsApp only per FAAN)",
+          "phones": ["08067998931"]
+        }
+      ]
+    },
+    {
+      "name": "Nigerian Airspace Management Agency (NAMA)",
+      "type": "Air Navigation Service Provider",
+      "mandate": [
+        "Air traffic management/navigation services",
+        "Aeronautical information services"
+      ],
+      "how_to_address_head": {
+        "head_title": "Managing Director, Nigerian Airspace Management Agency (NAMA)",
+        "salutation": "Dear Managing Director"
+      },
+      "contact": {
+        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
+      }
+    },
+    {
+      "name": "Nigerian Meteorological Agency (NiMet)",
+      "type": "Meteorological Services Provider",
+      "mandate": ["Aviation and national weather services"],
+      "how_to_address_head": {
+        "head_title": "Director-General/Chief Executive Officer, Nigerian Meteorological Agency (NiMet)",
+        "salutation": "Dear Director-General"
+      },
+      "contact": {
+        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
+      }
+    },
+    {
+      "name": "Nigerian Safety Investigation Bureau (NSIB)",
+      "type": "Accident/Incident Investigation",
+      "mandate": ["Investigation of transport safety occurrences (incl. aviation)"],
+      "how_to_address_head": {
+        "head_title": "Director-General, Nigerian Safety Investigation Bureau (NSIB)",
+        "salutation": "Dear Director-General"
+      },
+      "contact": {
+        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
+      }
+    }
+  ],
+  "players_in_sector": {
+    "airlines": {
+      "note": "Airline roster changes frequently; use NCAA/operator lists for current AOC holders.",
+      "authoritative_registry_hint": "NCAA / official aviation lists",
+      "items": [
+        { "name": "Air Peace", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } },
+        { "name": "Arik Air", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } },
+        { "name": "Dana Air", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } },
+        { "name": "Ibom Air", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } }
+      ]
+    },
+    "airports_and_ground_handlers": {
+      "federal_airports_operator": "FAAN",
+      "other_airports": "State/PPP airports (verify per airport authority/operator)",
+      "ground_handlers": [
+        { "name": "NAHCO", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } },
+        { "name": "SAHCO", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } }
+      ]
+    }
+  },
+  "complaint_and_escalation_flow": {
+    "step_1": "Complain to airline/airport/service provider in writing; request ticket/reference and timeline for resolution.",
+    "step_2": "If unresolved, escalate to NCAA (consumer protection) with evidence: ticket, receipts, flight details, correspondence, bank debits where relevant.",
+    "step_3": "If airport service issue, copy FAAN SERVICOM/customer service (where FAAN-operated).",
+    "step_4": "If suspected criminal conduct (fraud/assault), report to NPF and copy relevant oversight bodies."
+  },
+  "watchdogs_and_cross_cutting_oversight": [
+    {
+      "name": "SERVICOM (Service Compact with All Nigerians)",
+      "role": "Service delivery complaints within MDAs",
+      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
+    },
+    {
+      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
+      "role": "Consumer protection (where applicable, incl. unfair practices)",
+      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
+    }
+  ],
+  "routing_keywords": [
+    "flight delay",
+    "flight cancellation",
+    "denied boarding",
+    "baggage missing",
+    "baggage damage",
+    "refund",
+    "ticket fraud",
+    "airport extortion",
+    "ground handling",
+    "safety violation",
+    "airline negligence",
+    "overbooking",
+    "rude staff",
+    "security screening",
+    "immigration at airport",
+    "customs at airport"
+  ],
+  "evidence_checklist": [
+    "Flight itinerary/ticket",
+    "Boarding pass",
+    "Receipts (ticket, baggage, extra charges)",
+    "Photos/videos (if relevant)",
+    "Email/SMS/WhatsApp correspondence",
+    "Bank statement showing charges",
+    "Witness statements"
+  ]
+}

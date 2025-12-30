@@ -1,0 +1,152 @@
+{
+  "sector": "security",
+  "version": "1.0.2",
+  "country": "Nigeria",
+  "last_updated": "2025-12-29",
+
+  "oversight_ministry": {
+    "police_affairs": {
+      "name": "Federal Ministry of Police Affairs",
+      "emails": ["info@policeaffairs.gov.ng", "contact@policeaffairs.gov.ng"],
+      "phones": ["+2347056419241", "+2348033254923"],
+      "address": "10th & 11th Floors, Federal Secretariat Complex, Phase 3, Shehu Shagari Way, Maitama, Abuja"
+    },
+    "interior": {
+      "name": "Federal Ministry of Interior",
+      "emails": ["info@interior.gov.ng"],
+      "phones": ["+23492341935"],
+      "address": "Old Federal Secretariat, Area 1, Garki, Abuja"
+    },
+    "defence": {
+      "name": "Federal Ministry of Defence",
+      "emails": ["contact@defence.gov.ng"],
+      "phones": ["+234092340532", "+234092340533"],
+      "address": "Ship House, Area 10, Airport Road, Abuja"
+    }
+  },
+
+  "regulators": [
+    {
+      "name": "Inspector-General of Police (Nigeria Police Force)",
+      "emails": ["igp@police.gov.ng", "press@police.gov.ng"],
+      "phones": ["+2348033166622"],
+      "address": "Louis Edet House, Force Headquarters, Area 11, Garki, Abuja"
+    },
+    {
+      "name": "Police Service Commission (PSC)",
+      "emails": ["info@psc.gov.ng"],
+      "phones": ["+2347034072676", "+2347034072677"],
+      "address": "Plot 1394, Muhammadu Buhari Way, Central Business District, Abuja"
+    },
+    {
+      "name": "Nigerian Correctional Service (NCoS)",
+      "emails": ["info@corrections.gov.ng", "complaints@corrections.gov.ng"],
+      "phones": ["+2347087086005", "+2349060004598"],
+      "address": "National Headquarters, Bill Clinton Drive, Airport Road, Abuja"
+    },
+    {
+      "name": "Nigeria Security and Civil Defence Corps (NSCDC)",
+      "emails": ["info@nscdc.gov.ng", "nscdchq@gmail.com"],
+      "phones": ["+2348036565059"],
+      "address": "NSCDC National Headquarters, Plot V921, Cadastral Zone A2, Wuse Zone 5, Abuja"
+    },
+    {
+      "name": "Nigeria Immigration Service (NIS)",
+      "emails": ["nis.servicom@immigration.gov.ng", "oa@immigration.gov.ng", "cis-evisa@immigration.gov.ng"],
+      "phones": ["+2349121477092", "+2348170000154"],
+      "address": "NIS Headquarters, Airport Road, Sauka, Abuja"
+    },
+    {
+      "name": "Nigerian Army (NA)",
+      "emails": ["info@army.mil.ng", "recruitment@army.mil.ng"],
+      "phones": ["+2347039983117"],
+      "address": "Army Headquarters, Muhammadu Buhari Way, Area 7, Garki, Abuja"
+    },
+    {
+      "name": "Nigerian Navy (NN)",
+      "emails": ["info@navy.mil.ng", "nn.helpdesk@navy.mil.ng"],
+      "phones": ["+2348056779668"],
+      "address": "Naval Headquarters, Garki, Abuja"
+    },
+    {
+      "name": "Nigerian Air Force (NAF)",
+      "emails": ["info@airforce.mil.ng", "careers@airforce.mil.ng"],
+      "phones": ["+2347052683575"],
+      "address": "Air Force Headquarters, Ministry of Defence Annex, Area 10, Abuja"
+    },
+    {
+      "name": "Nigeria Police Commands (36 States + FCT)",
+      "emails": ["info@police.gov.ng"],
+      "phones": ["112", "08031234567"],
+      "address": "State Police Command Headquarters (varies by state, Nigeria)"
+    }
+  ],
+
+  "watchdogs": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "role": "Ombudsman for maladministration, rights abuse petitions (domestic legal protest support)",
+      "emails": ["research.unit@pcc.gov.ng", "info@pcc.gov.ng"],
+      "phones": ["+2348055600208"],
+      "address": "PCC Headquarters, Aguiyi Ironsi Street, Maitama, Abuja"
+    },
+    {
+      "name": "National Human Rights Commission (NHRC)",
+      "role": "Human rights monitoring, investigations, enforcement, urgent interventions",
+      "emails": ["info@nhrc.gov.ng", "complaints@nhrc.gov.ng"],
+      "phones": ["+2348099931800"],
+      "address": "NHRC Headquarters, Aguiyi-Ironsi Street, Maitama, Abuja"
+    }
+  ],
+
+  "players": [
+    {
+      "name": "State Police Commands (All 36 States + FCT)",
+      "emails": ["info@police.gov.ng"],
+      "phones": ["112"],
+      "address": "Nationwide Commands"
+    }
+  ],
+
+  "routing_rules": {
+    "PCC_CC_MANDATORY_FOR_DOMESTIC": true,
+    "MAX_MAILTO_RECIPIENTS": 10,
+    "NOTE": "Only the first 10 emails will open in Gmail. Others remain visible for manual copy."
+  },
+
+  "routing_keywords": [
+    "unlawful detention",
+    "illegal arrest",
+    "extortion",
+    "police brutality",
+    "army abuse",
+    "navy abuse",
+    "air force abuse",
+    "illegal checkpoint",
+    "assault",
+    "torture allegation",
+    "missing person",
+    "forced disappearance",
+    "bail refusal",
+    "border harassment",
+    "passport delay",
+    "visa extortion",
+    "prison conditions",
+    "inmate welfare",
+    "property seizure",
+    "illegal search",
+    "kidnapping",
+    "terror threat",
+    "critical asset protection failure"
+  ],
+
+  "evidence_checklist": [
+    "Incident date/time/location",
+    "ID of petitioner",
+    "Agency reference/ticket (if issued)",
+    "Photos/videos",
+    "Medical reports (if injury)",
+    "Witness statements",
+    "Written correspondence"
+  ]
+}
