@@ -38,6 +38,29 @@ const OVERSIGHT_EMAILS = {
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || "";
 const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID || "";
 
+// ===== Flutterwave Paywall CONFIG =====
+const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
+const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || "1050");
+
+// in-memory anti-reuse (not persistent)
+const USED_TX_REFS = new Set();
+
+async function flwFetch(url, options = {}) {
+  if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY missing");
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${FLW_SECRET_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, data };
+}
+
+
 // ---------- HELPERS ----------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -284,6 +307,101 @@ async function resolveMissingEmailsForInstitution(instName) {
 }
 
 // ---------- ENDPOINTS ----------
+
+
+// ===== Flutterwave Paywall =====
+
+// Start payment
+app.post("/pay/initialize", async (req, res) => {
+  try {
+    const amount = Number(req.body?.amount || PETITION_PRICE_NGN);
+    const currency = String(req.body?.currency || "NGN");
+    const email = String(req.body?.email || "user@petitiondesk.com");
+    const name = String(req.body?.name || "PetitionDesk User");
+    const phone = String(req.body?.phone || "");
+
+    const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    const redirect_url = `${FRONTEND_BASE_URL}/payment-success?tx_ref=${encodeURIComponent(tx_ref)}`;
+
+    const payload = {
+      tx_ref,
+      amount,
+      currency,
+      redirect_url,
+      customer: { email, phonenumber: phone, name },
+      customizations: {
+        title: "PetitionDesk",
+        description: "Unlock petition actions (Send Email / Download PDF)",
+      },
+    };
+
+    const { ok, data } = await flwFetch("https://api.flutterwave.com/v3/payments", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    if (!ok || !data?.data?.link) {
+      return res.status(400).json({ ok: false, error: data?.message || "Flutterwave init failed" });
+    }
+
+    return res.json({ ok: true, tx_ref, link: data.data.link });
+  } catch (e) {
+    console.error("pay/initialize error:", e);
+    return res.status(500).json({ ok: false, error: "Payment init error" });
+  }
+});
+
+// Verify payment
+app.get("/pay/verify", async (req, res) => {
+  try {
+    const transaction_id = String(req.query?.transaction_id || "").trim();
+    const tx_ref = String(req.query?.tx_ref || "").trim();
+
+    if (!transaction_id && !tx_ref) {
+      return res.status(400).json({ ok: false, error: "Missing transaction_id or tx_ref" });
+    }
+
+    // Prefer transaction verify (Flutterwave best practice)
+    if (transaction_id) {
+      const { ok, data } = await flwFetch(
+        `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transaction_id)}/verify`,
+        { method: "GET" }
+      );
+
+      if (!ok) return res.status(400).json({ ok: false, error: data?.message || "Verify failed" });
+
+      const d = data?.data || {};
+      const paidStatus = String(d.status || "").toLowerCase();
+      const paidAmount = Number(d.amount || 0);
+      const paidCurrency = String(d.currency || "");
+      const ref = String(d.tx_ref || tx_ref || "");
+
+      if (ref && USED_TX_REFS.has(ref)) {
+        return res.status(400).json({ ok: false, error: "This payment reference has already been used." });
+      }
+
+      const okPaid =
+        (paidStatus === "successful" || paidStatus === "success") &&
+        paidCurrency === "NGN" &&
+        paidAmount >= PETITION_PRICE_NGN;
+
+      if (!okPaid) {
+        return res.status(400).json({ ok: false, error: "Payment not successful or amount mismatch", tx_ref: ref });
+      }
+
+      if (ref) USED_TX_REFS.add(ref);
+
+      return res.json({ ok: true, tx_ref: ref, amount: paidAmount, currency: paidCurrency, status: paidStatus });
+    }
+
+    // tx_ref-only verify not supported (needs transaction_id)
+    return res.status(400).json({ ok: false, error: "transaction_id required for verification" });
+  } catch (e) {
+    console.error("pay/verify error:", e);
+    return res.status(500).json({ ok: false, error: "Payment verify error" });
+  }
+});
+
 app.get("/health", (req, res) => {
   res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
 });
