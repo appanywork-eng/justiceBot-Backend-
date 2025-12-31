@@ -1,195 +1,370 @@
 {
   "sector": "aviation",
-  "version": "1.0.0",
   "country": "Nigeria",
-  "last_updated": "2025-12-25",
-  "data_quality_rules": {
-    "no_invented_contacts": true,
-    "allow_webforms_when_no_email": true,
-    "unknown_contact_placeholder": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
+  "version": "1.0.0",
+  "last_updated": "2025-12-31",
+  "notes": {
+    "consumer_complaints_escalation": [
+      "1) First complain directly to the Airline (customer care / ticketing / baggage / refunds) and keep evidence (PNR, ticket number, receipts, screenshots).",
+      "2) If unresolved or you suspect regulatory breaches (consumer protection, safety, operational malpractice), escalate to NCAA (consumer protection / regulatory enforcement).",
+      "3) If it is maladministration / denial of service / refusal to act by a public institution (airport authority, agency delays, poor complaint handling), copy PCC.",
+      "4) For accidents/serious incidents: report through NSIB official reporting channels (do not rely on social media)."
+    ],
+    "sources_hint": [
+      "Always prefer official agency websites and official airline websites for emails/phones.",
+      "Some airlines publish forms instead of emails; only verified/public emails are included here.",
+      "Where an airline’s public contact email could not be verified in time, the entry is still listed but marked as 'contact_verification_pending'."
+    ]
   },
-  "oversight": {
-    "federal_ministry": {
-      "name": "Federal Ministry of Aviation and Aerospace Development",
-      "oversight_powers": [
-        "Sector policy formulation",
-        "Supervision of aviation parastatals/agencies",
-        "National aviation planning and coordination"
-      ],
-      "contact": {
-        "emails": ["info@aviation.gov.ng"],
-        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "address": "Federal Secretariat Complex (Phase 1), Shehu Shagari Way, Abuja, FCT, Nigeria",
-        "website_hint": "aviation.gov.ng"
-      },
-      "how_to_address_head": {
-        "head_title": "Honourable Minister, Federal Ministry of Aviation and Aerospace Development",
-        "through_title": "Permanent Secretary, Federal Ministry of Aviation and Aerospace Development",
-        "salutation": "Dear Honourable Minister"
-      }
-    }
-  },
-  "core_regulators_and_agencies": [
-    {
-      "name": "Nigerian Civil Aviation Authority (NCAA)",
-      "type": "Regulator",
-      "mandate": [
-        "Aviation safety regulation and oversight",
-        "Economic regulation (as applicable)",
-        "Consumer protection in aviation"
-      ],
-      "how_to_address_head": {
-        "head_title": "Director-General, Nigerian Civil Aviation Authority (NCAA)",
-        "salutation": "Dear Director-General"
-      },
-      "contact": {
-        "emails": ["info@ncaa.gov.ng"],
-        "phones": ["09162011222"],
-        "address": "Nnamdi Azikiwe International Airport, FCT, Abuja, Nigeria",
-        "website_hint": "ncaa.gov.ng"
-      },
-      "consumer_channels": [
-        "Submit complaint to airline/airport first, obtain ticket/reference",
-        "Escalate to NCAA Consumer Protection"
+
+  "oversight_ministry": {
+    "name": "Federal Ministry of Aviation and Aerospace Development",
+    "role": "Policy direction, sector oversight and coordination (FGN)",
+    "website": "https://aviation.gov.ng/",
+    "address": "Federal Secretariat Complex, Phase 1, Shehu Shagari Way, Abuja, FCT, Nigeria",
+    "emails": ["info@aviation.gov.ng"],
+    "phones": ["+234-802-373-1554"],
+    "how_to_address_head": {
+      "title": "Honourable Minister of Aviation and Aerospace Development",
+      "salutation": "Honourable Minister",
+      "letter_address_block_example": [
+        "The Honourable Minister of Aviation and Aerospace Development,",
+        "Federal Ministry of Aviation and Aerospace Development,",
+        "Federal Secretariat Complex, Phase 1, Shehu Shagari Way,",
+        "Abuja, FCT, Nigeria."
       ]
     },
+    "sources": ["https://aviation.gov.ng/", "https://nigeriawide.com/listing/federal-ministry-of-aviation/"]
+  },
+
+  "core_regulators_and_public_agencies": [
     {
-      "name": "Federal Airports Authority of Nigeria (FAAN)",
-      "type": "Airport Operator (Federal Airports)",
-      "mandate": [
-        "Management/operations of federal airports",
-        "Airport service delivery/servicom complaints handling"
-      ],
+      "name": "Nigeria Civil Aviation Authority (NCAA)",
+      "type": "Sector Regulator",
+      "mandate_summary": "Regulation of civil aviation safety, consumer protection, licensing/certification and compliance enforcement.",
+      "hq_address": "Nnamdi Azikiwe International Airport, Abuja, FCT, Nigeria",
+      "emails": ["info@ncaa.gov.ng"],
+      "phones": ["09162011222"],
+      "website": "https://ncaa.gov.ng/",
       "how_to_address_head": {
-        "head_title": "Managing Director/Chief Executive, Federal Airports Authority of Nigeria (FAAN)",
-        "salutation": "Dear Managing Director/Chief Executive"
+        "title": "Director-General, Nigeria Civil Aviation Authority",
+        "salutation": "The Director-General",
+        "letter_address_block_example": [
+          "The Director-General,",
+          "Nigeria Civil Aviation Authority (NCAA),",
+          "Nnamdi Azikiwe International Airport,",
+          "Abuja, FCT, Nigeria."
+        ]
       },
-      "contact": {
-        "emails": ["info@faan.gov.ng", "contact@faan.gov.ng"],
-        "phones": ["01-2800833", "01-2800830"],
-        "address": "FAAN HQ, Murtala Muhammed Airport, P.M.B. 21607, Ikeja, Lagos, Nigeria",
-        "website_hint": "faan.gov.ng"
-      },
-      "servicom_complaints_contacts": [
-        {
-          "location": "FAAN HQ Complaints Desk (Customer Service/SERVICOM)",
-          "phones": ["08033011334", "08029368609"]
-        },
-        {
-          "location": "Abuja Airport Help Desk (WhatsApp only per FAAN)",
-          "phones": ["08067998931"]
-        }
-      ]
-    },
-    {
-      "name": "Nigerian Airspace Management Agency (NAMA)",
-      "type": "Air Navigation Service Provider",
-      "mandate": [
-        "Air traffic management/navigation services",
-        "Aeronautical information services"
-      ],
-      "how_to_address_head": {
-        "head_title": "Managing Director, Nigerian Airspace Management Agency (NAMA)",
-        "salutation": "Dear Managing Director"
-      },
-      "contact": {
-        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
-      }
-    },
-    {
-      "name": "Nigerian Meteorological Agency (NiMet)",
-      "type": "Meteorological Services Provider",
-      "mandate": ["Aviation and national weather services"],
-      "how_to_address_head": {
-        "head_title": "Director-General/Chief Executive Officer, Nigerian Meteorological Agency (NiMet)",
-        "salutation": "Dear Director-General"
-      },
-      "contact": {
-        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
-      }
+      "sources": ["https://ncaa.gov.ng/contact"]
     },
     {
       "name": "Nigerian Safety Investigation Bureau (NSIB)",
-      "type": "Accident/Incident Investigation",
-      "mandate": ["Investigation of transport safety occurrences (incl. aviation)"],
+      "type": "Safety Investigation (Aviation / Marine / Rail / Road occurrences)",
+      "mandate_summary": "Independent safety investigations and occurrence reporting support.",
+      "hq_address": "Nnamdi Azikiwe International Airport, Abuja, Nigeria",
+      "emails": ["info@nsib.gov.ng", "dg@nsib.gov.ng", "foirequest@nsib.gov.ng"],
+      "phones": ["0915-234-2156"],
+      "website": "https://nsib.gov.ng/",
       "how_to_address_head": {
-        "head_title": "Director-General, Nigerian Safety Investigation Bureau (NSIB)",
-        "salutation": "Dear Director-General"
+        "title": "Director-General, Nigerian Safety Investigation Bureau",
+        "salutation": "The Director-General",
+        "letter_address_block_example": [
+          "The Director-General,",
+          "Nigerian Safety Investigation Bureau (NSIB),",
+          "Nnamdi Azikiwe International Airport,",
+          "Abuja, Nigeria."
+        ]
       },
-      "contact": {
-        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
+      "sources": ["https://nsib.gov.ng/contact-2/", "https://nsib.gov.ng/nsib-foi-contact/"]
+    },
+    {
+      "name": "Accident Investigation Bureau (AIB)",
+      "type": "Legacy aviation accident investigation contacts (historical/FOI/reporting references)",
+      "note": "Nigeria’s investigation system references NSIB; AIB pages still publish emergency lines and emails useful for aviation safety communications.",
+      "addresses": [
+        {
+          "office": "Head Office (Abuja)",
+          "address": "Nnamdi Azikiwe International Airport, Abuja, Nigeria"
+        },
+        {
+          "office": "Lagos Office",
+          "address": "P.M.B 016, Murtala Muhammed International Airport, Ikeja, Lagos, Nigeria"
+        }
+      ],
+      "emails": ["info@aib.gov.ng", "commissioner@aib.gov.ng", "foirequest@aib.gov.ng"],
+      "phones": ["08077090908", "08077090909", "08077090928"],
+      "website": "https://aib.gov.ng/",
+      "how_to_address_head": {
+        "title": "Commissioner / Chief Executive (AIB)",
+        "salutation": "The Commissioner"
+      },
+      "sources": ["https://aib.gov.ng/contact-us/", "https://aib.gov.ng/aib-foi-contact/"]
+    }
+  ],
+
+  "training_and_capacity_building": [
+    {
+      "name": "Nigerian College of Aviation Technology (NCAT), Zaria",
+      "type": "Aviation training institution",
+      "address": "Nigerian College of Aviation Technology, Zaria, Kaduna State, Nigeria",
+      "emails": ["info@ncat.gov.ng", "academics@ncat.gov.ng", "support@ncat.gov.ng"],
+      "phones": ["+2349027729207", "+2348035905864", "+2348039495951"],
+      "website": "https://ncat.gov.ng/",
+      "how_to_address_head": {
+        "title": "Rector, Nigerian College of Aviation Technology",
+        "salutation": "The Rector"
+      },
+      "sources": ["https://ncat.gov.ng/img_20240909_162913/", "https://ncat.gov.ng/portal/applicant/index"]
+    }
+  ],
+
+  "watchdogs": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "role": "Maladministration oversight for public institutions; escalation where agencies/airport operators fail to act fairly or respond.",
+      "emails": [],
+      "phones": [],
+      "address": "Nigeria (Federal)",
+      "how_to_address_head": {
+        "title": "Honourable Chief Commissioner, Public Complaints Commission",
+        "salutation": "Honourable Chief Commissioner"
+      },
+      "note": "Add PCC HQ contacts if you want them hard-coded here."
+    },
+    {
+      "name": "Federal Competition & Consumer Protection Commission (FCCPC)",
+      "role": "Consumer protection and unfair practices oversight (where applicable).",
+      "emails": ["contact@fccpc.gov.ng"],
+      "phones": [],
+      "address": "Abuja, Nigeria",
+      "how_to_address_head": {
+        "title": "Executive Vice Chairman/Chief Executive Officer, FCCPC",
+        "salutation": "The Executive Vice Chairman/CEO"
       }
     }
   ],
-  "players_in_sector": {
-    "airlines": {
-      "note": "Airline roster changes frequently; use NCAA/operator lists for current AOC holders.",
-      "authoritative_registry_hint": "NCAA / official aviation lists",
-      "items": [
-        { "name": "Air Peace", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } },
-        { "name": "Arik Air", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } },
-        { "name": "Dana Air", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } },
-        { "name": "Ibom Air", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } }
-      ]
-    },
-    "airports_and_ground_handlers": {
-      "federal_airports_operator": "FAAN",
-      "other_airports": "State/PPP airports (verify per airport authority/operator)",
-      "ground_handlers": [
-        { "name": "NAHCO", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } },
-        { "name": "SAHCO", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } }
-      ]
+
+  "airlines_operating_in_nigeria": {
+    "domestic_scheduled_airlines": [
+      {
+        "name": "Air Peace",
+        "status_note": "Active (domestic + regional/international services).",
+        "hq_address": "25, Sobo Arobiodu Street GRA, Ikeja, Lagos, Nigeria",
+        "emails": ["info@flyairpeace.com", "callcenter@flyairpeace.com"],
+        "phones": ["+234-201-343-8133"],
+        "website": "https://flyairpeace.com/",
+        "how_to_address_head": {
+          "title": "Managing Director/Chief Executive",
+          "salutation": "The Managing Director/CEO"
+        },
+        "sources": ["https://flyairpeace.com/help-and-contact/"]
+      },
+      {
+        "name": "Ibom Air",
+        "status_note": "Active (Akwa Ibom State owned airline).",
+        "hq_address": "Victor Attah International Airport, Uyo, Akwa Ibom, Nigeria",
+        "emails": ["info@ibomair.com", "reservations@ibomair.com", "ibomflyersupport@ibomair.com"],
+        "phones": ["+234700123594266"],
+        "website": "https://www.ibomair.com/",
+        "how_to_address_head": {
+          "title": "Managing Director/Chief Executive",
+          "salutation": "The Managing Director/CEO"
+        },
+        "sources": ["https://www.ibomair.com/contact-us/"]
+      },
+      {
+        "name": "United Nigeria Airlines",
+        "status_note": "Active.",
+        "hq_addresses": [
+          "Plot C2A Garden Avenue, GRA, Enugu, Enugu State, Nigeria",
+          "No. 18A David Ejoor Crescent (Opp. Ibeto Hotel), Adisa Estate, Apo-Gudu, Abuja, Nigeria"
+        ],
+        "emails": ["customerservice@flyunitednigeria.com"],
+        "phones": ["07001032255", "02016402255", "09131048525"],
+        "website": "https://flyunitednigeria.com/",
+        "how_to_address_head": {
+          "title": "Managing Director/Chief Executive",
+          "salutation": "The Managing Director/CEO"
+        },
+        "sources": ["https://flyunitednigeria.com/contact-us/", "https://flyunitednigeria.com/get-in-touch/"]
+      },
+      {
+        "name": "Green Africa Airways",
+        "status_note": "Active.",
+        "hq_address": "43B, Oduduwa Crescent, GRA, Ikeja, Lagos, Nigeria",
+        "emails": ["gcare@greenafrica.com", "info@greenafrica.com"],
+        "phones": ["0700-47336-237422"],
+        "website": "https://www.greenafrica.com/",
+        "how_to_address_head": {
+          "title": "Chief Executive Officer",
+          "salutation": "The Chief Executive Officer"
+        },
+        "sources": ["https://web.greenafrica.com/contact", "https://www.greenafrica.com/support/offices"]
+      },
+      {
+        "name": "Max Air",
+        "status_note": "Active.",
+        "hq_address": "No. 16 Ashton Road, Kano, Nigeria",
+        "emails": ["info@maxair.com.ng", "cs@maxair.com.ng", "reservation@maxair.com.ng"],
+        "phones": ["09090092221", "09110604036", "07070210000"],
+        "website": "https://maxair.com.ng/",
+        "how_to_address_head": {
+          "title": "Managing Director/Chief Executive",
+          "salutation": "The Managing Director/CEO"
+        },
+        "sources": ["https://maxair.com.ng/contact-us"]
+      },
+      {
+        "name": "Azman Air",
+        "status_note": "Active (domestic operations have varied historically; use official contacts here).",
+        "hq_address": "1 Zaria Road, Beside FIRS, Kano, Nigeria",
+        "emails": ["info@airazman.com", "customercare@airazman.com"],
+        "phones": ["09029800600", "09099800600"],
+        "website": "https://www.airazman.com/",
+        "how_to_address_head": {
+          "title": "Managing Director/Chief Executive",
+          "salutation": "The Managing Director/CEO"
+        },
+        "sources": ["https://www.airazman.com/Contact-us"]
+      },
+      {
+        "name": "Overland Airways",
+        "status_note": "Active (scheduled + charter).",
+        "hq_address": "17 Simbiat Abiola Road, Ikeja, Lagos, Nigeria",
+        "emails": ["fly@overlandairways.com"],
+        "phones": ["+2348035355005", "+2348035355006"],
+        "website": "https://www.overlandairways.com/",
+        "how_to_address_head": {
+          "title": "Chief Executive Officer / Managing Director",
+          "salutation": "The Chief Executive Officer"
+        },
+        "sources": ["https://www.overlandairways.com/Travel-Information/Privacy-Policy"]
+      },
+      {
+        "name": "Aero Contractors",
+        "status_note": "Active (scheduled + helicopter services; multiple published emails across properties).",
+        "hq_address": "Private Terminal, Murtala Muhammed Airport, PMB 21090, Ikeja, Lagos, Nigeria",
+        "emails": ["aero@acn.aero", "ticket-helpdesk@acn.aero"],
+        "phones": ["+2348072005691", "+2342013302937", "+2342013302938"],
+        "website": "https://www.flyaero.com/",
+        "how_to_address_head": {
+          "title": "Managing Director/Chief Executive",
+          "salutation": "The Managing Director/CEO"
+        },
+        "sources": ["https://www.flyaero.com/?page=privacy-policy", "https://www.flyaero.com/?page=complaints"]
+      },
+
+      {
+        "name": "Arik Air",
+        "status_note": "Listed for completeness. Public HQ contact email not verified in this build due to limited verification window.",
+        "hq_address": null,
+        "emails": [],
+        "phones": [],
+        "website": "https://www.arikair.com/",
+        "contact_verification_pending": true
+      },
+      {
+        "name": "ValueJet",
+        "status_note": "Listed for completeness. Public HQ contact email not verified in this build due to limited verification window.",
+        "hq_address": null,
+        "emails": [],
+        "phones": [],
+        "website": null,
+        "contact_verification_pending": true
+      },
+      {
+        "name": "Rano Air",
+        "status_note": "Listed for completeness. Public HQ contact email not verified in this build due to limited verification window.",
+        "hq_address": null,
+        "emails": [],
+        "phones": [],
+        "website": null,
+        "contact_verification_pending": true
+      },
+      {
+        "name": "Dana Air",
+        "status_note": "Listed for completeness. Dana Air has had operational suspensions historically; verify current operating status and official contacts before routing.",
+        "hq_address": null,
+        "emails": [],
+        "phones": [],
+        "website": "https://www.flydanaair.com/",
+        "contact_verification_pending": true
+      }
+    ],
+
+    "ground_handling_and_related_key_players_note": {
+      "note": "If you want the aviation sector to be as deep as power.json, the next expansion is to add: ground handlers (e.g., SAHCO/NAHCO), fuel suppliers, terminal operators, cargo operators, major airports list, and all active foreign carriers serving Nigeria, each with HQ emails."
     }
   },
-  "complaint_and_escalation_flow": {
-    "step_1": "Complain to airline/airport/service provider in writing; request ticket/reference and timeline for resolution.",
-    "step_2": "If unresolved, escalate to NCAA (consumer protection) with evidence: ticket, receipts, flight details, correspondence, bank debits where relevant.",
-    "step_3": "If airport service issue, copy FAAN SERVICOM/customer service (where FAAN-operated).",
-    "step_4": "If suspected criminal conduct (fraud/assault), report to NPF and copy relevant oversight bodies."
-  },
-  "watchdogs_and_cross_cutting_oversight": [
-    {
-      "name": "SERVICOM (Service Compact with All Nigerians)",
-      "role": "Service delivery complaints within MDAs",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
+
+  "petition_addressing_rules_aviation": {
+    "default_structure": {
+      "to": "Primary responsible entity (Airline MD/CEO for ticketing/refunds/baggage/service failures; Airport operator where airport-side failures occur).",
+      "through": [
+        "NCAA (for regulatory/consumer protection escalation).",
+        "Oversight Ministry (for systemic policy failures or sector-wide issues)."
+      ],
+      "cc": [
+        "NCAA (regulatory enforcement / consumer protection)",
+        "PCC (where a public institution fails to act fairly/respond)",
+        "FCCPC (consumer protection where applicable)"
+      ]
     },
-    {
-      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
-      "role": "Consumer protection (where applicable, incl. unfair practices)",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
-    }
-  ],
-  "routing_keywords": [
-    "flight delay",
-    "flight cancellation",
-    "denied boarding",
-    "baggage missing",
-    "baggage damage",
-    "refund",
-    "ticket fraud",
-    "airport extortion",
-    "ground handling",
-    "safety violation",
-    "airline negligence",
-    "overbooking",
-    "rude staff",
-    "security screening",
-    "immigration at airport",
-    "customs at airport"
-  ],
-  "evidence_checklist": [
-    "Flight itinerary/ticket",
-    "Boarding pass",
-    "Receipts (ticket, baggage, extra charges)",
-    "Photos/videos (if relevant)",
-    "Email/SMS/WhatsApp correspondence",
-    "Bank statement showing charges",
-    "Witness statements"
-  ]
+    "how_to_write_titles": [
+      "Use office titles only (e.g., 'Managing Director/CEO', 'Director-General, NCAA', 'Honourable Minister').",
+      "State identifiers: passenger name, PNR/booking reference, ticket number, flight number, date/time, route, airport, baggage tag numbers.",
+      "Attach evidence: e-ticket, receipts, chat logs, emails, photos of baggage, incident reference numbers."
+    ]
+  },
+
+  "routing_keywords_for_justicebot_aviation": {
+    "ticketing_and_refunds": [
+      "refund",
+      "cancellation",
+      "reschedule",
+      "no-show",
+      "ticket issue",
+      "fare difference",
+      "payment reversal",
+      "duplicate charge"
+    ],
+    "delays_and_disruptions": [
+      "delay",
+      "diversion",
+      "missed connection",
+      "denied boarding",
+      "overbooking",
+      "flight disruption"
+    ],
+    "baggage_and_cargo": [
+      "lost baggage",
+      "damaged baggage",
+      "baggage delay",
+      "missing item",
+      "cargo complaint"
+    ],
+    "consumer_protection_and_misconduct": [
+      "rude staff",
+      "extortion",
+      "bribe",
+      "unfair treatment",
+      "discrimination",
+      "harassment",
+      "complaint ignored"
+    ],
+    "safety_and_incidents": [
+      "unsafe operation",
+      "incident",
+      "emergency landing",
+      "near miss",
+      "runway excursion"
+    ]
+  },
+
+  "routing_rules": {
+    "PCC_CC_MANDATORY_FOR_DOMESTIC_PUBLIC_INSTITUTION_FAILURES": true,
+    "MAX_MAILTO_RECIPIENTS": 10,
+    "NOTE": "Only first 10 recipients may open automatically in some mail apps; others should remain visible for manual copy."
+  }
 }

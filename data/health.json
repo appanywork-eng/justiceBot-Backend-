@@ -1,111 +1,257 @@
 {
   "sector": "health",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "country": "Nigeria",
-  "last_updated": "2025-12-25",
-  "oversight": {
-    "federal_ministry": {
-      "name": "Federal Ministry of Health and Social Welfare",
-      "oversight_powers": [
-        "National health policy and regulation coordination",
-        "Supervision of health agencies and programs"
-      ],
-      "contact": {
-        "emails": ["info@health.gov.ng"],
-        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "address": "Federal Secretariat Complex, Phase III, Shehu Shagari Way, Central Business District, FCT Abuja, Nigeria",
-        "website_hint": "health.gov.ng"
-      },
-      "how_to_address_head": {
-        "head_title": "Honourable Minister of Health and Social Welfare",
-        "through_title": "Permanent Secretary, Federal Ministry of Health and Social Welfare",
-        "salutation": "Dear Honourable Minister"
-      }
+  "last_updated": "2025-12-30",
+
+  "oversight_ministry": {
+    "name": "Federal Ministry of Health & Social Welfare",
+    "role": "Health policy formulation, sector oversight, standards coordination, inter-agency supervision (FGN)",
+    "address": "Federal Secretariat Complex, Phase III, Shehu Shagari Way, Central Business District, Abuja, Nigeria",
+    "emails": ["info@health.gov.ng"],
+    "phones": ["+234-9-523-9510"],
+    "website": "https://health.gov.ng/",
+    "how_to_address_head": {
+      "title": "Honourable Minister of Health & Social Welfare",
+      "salutation": "Honourable Minister",
+      "petition_block_example": [
+        "The Honourable Minister of Health & Social Welfare,",
+        "Federal Ministry of Health & Social Welfare,",
+        "Federal Secretariat Complex, Phase III,",
+        "Shehu Shagari Way, CBD, Abuja, Nigeria."
+      ]
     }
   },
-  "regulators_and_key_agencies": [
+
+  "health_institution_regulators": [
     {
-      "name": "National Agency for Food and Drug Administration and Control (NAFDAC)",
-      "type": "Food/Drug/Regulated Products Regulator",
-      "how_to_address_head": { "head_title": "Director-General, NAFDAC", "salutation": "Dear Director-General" },
-      "contact": {
-        "emails": ["nafdac@nafdac.gov.ng"],
-        "phones": ["09-6718008", "09-5240996"],
-        "address": "Plot 2032 Olusegun Obasanjo Way, Wuse Zone 7, Abuja, FCT, Nigeria",
-        "website_hint": "nafdac.gov.ng"
+      "name": "National Health Insurance Authority (NHIA)",
+      "type": "Health Insurance & HMO Regulator",
+      "mandate": "Licensing and regulation of HMOs, enforcement of health insurance standards, dispute resolution, sanctions on HMO non-compliance",
+      "address": "Plot 297, POW Mafemi Crescent, Off Solomon Lar Way, Utako, Abuja, Nigeria",
+      "emails": ["info@nhia.gov.ng"],
+      "phones": ["+234-804-231-8888"],
+      "website": "https://nhia.gov.ng/",
+      "how_to_address_head": {
+        "title": "Director-General, National Health Insurance Authority",
+        "salutation": "The Director-General"
       }
     },
     {
-      "name": "Nigeria Centre for Disease Control (NCDC)",
-      "type": "Public Health Institute",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Director-General, NCDC", "salutation": "Dear Director-General" }
+      "name": "National Primary Health Care Development Agency (NPHCDA)",
+      "type": "Primary Health Care Implementing Agency",
+      "mandate": "PHC system development, immunisation coordination, facility standards, national health campaigns",
+      "address": "Plot 681/682, Port Harcourt Crescent, Off Gimbiya Street, Garki Area 11, Abuja, Nigeria",
+      "emails": ["info@nphcda.gov.ng"],
+      "phones": ["+234-9-461-8612"],
+      "website": "https://nphcda.gov.ng/",
+      "how_to_address_head": {
+        "title": "Executive Director/CEO, NPHCDA",
+        "salutation": "The Executive Director/CEO"
+      }
     },
     {
-      "name": "National Health Insurance Authority (NHIA)",
-      "type": "Health Insurance Regulator/Administrator",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Director-General, NHIA", "salutation": "Dear Director-General" }
+      "name": "National Agency for the Control of AIDS (NACA)",
+      "type": "Public Health Programme Agency",
+      "mandate": "HIV/AIDS policy coordination, interventions, monitoring, and programme standards",
+      "address": "Plot 823, Ralph Shodeinde Street, Central Business District, Abuja, Nigeria",
+      "emails": ["info@naca.gov.ng"],
+      "phones": ["+234-9-461-3726"],
+      "website": "https://naca.gov.ng/",
+      "how_to_address_head": {
+        "title": "Director-General, NACA",
+        "salutation": "The Director-General"
+      }
     },
+    {
+      "name": "Nigeria Centre for Disease Control and Prevention (NCDC)",
+      "type": "National Public Health Institute",
+      "mandate": "Disease surveillance, outbreak response, public health advisory, enforcement guidance, emergency risk communication",
+      "address": "Plot 801, Ebitu Ukiwe Street, Jabi, Abuja, Nigeria",
+      "emails": ["info@ncdc.gov.ng"],
+      "phones": ["6232"],
+      "website": "https://ncdc.gov.ng/",
+      "how_to_address_head": {
+        "title": "Director-General, NCDC",
+        "salutation": "The Director-General"
+      }
+    },
+    {
+      "name": "National Blood Service Commission (NBSC)",
+      "type": "Health Infrastructure / Blood Regulation",
+      "mandate": "Regulation of blood transfusion services, certification of facilities, national blood standards",
+      "address": "Abuja, Nigeria",
+      "emails": ["info@nbsc.gov.ng"],
+      "phones": ["+234-9-461-3726"],
+      "website": "https://nbsc.gov.ng/",
+      "how_to_address_head": {
+        "title": "Director-General, National Blood Service Commission",
+        "salutation": "The Director-General"
+      }
+    }
+  ],
+
+  "health_professionals_regulators": [
     {
       "name": "Medical and Dental Council of Nigeria (MDCN)",
-      "type": "Professional Regulator (Doctors/Dentists)",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Registrar, MDCN", "salutation": "Dear Registrar" }
-    },
-    {
-      "name": "Pharmacists Council of Nigeria (PCN)",
-      "type": "Professional/Facility Regulator (Pharmacy)",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Registrar, PCN", "salutation": "Dear Registrar" }
+      "type": "Professional Licensing / Discipline (Doctors & Dentists)",
+      "mandate": "Licensing, certification, ethics enforcement, discipline, suspension, revocation of practice for doctors/dentists",
+      "address": "MDCN HQ, Abuja, Nigeria",
+      "emails": ["registrar@mdcn.gov.ng", "info@mdcn.gov.ng"],
+      "phones": ["+234-9-523-9510"],
+      "website": "https://mdcn.gov.ng/",
+      "how_to_address_head": {
+        "title": "Registrar/CEO, MDCN",
+        "salutation": "The Registrar/CEO"
+      }
     },
     {
       "name": "Nursing and Midwifery Council of Nigeria (NMCN)",
-      "type": "Professional Regulator (Nurses/Midwives)",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Registrar, NMCN", "salutation": "Dear Registrar" }
+      "type": "Professional Licensing / Standards (Nurses & Midwives)",
+      "mandate": "Licensing, verification, ethics, discipline, sanctions for nurses/midwives",
+      "address": "NMCN HQ, Abuja, Nigeria",
+      "emails": ["info@nmcn.gov.ng"],
+      "phones": ["+234-9-461-8612"],
+      "website": "https://www.nmcn.gov.ng/",
+      "how_to_address_head": {
+        "title": "Registrar/CEO, NMCN",
+        "salutation": "The Registrar/CEO"
+      }
+    },
+    {
+      "name": "Pharmacy Council of Nigeria (PCN)",
+      "type": "Professional Licensing / Standards (Pharmacists & Pharmacies)",
+      "mandate": "Licensing of pharmacists, accreditation of pharmacies, ethics, discipline, sanctions, closure orders",
+      "address": "PCN HQ, Abuja, Nigeria",
+      "emails": ["info@pcn.gov.ng"],
+      "phones": ["0800-202-02020"],
+      "website": "https://www.pcn.gov.ng/",
+      "how_to_address_head": {
+        "title": "Registrar/CEO, PCN",
+        "salutation": "The Registrar/CEO"
+      }
+    },
+    {
+      "name": "Health Professions Council of Nigeria (HPCN)",
+      "type": "Umbrella Council for Health Professional Boards",
+      "mandate": "Policy coordination for health professional regulation, advisory and standards alignment",
+      "address": "Abuja, Nigeria",
+      "emails": ["info@hpcn.gov.ng"],
+      "phones": [],
+      "website": "",
+      "how_to_address_head": {
+        "title": "Chair, HPCN",
+        "salutation": "The Chair"
+      }
+    },
+    {
+      "name": "Medical Laboratory Science Council of Nigeria (MLSCN)",
+      "type": "Professional Licensing / Standards (Medical Labs & Scientists)",
+      "mandate": "Licensing, lab accreditation, inspection, sanctions, suspension, ethics enforcement",
+      "hq_address": "Abuja, Nigeria",
+      "emails": ["info@mlscn.gov.ng"],
+      "phones": ["+234-809-731-5333"],
+      "website": "https://www.mlscn.gov.ng/",
+      "how_to_address_head": {
+        "title": "Registrar/CEO, MLSCN",
+        "salutation": "The Registrar/CEO"
+      }
+    },
+    {
+      "name": "Radiographers Registration Board of Nigeria (RRBN)",
+      "type": "Professional Licensing / Standards (Radiographers & Imaging Centres)",
+      "mandate": "Licensing, verification, ethics, sanctions",
+      "hq_address": "Abuja, Nigeria",
+      "emails": ["info@rrbn.gov.ng"],
+      "phones": [],
+      "website": "https://rrbn.gov.ng/",
+      "how_to_address_head": {
+        "title": "Registrar/CEO, RRBN",
+        "salutation": "The Registrar/CEO"
+      }
+    },
+    {
+      "name": "Community Health Practitioners Registration Board of Nigeria (CHPRBN)",
+      "type": "Professional Licensing (Community Health Workers, CHEWs, JCHEWs)",
+      "mandate": "Registration, licensing, verification, ethics and discipline for community health practitioners",
+      "hq_address": "Abuja, Nigeria",
+      "emails": ["info@chprbn.gov.ng"],
+      "phones": ["0800-202-02020"],
+      "website": "https://chprbn.gov.ng/",
+      "how_to_address_head": {
+        "title": "Registrar/CEO, CHPRBN",
+        "salutation": "The Registrar/CEO"
+      }
     }
   ],
-  "players_in_sector": {
-    "teaching_hospitals_and_federal_facilities": {
-      "note": "Facility-level contacts vary; verify per hospital/agency listing before routing.",
-      "items": [{ "name": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE", "type": "Hospital/Facility", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } }]
+
+  "public_health_and_programme_agencies": [
+    {
+      "name": "National Centre for Disease Control (NCDC)",
+      "emails": ["info@ncdc.gov.ng"],
+      "phones": ["6232"],
+      "address": "Plot 801, Ebitu Ukiwe Street, Jabi, Abuja",
+      "website": "https://ncdc.gov.ng/"
     },
-    "private_hospitals": {
-      "note": "Use state health facility regulator/association directories; avoid guessing contacts."
+    {
+      "name": "National Blood Service Commission (NBSC)",
+      "emails": ["info@nbsc.gov.ng"],
+      "phones": ["+234-9-461-3726"],
+      "address": "Abuja, Nigeria",
+      "website": "https://nbsc.gov.ng/"
     },
-    "pharmaceuticals_and_distributors": {
-      "note": "For fake drugs/unsafe products, route to NAFDAC first."
+    {
+      "name": "National Agency for the Control of AIDS (NACA)",
+      "emails": ["info@naca.gov.ng"],
+      "phones": ["+234-9-461-3726"],
+      "address": "Plot 823, Ralph Shodeinde Street, Abuja",
+      "website": "https://naca.gov.ng/"
+    },
+    {
+      "name": "National Primary Health Care Development Agency (NPHCDA)",
+      "emails": ["info@nphcda.gov.ng"],
+      "phones": ["+234-9-461-8612"],
+      "address": "Plot 681/682 Port Harcourt Crescent, Abuja",
+      "website": "https://nphcda.gov.ng/"
     }
+  ],
+
+  "international_escalation_links_in_professional_disputes": {
+    "doctors": ["MDCN → WHO/UN OHCHR (via international_escalation.json)"],
+    "nurses": ["NMCN → WHO/UN OHCHR"],
+    "pharmacists": ["PCN → WHO/UN OHCHR"],
+    "labs": ["MLSCN → WHO/UN OHCHR"]
   },
-  "complaint_and_escalation_flow": {
-    "step_1": "Complain to the hospital/clinic (medical director/complaints desk) in writing; request a response and patient record audit trail.",
-    "step_2": "If professional misconduct: escalate to the relevant professional council (MDCN/PCN/NMCN etc.) with evidence.",
-    "step_3": "If counterfeit/unsafe drugs/foods: escalate to NAFDAC with product details, batch numbers, receipts, and photos.",
-    "step_4": "If insurance/HMO denial: escalate to NHIA (and copy the HMO/provider)."
-  },
+
+  "watchdogs": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"],
+      "phones": ["+2348070100580", "+2342097000099"],
+      "address": "25 Aguiyi Ironsi Street, Maitama, Abuja"
+    },
+    {
+      "name": "National Human Rights Commission (NHRC)",
+      "emails": ["info@nhrc.gov.ng"],
+      "phones": ["08006472428", "092903746", "092908829"],
+      "address": "No 19 Aguiyi Ironsi Street, Maitama, PMB 444, Abuja"
+    }
+  ],
+
   "routing_keywords": [
-    "medical negligence",
-    "wrong diagnosis",
-    "denied treatment",
-    "illegal charges",
-    "NHIA denial",
-    "HMO refusal",
-    "fake drugs",
-    "adverse drug reaction",
-    "unsafe food",
-    "quack doctor",
-    "pharmacy malpractice",
-    "nursing misconduct",
-    "lab error",
-    "hospital extortion"
-  ],
-  "evidence_checklist": [
-    "Patient records (where available)",
-    "Bills/receipts",
-    "Prescription and lab results",
-    "Photos of product labels/batch numbers",
-    "Timeline of care",
-    "Witness statements"
+    "HMO denial",
+    "hospital negligence",
+    "counterfeit drugs",
+    "expired drugs",
+    "lab result withheld",
+    "unfair suspension",
+    "license verification",
+    "clinic extortion",
+    "emergency care refusal",
+    "data breach hospital",
+    "medical fraud",
+    "equipment failure",
+    "radiology abuse",
+    "blood facility failure"
   ]
 }

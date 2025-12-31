@@ -62,70 +62,233 @@
       "note": "Include for fraud, laundering, scams, identity theft.",
       "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
       "how_to_address_head": { "head_title": "Executive Chairman, EFCC", "salutation": "Dear Executive Chairman" }
+{
+  "sector": "banking",
+  "country": "Nigeria",
+  "version": "1.0.5",
+  "last_updated": "2025-12-31",
+
+  "notes": {
+    "customer_protest_mode": "Users send petitions from their own devices. No domestic remedy steps included here.",
+    "watchdog_scope": "Only PCC and FCCPC act as watchdogs in this sector."
+  },
+
+  "oversight_ministry": {
+    "name": "Central Bank of Nigeria (CBN)",
+    "role": "Primary regulator and supervisory authority for all banks and financial institutions in Nigeria",
+    "hq_address": "Central Business District, Abuja, Nigeria",
+    "emails": ["contactcbn@cbn.gov.ng", "cpd@cbn.gov.ng"],
+    "phones": ["+234-700-225-5226", "+234-800-225-5226"],
+    "website": "https://www.cbn.gov.ng/",
+    "how_to_address_head": {
+      "title": "Governor, Central Bank of Nigeria",
+      "salutation": "Dear Governor",
+      "petition_block_example": [
+        "The Governor,",
+        "Central Bank of Nigeria,",
+        "Central Business District,",
+        "Abuja, Nigeria."
+      ]
+    }
+  },
+
+  "core_regulators": [
+    {
+      "name": "Nigeria Deposit Insurance Corporation (NDIC)",
+      "role": "Deposit insurer, failed bank resolution, financial stability",
+      "hq_address": "Plot 447/448 Constitution Avenue, CBD, Garki, Abuja, Nigeria",
+      "emails": ["info@ndic.gov.ng", "helpdesk@ndic.gov.ng"],
+      "phones": [],
+      "website": "https://ndic.gov.ng/",
+      "how_to_address_head": {
+        "title": "Managing Director/CEO, NDIC",
+        "salutation": "Dear Managing Director/CEO"
+      }
     },
     {
-      "name": "Nigeria Police Force (NPF)",
-      "type": "Law Enforcement",
-      "note": "Include for criminal complaints (fraud/theft/extortion).",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Inspector-General of Police", "salutation": "Dear Inspector-General of Police" }
-    }
-  ],
-  "regulated_players": {
-    "deposit_money_banks": {
-      "authoritative_registry_hint": "CBN ‘List of Deposit Money Banks as at 26 April 2024’ (PDF) – use as source-of-truth for complete roster and HQ addresses.",
-      "complete_roster_policy": "DO_NOT_GUESS. Parse from CBN PDF and keep updated.",
-      "items": [
-        { "name": "USE_CBN_DMB_PDF_ROSTER", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_CBN_DMB_PDF_HQ_ADDRESS" } }
-      ]
+      "name": "Securities and Exchange Commission (SEC) Nigeria",
+      "role": "Capital markets regulation, investment, merchant bank alignment",
+      "hq_address": "Plot 272 Samuel Ademulegun Street, Garki, Abuja, Nigeria",
+      "emails": ["sec@sec.gov.ng"],
+      "phones": ["+234-209-462-1168", "+234-209-462-1169"],
+      "website": "https://sec.gov.ng/",
+      "how_to_address_head": {
+        "title": "Director General, SEC Nigeria",
+        "salutation": "Dear Director General"
+      }
     },
-    "fintechs_psps_mm_os": {
-      "note": "Fintech/PSP/MMO rosters change; use CBN/NIBSS/NCC/SEC (as applicable) registries. Do not omit current licensees.",
-      "authoritative_registry_hint": "CBN payments licensing/PSP/MMO lists and related registries (where published).",
-      "items": [
-        { "name": "USE_OFFICIAL_REGISTRY_IMPORT", "type": "PSP/MMO/Fintech", "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] } }
+    {
+      "name": "Corporate Affairs Commission (CAC)",
+      "role": "Company registration and statutory compliance for banks as corporate entities",
+      "hq_address": "Plot 420 Tigris Crescent, Off Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+      "emails": ["info@cac.gov.ng"],
+      "phones": ["+234-9-460-9540"],
+      "website": "https://cac.gov.ng/",
+      "how_to_address_head": {
+        "title": "Registrar-General, CAC",
+        "salutation": "Dear Registrar-General"
+{
+  "sector": "banking",
+  "country": "Nigeria",
+  "version": "1.0.6",
+  "last_updated": "2025-12-31",
+
+  "notes": {
+    "petition_usage": "This file supports JusticeBot routing and SAN-grade petition addressing. Mass petitions are sent from individual user devices.",
+    "watchdogs_scope": "Only PCC and FCCPC are watchdogs for this sector."
+  },
+
+  "oversight_ministry": {
+    "name": "Central Bank of Nigeria (CBN)",
+    "role": "Primary regulator and supervisory authority for all banks and financial institutions in Nigeria",
+    "hq_address": "Central Business District, Abuja, Nigeria",
+    "emails": ["contactcbn@cbn.gov.ng", "cpd@cbn.gov.ng"],
+    "phones": ["+234-700-225-5226", "+234-800-225-5226"],
+    "website": "https://www.cbn.gov.ng/",
+    "how_to_address_head": {
+      "title": "Governor, Central Bank of Nigeria",
+      "salutation": "Dear Governor",
+      "petition_block_example": [
+        "The Governor,",
+        "Central Bank of Nigeria,",
+        "Central Business District, Abuja, Nigeria."
       ]
     }
   },
-  "how_to_address_and_route": {
-    "bank_letter_addressee": "Managing Director/Chief Executive Officer, [Bank Name]",
-    "bank_through": "Head, Customer Complaints/Complaint Resolution Unit, [Bank Name]",
-    "cbn_escalation_addressee": "Director, Consumer Protection Department (CPD), Central Bank of Nigeria",
-    "default_salutation": "Dear Sir/Ma"
-  },
-  "complaint_and_escalation_flow": {
-    "step_1": "Write to your bank first; demand reversal/refund, request investigation report, and obtain acknowledgment/reference.",
-    "step_2": "If not resolved, escalate to CBN CPD with full evidence and the bank’s reference/timeline.",
-    "step_3": "For fraud/scams/identity theft, report to EFCC/NPF and copy CBN CPD.",
-    "step_4": "If deposit protection/failed bank liquidation matters arise, contact NDIC and attach account evidence."
-  },
-  "routing_keywords": [
-    "unlawful debit",
-    "unauthorized transaction",
-    "POS debit",
-    "ATM debit",
-    "transfer reversal",
-    "chargeback",
-    "card fraud",
-    "USSD debit",
-    "mobile app debit",
-    "loan harassment",
-    "account freeze",
-    "kyc dispute",
-    "BVN/NIN linkage",
-    "scam",
-    "phishing",
-    "SIM swap banking fraud",
-    "merchant dispute"
+
+  "core_regulators": [
+    {
+      "name": "Nigeria Deposit Insurance Corporation (NDIC)",
+      "role": "Deposit insurer, failed bank resolution, financial stability",
+      "hq_address": "Plot 447/448 Constitution Avenue, CBD, Garki, Abuja, Nigeria",
+      "emails": ["info@ndic.gov.ng", "helpdesk@ndic.gov.ng"],
+      "phones": [],
+      "website": "https://ndic.gov.ng/",
+      "how_to_address_head": {
+        "title": "Managing Director/CEO, NDIC",
+        "salutation": "Dear Managing Director/CEO"
+      }
+    },
+    {
+      "name": "Securities and Exchange Commission (SEC) Nigeria",
+      "role": "Capital markets regulation, investments, oversight on merchant banks",
+      "hq_address": "Plot 272, Samuel Ademulegun Street, Garki, Abuja, Nigeria",
+      "emails": ["sec@sec.gov.ng"],
+      "phones": ["+234-209-462-1168", "+234-209-462-1169"],
+      "website": "https://sec.gov.ng/",
+      "how_to_address_head": {
+        "title": "Director-General, SEC Nigeria",
+        "salutation": "Dear Director-General"
+      }
+    },
+    {
+      "name": "Bankers Committee",
+      "role": "Industry coordination body under CBN aligning policy and bank cooperation",
+      "hq_address": "CBN Headquarters, Abuja",
+      "emails": ["bankerscommittee@cbn.gov.ng"],
+      "phones": [],
+      "website": ""
+    },
+    {
+      "name": "Financial Reporting Council of Nigeria (FRC)",
+      "role": "Accounting, audit, and financial reporting standards enforcement for banks",
+      "hq_address": "Plot 427 Gidan Zakara, Off Shehu Shagari Way, CBD, Abuja",
+      "emails": ["info@financialreportingcouncil.gov.ng"],
+      "phones": [],
+      "website": "",
+      "how_to_address_head": {
+        "title": "Executive Secretary/CEO, FRC Nigeria",
+        "salutation": "Dear Executive Secretary/CEO"
+      }
+    },
+    {
+      "name": "Anti-Money Laundering/Combating Financing of Terrorism (AML/CFT) Office",
+      "role": "Compliance enforcement on financial crime reporting",
+      "hq_address": "Abuja, Nigeria",
+      "emails": ["aml@cbn.gov.ng"],
+      "phones": [],
+      "website": ""
+    }
   ],
-  "evidence_checklist": [
-    "Account number (mask if needed)",
-    "Bank name/branch or digital channel",
-    "Date/time of debit",
-    "Amount and narration/reference",
-    "Screenshots/receipts",
-    "Statements",
-    "Correspondence with bank",
-    "Police/EFCC report (if applicable)"
+
+  "commercial_banks": [
+    { "name": "Access Bank Plc", "hq_address": "14/15 Prince Alaba Oniru Rd, Victoria Island, Lagos", "emails": ["info@accessbankplc.com"], "phones": ["+234-1-2709000"], "website": "" },
+    { "name": "Fidelity Bank Plc", "hq_address": "2 Kofo Abayomi St, Victoria Island, Lagos", "emails": ["info@fidelitybankplc.com"], "phones": ["+234-1-2700530"], "website": "" },
+    { "name": "First Bank of Nigeria Ltd", "hq_address": "35 Marina, Lagos Island, Lagos", "emails": ["firstcontact@firstbanknigeria.com"], "phones": ["+234-1-2663163"], "website": "" },
+    { "name": "First City Monument Bank (FCMB)", "hq_address": "Primrose Towers, 17A Tinubu St, Lagos", "emails": ["info@fcmb.com"], "phones": [], "website": "" },
+    { "name": "Guaranty Trust Bank (GTBank) Plc", "hq_address": "635 Akin Adesola St, Victoria Island, Lagos", "emails": ["complaints@gtbank.com", "info@gtbank.com"], "phones": ["+234-1-2714580"], "website": "" },
+    { "name": "United Bank for Africa (UBA) Plc", "hq_address": "57 Marina, Lagos Island", "emails": ["cfc@ubagroup.com"], "phones": ["+234-1-2808800"], "website": "" },
+    { "name": "Zenith Bank Plc", "hq_address": "84 Ajose Adeogun St, Victoria Island, Lagos", "emails": ["zenithdirect@zenithbank.com"], "phones": [], "website": "" },
+    { "name": "Polaris Bank Limited", "hq_address": "3 Akin Adesola St, VI, Lagos", "emails": ["info@polarisbanklimited.com"], "phones": [], "website": "" },
+    { "name": "Stanbic IBTC Bank Plc", "hq_address": "IBTC Place, Walter Carrington Crescent, VI, Lagos", "emails": ["customercarenigeria@stanbicibtc.com"], "phones": ["+234-1-2717739"], "website": "" },
+    { "name": "Standard Chartered Bank Nigeria Ltd", "hq_address": "142 Ahmadu Bello Way, VI, Lagos", "emails": ["callcentre.nigeria@sc.com"], "phones": ["+234-1-2700025"], "website": "" },
+    { "name": "Sterling Bank Plc", "hq_address": "Sterling Towers, 20 Marina, Lagos", "emails": ["customercare@sterling.ng"], "phones": [], "website": "" },
+    { "name": "Titan Trust Bank Ltd", "hq_address": "1680 Sanusi Fafunwa St, VI, Lagos", "emails": ["contactcentre@titantrustbank.com"], "phones": [], "website": "" },
+    { "name": "Unity Bank Plc", "hq_address": "42 Ahmed Onibudo St, VI, Lagos", "emails": ["we_care@unitybankng.com"], "phones": [], "website": "" },
+    { "name": "Wema Bank Plc", "hq_address": "Wema Towers, 54 Marina, Lagos Island", "emails": ["purpleconnect@wemabank.com"], "phones": [], "website": "" },
+    { "name": "Providus Bank Ltd", "hq_address": "Plot 54, Adetokunbo Ademola St, VI, Lagos", "emails": ["businessconcierge@providusbank.com"], "phones": [], "website": "" },
+    { "name": "Optimus Bank Ltd", "hq_address": "55 Bishop Oluwole St, VI, Lagos", "emails": ["info@optimusbank.com"], "phones": [], "website": "" },
+    { "name": "SunTrust Bank Ltd", "hq_address": "1 Oladele Olashore St, VI, Lagos", "emails": ["helpdesk@suntrustng.com"], "phones": [], "website": "" },
+    { "name": "Signature Bank Ltd", "hq_address": "31B, Gana St, Maitama, Abuja", "emails": ["info@signaturebank.ng"], "phones": [], "website": "" }
+  ],
+
+  "non_interest_banks": [
+    { "name": "Jaiz Bank Plc", "hq_address": "73 Ralph Shodeinde St, CBD, Abuja", "emails": ["info@jaizbankplc.com"], "phones": ["+234-9-4605294"], "website": "" },
+    { "name": "Lotus Bank Ltd", "hq_address": "30A Adetokunbo Ademola St, VI, Lagos", "emails": ["info@lotusbank.com"], "phones": [], "website": "" },
+    { "name": "Taj Bank Ltd", "hq_address": "Plot 72 Ahmadu Bello Way, CBD, Abuja", "emails": ["info@tajbank.com"], "phones": [], "website": "" }
+  ],
+
+  "merchant_banks": [
+    { "name": "Coronation Merchant Bank Ltd", "hq_address": "10 Amodu Ojikutu St, VI, Lagos", "emails": ["info@coronationmb.com"], "phones": [], "website": "" },
+    { "name": "FBNQuest Merchant Bank", "hq_address": "6th Floor, St. Nicholas House, Marina, Lagos", "emails": ["info@fbnquest.com"], "phones": [], "website": "" },
+    { "name": "FSDH Merchant Bank Ltd", "hq_address": "FSDH Plaza, 13 Odunlami St, Lagos", "emails": ["info@fsdh.com"], "phones": [], "website": "" }
+  ],
+
+  "payment_service_banks": [
+    { "name": "9PSB", "hq_address": "Nigeria", "emails": ["support@9psb.com.ng"], "phones": [], "website": "" },
+    { "name": "Hope PSB", "hq_address": "Nigeria", "emails": ["info@hopepsb.com"], "phones": [], "website": "" },
+    { "name": "MoMo PSB (MTN)", "hq_address": "Nigeria", "emails": ["momo.support@mtn.com"], "phones": [], "website": "" },
+    { "name": "NIRSAL Microfinance Bank", "hq_address": "NIRSAL House, 2nd Floor, No. 3 Tafawa Balewa Way, CBD, Abuja", "emails": ["info@nirsal.com"], "phones": [], "website": "" }
+  ],
+
+  "microfinance_banks": {
+    "note": "There are thousands of CBN-licensed MFBs. Full list is maintained by CBN/NDIC. Individual MFB HQ emails should be stored in a separate dataset.",
+    "sample": [
+      { "name": "Accion MFB", "emails": ["info@accionmfb.com"], "phones": [], "website": "" },
+      { "name": "Trinity MFB", "emails": ["info@trinitymfb.com.ng"], "phones": [], "website": "" }
+    ]
+  },
+
+  "watchdogs": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "role": "Maladministration, negligence, unfair banking treatment petitions",
+      "hq_address": "25 Aguiyi Ironsi St, Maitama, Abuja, Nigeria",
+      "emails": ["info@pcc.gov.ng", "complaints@pcc.gov.ng"],
+      "phones": []
+    },
+    {
+      "name": "Federal Competition & Consumer Protection Commission (FCCPC)",
+      "role": "Consumer rights enforcement in banking: unlawful charges, refusal, negligence, financial abuse",
+      "hq_address": "Abuja, Nigeria",
+      "emails": ["contact@fccpc.gov.ng"],
+      "phones": ["0700-225-5226"],
+      "website": ""
+    }
+  ],
+
+  "routing_keywords": [
+    "unauthorized debit",
+    "failed transfer",
+    "ATM fraud",
+    "loan abuse",
+    "illegal charges",
+    "account restriction",
+    "reversal failure",
+    "mobile banking fraud",
+    "microfinance loan harassment",
+    "interest rate abuse",
+    "wrong tariff band",
+    "consumer negligence"
   ]
 }
