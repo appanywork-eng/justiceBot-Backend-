@@ -3,7 +3,6 @@ import { useState } from "react";
 export default function App() {
   const [fullName, setFullName] = useState("");
   const [address, setAddress] = useState("");
-  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,10 +14,10 @@ export default function App() {
   const [petitionText, setPetitionText] = useState("");
   const [mailto, setMailto] = useState("");
 
-  // Your live Render backend URL
+  // FIXED: Use your live Render backend URL
   const API_BASE = "https://justicebot-backend-6pzy.onrender.com";
 
-  // Free testing mode (everything unlocked, no payment needed)
+  // Free testing mode: auto-unlock everything (no payment needed)
   const IS_FREE_TESTING = true; // Change to false when ready for production
 
   async function handleGenerate(e) {
@@ -39,7 +38,6 @@ export default function App() {
           petitioner: {
             fullName: fullName.trim(),
             address: address.trim(),
-            email: email.trim(),
             phone: phone.trim(),
           },
         }),
@@ -53,11 +51,12 @@ export default function App() {
       const data = await res.json();
 
       if (IS_FREE_TESTING) {
-        // Free mode: auto-unlock and show full content
+        // Free mode: show full petition immediately
         setUnlocked(true);
-        setPetitionText(data.petition || data.preview || "No petition generated");
+        setPetitionText(data.petition || data.preview || "No petition text received from server");
         setMailto(data.mailto || "");
       } else {
+        // Normal mode (preview only)
         setPreview(data.preview || "");
         setTxRef(data.tx_ref || "");
         setNeedsPayment(data.needsPayment || false);
@@ -153,24 +152,69 @@ export default function App() {
 
       {!unlocked ? (
         <>
-          <form onSubmit={handleGenerate} style={{ display: "flex", flexDirection: "column", gap: "22px", background: "#fff", padding: "32px", borderRadius: "16px", boxShadow: "0 6px 20px rgba(0,0,0,0.1)" }}>
+          <form
+            onSubmit={handleGenerate}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "22px",
+              background: "#fff",
+              padding: "32px",
+              borderRadius: "16px",
+              boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+            }}
+          >
             <label style={{ fontWeight: "600" }}>Full Name</label>
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} style={inputStyle} required />
+            <input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              style={{
+                padding: "14px",
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                fontSize: "16px",
+              }}
+              required
+            />
 
             <label style={{ fontWeight: "600" }}>Address</label>
-            <input value={address} onChange={(e) => setAddress(e.target.value)} style={inputStyle} required />
-
-            <label style={{ fontWeight: "600" }}>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+            <input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              style={{
+                padding: "14px",
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                fontSize: "16px",
+              }}
+              required
+            />
 
             <label style={{ fontWeight: "600" }}>Phone</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} style={inputStyle} />
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              style={{
+                padding: "14px",
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                fontSize: "16px",
+              }}
+              required
+            />
 
             <label style={{ fontWeight: "600" }}>Your Complaint / Issue</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              style={{ ...inputStyle, minHeight: "180px", resize: "vertical" }}
+              style={{
+                padding: "14px",
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                fontSize: "16px",
+                minHeight: "180px",
+                resize: "vertical",
+              }}
               required
             />
 
@@ -206,25 +250,12 @@ export default function App() {
                     lineHeight: "1.65",
                     whiteSpace: "pre-wrap",
                     textAlign: "justify",
-                    background: "linear-gradient(to bottom, #ffffff 0%, #f8fff8 70%, #e8f5e8 100%)",
-                    borderRadius: "12px",
+                    background: "#fff",
                     minHeight: "500px",
                   }}
                 >
                   {preview}
                 </pre>
-
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: "200px",
-                    background: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%)",
-                    pointerEvents: "none",
-                  }}
-                />
               </div>
 
               <button
@@ -252,7 +283,16 @@ export default function App() {
           <h2 style={{ color: "#006600", textAlign: "center", marginBottom: "30px" }}>
             Your Full Petition is Ready!
           </h2>
-          <pre style={{ whiteSpace: "pre-wrap", fontSize: "15px", lineHeight: "1.7", background: "#f9fff9", padding: "20px", borderRadius: "10px" }}>
+          <pre
+            style={{
+              whiteSpace: "pre-wrap",
+              fontSize: "15px",
+              lineHeight: "1.7",
+              background: "#f9fff9",
+              padding: "20px",
+              borderRadius: "10px",
+            }}
+          >
             {petitionText}
           </pre>
 
@@ -282,7 +322,16 @@ export default function App() {
       )}
 
       {error && (
-        <div style={{ color: "#d32f2f", background: "#ffebee", padding: "16px", borderRadius: "8px", marginTop: "20px", textAlign: "center" }}>
+        <div
+          style={{
+            color: "#d32f2f",
+            background: "#ffebee",
+            padding: "16px",
+            borderRadius: "8px",
+            marginTop: "20px",
+            textAlign: "center",
+          }}
+        >
           {error}
         </div>
       )}
