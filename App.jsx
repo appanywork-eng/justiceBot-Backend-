@@ -11,7 +11,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [petitionText, setPetitionText] = useState("");
 
-  const API_BASE = "http://localhost:3000"; // must match backend
+  const API_BASE = https://justicebot-backend-6pzy.onrender.com
 
   async function handleSubmit(e) {
     e.preventDefault();
