@@ -1,0 +1,21 @@
+// ===== Flutterwave Paywall CONFIG =====
+const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
+const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || "1050");
+
+// in-memory anti-reuse (not persistent)
+const USED_TX_REFS = new Set();
+
+async function flwFetch(url, options = {}) {
+  if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY missing");
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${FLW_SECRET_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, data };
+}

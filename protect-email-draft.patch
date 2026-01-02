@@ -1,0 +1,80 @@
+diff --git a/server.mjs b/server.mjs
+index 2222222..3333333 100644
+--- a/server.mjs
++++ b/server.mjs
+@@ -120,60 +120,90 @@ app.post("/email-draft", async (req, res) => {
+   try {
+     const { complaint = "", sector: sectorIn = "", petitionText = "" } = req.body || {};
+     const sector = (sectorIn || detectSector(complaint) || "unknown").toLowerCase();
+-    if (sector === "unknown") return res.status(400).json({ error: "Sector recognized>" });
++    if (sector === "unknown") return res.status(400).json({ error: "Sector not recognized." });
+
+-    const caseType = inferCaseType(sector);
+-    const adminCC = buildAdminOversightCC({ sector, caseType });
+-
+-    const sectorJson = loadSectorJson(sector);
+-
+-    const catalog = buildInstitutionCatalog(sectorJson);
+-
+-    const mentioned = findMentionedInstitutions(petitionText || complaint, catalog);
+-
+-    let mentionedEmails = [];
+-    if (mentioned.length > 0) {
+-      for (const inst of mentioned) {
+-        if (inst?.emails?.length) {
+-          const filtered = inst.emails.filter((e) => isLikelyOfficialEmail(e));
+-          mentionedEmails.push(...filtered);
+-        }
+-      }
+-    }
+-
+-    mentionedEmails = safeUniq(mentionedEmails).filter(isEmail).slice(0, 10);
+-
+-    if (mentionedEmails.length === 0 && sectorJson?.oversight) {
+-      const fallback = safeUniq(
+-        extractEmailsDeep(sectorJson.oversight).filter((e) => isLikelyOfficialEmail(e))
+-      ).filter(isEmail);
+-      mentionedEmails = fallback.slice(0, 10);
+-    }
+-
+-    const subject = petitionText
+-      ? extractSubjectFromPetition(petitionText) ||
+-        `Official Petition Submission — ${new Date().toLocaleDateString("en-GB")}`
+-      : `Official Petition Submission — ${new Date().toLocaleDateString("en-GB")}`;
+-
+-    const body = (petitionText || complaint || "").toString();
+-
+-    const mailto = buildMailto({ to: mentionedEmails, cc: adminCC.slice(0, 10), subject, body });
+-
+-    if (!mailto) {
+-      return res.status(404).json({
+-        error: "No verified official emails found for routing.",
+-        sector,
+-        mentionedInstitutions: mentioned.map((m) => m.name),
+-        to: mentionedEmails,
+-        cc: adminCC,
+-        note: "Ensure institution names exist in sector JSON oversight or regulators section."
+-      });
+-    }
+-
+     res.json({
+       sector,
+       caseType,
+       subject,
+       mentionedInstitutions: mentioned.map((m) => m.name),
+-      to: toFull,
+-      cc: ccFull,
++      to: mentionedEmails,
++      cc: adminCC.slice(0, 10),
+       mailto_to: mentionedEmails,
+       mailto_cc: adminCC.slice(0, 10),
+       truncated: {
+         to: mentionedEmails.length > 10,
+         cc: adminCC.length > 10,
+       },
+       mailto,
+     });
+   } catch (err) {
+     res.status(500).json({ error: "Server error generating email draft." });
+   }
+ });

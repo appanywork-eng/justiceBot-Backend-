@@ -1,0 +1,64 @@
+diff --git a/server.mjs b/server.mjs
+index 0000000..1111111 100644
+--- a/server.mjs
++++ b/server.mjs
+@@ -610,90 +610,150 @@ app.post("/email-draft", async (req, res) => {
++// ---------- FIX: Strict email extraction from matched institutions ONLY ----------
++  const sectorPath = path.join("./data", `${sector}.json`);
++  const sectorData = JSON.parse(fs.readFileSync(sectorPath, "utf8"));
++
++  const catalog = buildInstitutionCatalog(sectorData);
++  const textToScan = (petitionText || complaint || "").toString();
++
++  const matchedInstitutions = findMentionedInstitutions(textToScan, catalog);
++
++  const watchdogCC = [
++      sectorData.watchdogs?.find(w => w.name.includes("PCC"))?.emails?.[0],
++      sectorData.watchdogs?.find(w => w.name.includes("FCCPC"))?.emails?.[0]
++  ].filter(Boolean);
++
++  if (matchedInstitutions.length === 0) {
++      return res.status(404).json({
++          ok: false,
++          error: "No institution matched in petition text.",
++          sector,
++          to: [],
++          cc: watchdogCC,
++          note: "Include institution names in petition for routing."
++      });
++  }
++
++  let toEmails = [];
++  for (const inst of matchedInstitutions) {
++      if (inst.emails?.length) {
++          toEmails.push(...inst.emails.filter(isLikelyOfficialEmail));
++      }
++  }
++
++  toEmails = safeUniq(toEmails).filter(isEmail).slice(0, 10);
++
++  if (toEmails.length === 0) {
++      return res.status(404).json({
++          ok: false,
++          error: "Matched institutions contain no valid HQ emails.",
++          sector,
++          to: [],
++          cc: watchdogCC
++      });
++  }
++
++  const subject = extractSubjectFromPetition(petitionText) || `Official Petition — ${new Date().toLocaleDateString("en-GB")}`;
++  const body = (petitionText || complaint || "").toString();
++
++  const mailto = buildMailto({ to: toEmails, cc: watchdogCC, subject, body });
++
++  return res.json({
++      ok: true,
++      sector,
++      subject,
++      mentionedInstitutions: matchedInstitutions.map(m => m.name),
++      to: toEmails,
++      cc: watchdogCC,
++      mailto
++  });
+}

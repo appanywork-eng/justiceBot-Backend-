@@ -1,0 +1,74 @@
+diff --git a/server.mjs b/server.mjs
+index 3333333..4444444 100644
+--- a/server.mjs
++++ b/server.mjs
+@@ -110,6 +110,34 @@ function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
+   pdf.end();
+ });
+
++/**
++ * ===== SURGICAL EMAIL ROUTING FIX (Nelson's Rule) =====
++ * Extract emails for institutions mentioned in petition body from sector JSON.
++ * Works for TO, THROUGH, or CC sections as long as the institution name appears in the body.
++ * Does NOT fallback to all sector contacts.
++ * Preserves all other logic, config, and endpoints.
++ */
++function getMentionedInstitutionEmails(petitionText = "", sectorJson = {}) {
++  const found = [];
++  const text = normalizeName(petitionText);
++
++  function collect(node) {
++    if (!node || typeof node !== "object") return;
++    const name = normalizeName(node.name || "");
++    if (name && text.includes(name) && Array.isArray(node.emails)) {
++      found.push(...node.emails);
++    }
++  }
++
++  if (Array.isArray(sectorJson.core_institutions)) sectorJson.core_institutions.forEach(collect);
++  if (Array.isArray(sectorJson.regulators)) sectorJson.regulators.forEach(collect);
++  if (Array.isArray(sectorJson.watchdogs)) sectorJson.watchdogs.forEach(collect);
++  if (Array.isArray(sectorJson.players)) sectorJson.players.forEach(collect);
++
++  const uniq = safeUniq(found).filter(isEmail).filter(isLikelyOfficialEmail);
++  return uniq.length ? uniq.slice(0, 10) : [];
++}
++
++
+ // ===== Flutterwave Paywall =====
+
+ // Start payment app.post("/pay/initialize", async (req, res) => {
+@@ -120,6 +148,20 @@ app.post("/email-draft", async (req, res) => {
+     const sectorJson = loadSectorJson(sector);
+     if (!sectorJson) {
+       return res.status(404).json({ ok: false, error: `Sector JSON not found for: ${sector}`, to: [], cc: adminCC });
++    }
++
++    // ===== APPLYING NEW FIX =====
++    const institutionEmails = getMentionedInstitutionEmails(petitionText, sectorJson);
++
++    if (institutionEmails.length === 0) {
++      return res.status(404).json({
++        ok: false,
++        error: "No valid official emails found for institutions mentioned in the petition body.",
++        sector,
++        to: [],
++        cc: adminCC,
++        note: "Ensure institution names are written inside the petition body and include HQ emails in sector JSON."
++      });
++    }
++
++    const subject = extractSubjectFromPetition(petitionText) || `Petition — ${new Date().toLocaleDateString("en-GB")}`;
++    const body = (petitionText || complaint || "").toString();
++
++    const mailto = buildMailto({ to: institutionEmails, cc: adminCC, subject, body });
++
++    return res.json({
++      ok: true,
++      sector,
++      to: institutionEmails,
++      cc: adminCC,
++      mailto
++    });
++
+     }

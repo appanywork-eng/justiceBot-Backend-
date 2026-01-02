@@ -1,0 +1,25 @@
+diff --git a/server.mjs b/server.mjs
+index 0000000..1111111 100644
+--- a/server.mjs
++++ b/server.mjs
+@@ -520,25 +520,40 @@ app.post("/email-draft", async (req, res) => {
+-    let toEmails = catalog.flatMap(i => i.emails || []);
+-    let watchdogCC = OVERSIGHT_EMAILS[sector.toUpperCase()] ? [OVERSIGHT_EMAILS[sector.toUpperCase()]] : [];
++    // FIX: Extract emails ONLY from institutions actually mentioned in the petition text
++    let matched = findMentionedInstitutions(petitionText, catalog);
++    let toEmails = [];
++    for (const inst of matched) {
++      if (Array.isArray(inst.emails)) {
++        toEmails.push(...inst.emails);
++      }
++    }
++    toEmails = [...new Set(toEmails.filter(isLikelyOfficialEmail))].slice(0, 10);
++
++    // Always include PCC and FCCPC as watchdog CCs ONLY
++    let watchdogCC = [];
++    if (sectorData.watchdogs) {
++      const w1 = sectorData.watchdogs.find(w => w.name.includes("PCC"));
++      const w2 = sectorData.watchdogs.find(w => w.name.includes("FCCPC"));
++      if (w1?.emails?.length) watchdogCC.push(w1.emails[0]);
++      if (w2?.emails?.length) watchdogCC.push(w2.emails[0]);
++    }

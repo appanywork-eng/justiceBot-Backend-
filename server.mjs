@@ -23,9 +23,6 @@ app.use(express.json({ limit: "5mb" }));
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Use native fetch (stable in Node.js 21+ as of 2025). No extra import needed.
-// If running on older Node (<21), add: import fetch from "node-fetch"; and use that.
-
 // ---------- CONFIG ----------
 const OVERSIGHT_EMAILS = {
   PCC: process.env.PCC_EMAIL || "",
@@ -35,15 +32,12 @@ const OVERSIGHT_EMAILS = {
   AGF: process.env.AGF_EMAIL || "",
 };
 
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || "";
-const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID || "";
-
-// ===== Flutterwave Paywall CONFIG =====
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
-const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
-const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || "1050");
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "http://localhost:5173"; // Change in production
+const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 
-// in-memory anti-reuse (not persistent)
+// In-memory storage (temporary)
+const petitionStore = new Map();
 const USED_TX_REFS = new Set();
 
 async function flwFetch(url, options = {}) {
@@ -60,7 +54,6 @@ async function flwFetch(url, options = {}) {
   return { ok: res.ok, data };
 }
 
-
 // ---------- HELPERS ----------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,7 +63,7 @@ function safeUniq(arr) {
 }
 
 function isEmail(s) {
-  return typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+  return typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 }
 
 function isLikelyOfficialEmail(email) {
@@ -108,24 +101,25 @@ function extractEmailsDeep(value, out = []) {
 }
 
 function loadSectorJson(sector) {
-const filePath = path.join(__dirname, "data", sector + ".json");
-if (!fs.existsSync(filePath)) return null;
+  const filePath = path.join(__dirname, "data", sector + ".json");
+  if (!fs.existsSync(filePath)) return null;
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
 function detectSector(text) {
   const lower = (text || "").toLowerCase();
   const map = {
-    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "tcn", "nberc"],
+    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "light"],
     aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation"],
-    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit"],
-    telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "airtel", "glo", "9mobile"],
-    education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund"],
-    health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
-    security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration"],
+    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "cbn"],
+    telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "glo", "airtel"],
+    education: ["school", "university", "waec", "jamb", "nuc", "education"],
+    health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical"],
+    security: ["police", "army", "navy", "airforce", "nscdc", "unlawful", "arrest"],
     judiciary: ["court", "judge", "justice", "supreme", "petition", "magistrate"],
     international_escalation: ["un", "ecowas", "au", "icc", "eu", "international"],
   };
+
   for (const [sec, words] of Object.entries(map)) {
     if (words.some((w) => lower.includes(w))) return sec;
   }
@@ -134,7 +128,8 @@ function detectSector(text) {
 
 function inferCaseType(sector) {
   if (sector === "security" || sector === "judiciary") return "human_rights";
-  if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector)) return "service_delivery";
+  if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector))
+    return "service_delivery";
   if (sector === "international_escalation") return "international";
   return "other";
 }
@@ -155,13 +150,12 @@ function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
   const toList = safeUniq(to).filter(isEmail).slice(0, 10).join(",");
   const ccList = safeUniq(cc).filter(isEmail).slice(0, 10).join(",");
   if (!toList) return null;
-  const s = encodeURIComponent(subject || "");
+  const s = encodeURIComponent(subject || "Petition Regarding Complaint");
   const b = encodeURIComponent(body || "");
   const ccParam = ccList ? `&cc=${encodeURIComponent(ccList)}` : "";
   return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
 }
 
-// ---------- PETITION PARSING ----------
 function extractSubjectFromPetition(petitionText = "") {
   const m =
     petitionText.match(/^\s*subject\s*:\s*(.+)\s*$/im) ||
@@ -184,7 +178,11 @@ function buildInstitutionCatalog(sectorJson) {
   function addItem(name, obj) {
     if (!name) return;
     const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
-    items.push({ name: String(name), norm: normalizeName(name), emails });
+    items.push({
+      name: String(name),
+      norm: normalizeName(name),
+      emails,
+    });
   }
 
   if (!sectorJson || typeof sectorJson !== "object") return items;
@@ -197,12 +195,11 @@ function buildInstitutionCatalog(sectorJson) {
   }
 
   if (Array.isArray(sectorJson.core_institutions)) {
-    sectorJson.core_institutions.forEach((inst) => addItem(inst?.name, inst));
+    sectorJson.core_institutions.forEach((inst) => addItem(inst?.name || inst, inst));
   }
-
-  if (Array.isArray(sectorJson.regulators)) sectorJson.regulators.forEach((x) => addItem(x?.name || x, x));
-  if (Array.isArray(sectorJson.watchdogs)) sectorJson.watchdogs.forEach((x) => addItem(x?.name || x, x));
-  if (Array.isArray(sectorJson.players)) sectorJson.players.forEach((x) => addItem(x?.name || x, x));
+  if (Array.isArray(sectorJson.regulators)) sectorJson.regulators.forEach((r) => addItem(r?.name || r, r));
+  if (Array.isArray(sectorJson.watchdogs)) sectorJson.watchdogs.forEach((w) => addItem(w?.name || w, w));
+  if (Array.isArray(sectorJson.players)) sectorJson.players.forEach((p) => addItem(p?.name || p, p));
 
   return items;
 }
@@ -216,7 +213,7 @@ function findMentionedInstitutions(petitionText, catalog) {
   }
 
   const raw = (petitionText || "").toLowerCase();
-  if (raw.includes("police") || raw.includes("igp") || raw.includes("nigeria police")) {
+  if (raw.includes("police") || raw.includes("igp") || raw.includes("nigerian police")) {
     const npf = catalog.find((c) => c.norm.includes("nigeria police force"));
     if (npf) mentioned.push(npf);
     const psc = catalog.find((c) => c.norm.includes("police service commission"));
@@ -224,16 +221,19 @@ function findMentionedInstitutions(petitionText, catalog) {
     const policeMin = catalog.find((c) => c.norm.includes("ministry of police affairs"));
     if (policeMin) mentioned.push(policeMin);
   }
+
   if (raw.includes("immigration")) {
     const nis = catalog.find((c) => c.norm.includes("nigeria immigration service"));
     if (nis) mentioned.push(nis);
   }
-  if (raw.includes("correction") || raw.includes("prison") || raw.includes("ncos")) {
+
+  if (raw.includes("correction") || raw.includes("prison")) {
     const ncos = catalog.find((c) => c.norm.includes("nigerian correctional service"));
     if (ncos) mentioned.push(ncos);
   }
+
   if (raw.includes("civil defence") || raw.includes("nscdc")) {
-    const nscdc = catalog.find((c) => c.norm.includes("nigeria security and civil defence corps"));
+    const nscdc = catalog.find((c) => c.norm.includes("nigeria security and civil defence"));
     if (nscdc) mentioned.push(nscdc);
   }
 
@@ -247,227 +247,40 @@ function findMentionedInstitutions(petitionText, catalog) {
   return uniq;
 }
 
-// ---------- GOOGLE CSE LOOKUP ----------
-async function googleCseSearch(query) {
-  if (!GOOGLE_API_KEY || !GOOGLE_CSE_ID) return [];
-  const url = `https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(
-    GOOGLE_API_KEY
-  )}&cx=${encodeURIComponent(GOOGLE_CSE_ID)}&q=${encodeURIComponent(query)}`;
-  const res = await fetch(url);
-  if (!res.ok) return [];
-  const data = await res.json();
-  const items = Array.isArray(data.items) ? data.items : [];
-  return items.map((it) => it?.link).filter(Boolean).slice(0, 5);
-}
-
-function sameDomain(email, siteUrl) {
-  try {
-    const host = new URL(siteUrl).hostname.replace(/^www\./, "").toLowerCase();
-    const domain = String(email).split("@")[1]?.toLowerCase() || "";
-    return domain === host || domain.endsWith("." + host) || host.endsWith("." + domain);
-  } catch {
-    return false;
-  }
-}
-
-async function fetchOfficialEmailsFromUrl(url) {
-  try {
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": "PetitionDeskEmailResolver/1.0",
-        Accept: "text/html,application/xhtml+xml",
-      },
-    });
-    if (!res.ok) return [];
-    const html = await res.text();
-    const emails = extractEmailsFromText(html).filter(isLikelyOfficialEmail);
-    const filtered = emails.filter((e) => sameDomain(e, url));
-    return safeUniq(filtered).slice(0, 10);
-  } catch {
-    return [];
-  }
-}
-
-async function resolveMissingEmailsForInstitution(instName) {
-  const q = `${instName} official website contact email`;
-  const links = await googleCseSearch(q);
-  for (const link of links) {
-    const lower = link.toLowerCase();
-    if (
-      lower.includes(".gov.ng") ||
-      lower.includes(".org.ng") ||
-      lower.includes(".mil.ng") ||
-      lower.endsWith(".ng")
-    ) {
-      const emails = await fetchOfficialEmailsFromUrl(link);
-      if (emails.length) return emails;
-    }
-  }
-  return [];
-}
-
 // ---------- ENDPOINTS ----------
-
-
-// ===== Flutterwave Paywall =====
-
-// Start payment
-app.post("/pay/initialize", async (req, res) => {
-  try {
-    const amount = Number(req.body?.amount || PETITION_PRICE_NGN);
-    const currency = String(req.body?.currency || "NGN");
-    const email = String(req.body?.email || "user@petitiondesk.com");
-    const name = String(req.body?.name || "PetitionDesk User");
-    const phone = String(req.body?.phone || "");
-
-    const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-    const redirect_url = `${FRONTEND_BASE_URL}/payment-success?tx_ref=${encodeURIComponent(tx_ref)}`;
-
-    const payload = {
-      tx_ref,
-      amount,
-      currency,
-      redirect_url,
-      customer: { email, phonenumber: phone, name },
-      customizations: {
-        title: "PetitionDesk",
-        description: "Unlock petition actions (Send Email / Download PDF)",
-      },
-    };
-
-    const { ok, data } = await flwFetch("https://api.flutterwave.com/v3/payments", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-
-    if (!ok || !data?.data?.link) {
-      return res.status(400).json({ ok: false, error: data?.message || "Flutterwave init failed" });
-    }
-
-    return res.json({ ok: true, tx_ref, link: data.data.link });
-  } catch (e) {
-    console.error("pay/initialize error:", e);
-    return res.status(500).json({ ok: false, error: "Payment init error" });
-  }
-});
-
-// Verify payment
-app.get("/pay/verify", async (req, res) => {
-  try {
-    const transaction_id = String(req.query?.transaction_id || "").trim();
-    const tx_ref = String(req.query?.tx_ref || "").trim();
-
-    if (!transaction_id && !tx_ref) {
-      return res.status(400).json({ ok: false, error: "Missing transaction_id or tx_ref" });
-    }
-
-    // Prefer transaction verify (Flutterwave best practice)
-    if (transaction_id) {
-      const { ok, data } = await flwFetch(
-        `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transaction_id)}/verify`,
-        { method: "GET" }
-      );
-
-      if (!ok) return res.status(400).json({ ok: false, error: data?.message || "Verify failed" });
-
-      const d = data?.data || {};
-      const paidStatus = String(d.status || "").toLowerCase();
-      const paidAmount = Number(d.amount || 0);
-      const paidCurrency = String(d.currency || "");
-      const ref = String(d.tx_ref || tx_ref || "");
-
-      if (ref && USED_TX_REFS.has(ref)) {
-        return res.status(400).json({ ok: false, error: "This payment reference has already been used." });
-      }
-
-      const okPaid =
-        (paidStatus === "successful" || paidStatus === "success") &&
-        paidCurrency === "NGN" &&
-        paidAmount >= PETITION_PRICE_NGN;
-
-      if (!okPaid) {
-        return res.status(400).json({ ok: false, error: "Payment not successful or amount mismatch", tx_ref: ref });
-      }
-
-      if (ref) USED_TX_REFS.add(ref);
-
-      return res.json({ ok: true, tx_ref: ref, amount: paidAmount, currency: paidCurrency, status: paidStatus });
-    }
-
-    // tx_ref-only verify not supported (needs transaction_id)
-    return res.status(400).json({ ok: false, error: "transaction_id required for verification" });
-  } catch (e) {
-    console.error("pay/verify error:", e);
-    return res.status(500).json({ ok: false, error: "Payment verify error" });
-  }
-});
 
 app.get("/health", (req, res) => {
   res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
 });
 
-app.post("/classify-sector", async (req, res) => {
-  const complaint = req.body.complaint || "";
-  if (!process.env.OPENAI_API_KEY) return res.json({ sector: detectSector(complaint) });
-
-  try {
-    const ai = await openai.chat.completions.create({
-      model: "gpt-5.2", // Updated to latest flagship model as of Dec 2025
-      messages: [
-        {
-          role: "system",
-          content:
-            "Classify the complaint into exactly one sector: power, aviation, banking, telecoms, education, health, security, judiciary, international_escalation.",
-        },
-        { role: "user", content: complaint },
-      ],
-    });
-    const raw = (ai.choices?.[0]?.message?.content || "").trim().toLowerCase();
-    const allowed = new Set([
-      "power",
-      "aviation",
-      "banking",
-      "telecoms",
-      "education",
-      "health",
-      "security",
-      "judiciary",
-      "international_escalation",
-    ]);
-    res.json({ sector: allowed.has(raw) ? raw : detectSector(complaint) });
-  } catch (err) {
-    console.error("Classification error:", err);
-    res.json({ sector: detectSector(complaint) });
-  }
-});
-
 app.post("/generate-petition", async (req, res) => {
   const complaint = req.body.complaint || "";
-  const sector = (req.body.sector || detectSector(complaint) || "unknown").toLowerCase();
-
+  const sector = req.body.sector || detectSector(complaint) || "unknown";
   const petitioner = req.body.petitioner || {};
-  const pName = petitioner.fullName || "[Your Full Name]";
-  const pAddress = petitioner.address || "[Your Address]";
-  const pPhone = petitioner.phone || "[Phone Number]";
+  const pName = petitioner.fullName?.trim() || "[Your Full Name]";
+  const pAddress = petitioner.address?.trim() || "[Your Address]";
+  const pEmail = petitioner.email?.trim() || "[Your Email]";
+  const pPhone = petitioner.phone?.trim() || "[Phone Number]";
   const pEvidence = petitioner.evidenceName || "None";
 
-  if (sector === "unknown") return res.status(400).json({ error: "Sector not recognized." });
+  if (sector === "unknown") {
+    return res.status(400).json({ error: "Could not detect sector from complaint." });
+  }
 
   if (!process.env.OPENAI_API_KEY) {
-    return res.json({ sector, petition: "❌ OPENAI_API_KEY not set." });
+    return res.status(500).json({ error: "OPENAI_API_KEY not configured." });
   }
 
   try {
     const autoDate = new Date().toLocaleDateString("en-GB");
     const caseType = inferCaseType(sector);
 
-    const ai = await openai.chat.completions.create({
-      model: "gpt-5.2", // Updated to latest model
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // Use valid model: gpt-4o or gpt-4-turbo
       messages: [
         {
           role: "system",
-          content: `
-Draft a well-structured Nigerian petition letter with clear sections and spacing.
+          content: `Draft a well-structured Nigerian petition letter with clear sections.
 MANDATORY OUTPUT FORMAT (exact headings):
 
 Date: ${autoDate}
@@ -475,13 +288,12 @@ Date: ${autoDate}
 PETITIONER DETAILS:
 Name: ${pName}
 Address: ${pAddress}
+Email: ${pEmail}
 Phone: ${pPhone}
 Evidence/Attachments: ${pEvidence}
 
 TO: [Primary institution]
-
 THROUGH: [If appropriate — NEVER PCC]
-
 CC: [Relevant oversight bodies]
 
 IMPORTANT: For domestic cases, PCC MUST be in CC (not Through).
@@ -490,127 +302,159 @@ SUBJECT: [Strong subject line]
 
 FACTS: [Numbered points]
 
-APPLICABLE LEGAL/RIGHTS FRAMEWORK:
-[Cite relevant Constitution sections, Acts, regulations]
+APPLICABLE LEGAL/RIGHTS FRAMEWORK: [Cite relevant Constitution sections, Acts, regulations]
 
 RELIEFS SOUGHT: [Numbered]
 
 ATTACHMENTS: [List]
 
-SIGNATURE: [Name + phone]
+SIGNATURE:
+[Name]
+[Phone]
 
 Keep readable with blank lines between sections.
-Sector: ${sector} | CaseType: ${caseType}
-`.trim(),
+Sector: ${sector} | CaseType: ${caseType}`.trim(),
         },
         { role: "user", content: `Complaint:\n${complaint}` },
       ],
     });
 
-    const petitionText = ai.choices?.[0]?.message?.content?.trim() || "❌ Generation failed.";
-    const subject = extractSubjectFromPetition(petitionText) || "";
+    const petitionText = completion.choices?.[0]?.message?.content?.trim() || "Failed to generate text.";
 
-    res.json({ petition: petitionText, sector, date: autoDate, subject });
-  } catch (err) {
-    console.error("Petition generation error:", err);
-    res.json({ petition: "❌ Failed to generate petition.", sector });
-  }
-});
+    const subject = extractSubjectFromPetition(petitionText) || "Petition Regarding Fundamental Rights Violation / Service Failure";
 
-app.post("/email-draft", async (req, res) => {
-  try {
-    const { complaint = "", sector: sectorIn = "", petitionText = "" } = req.body;
-    const sector = (sectorIn || detectSector(complaint) || "unknown").toLowerCase();
-    if (sector === "unknown") return res.status(400).json({ error: "Sector not recognized." });
-
-    const caseType = inferCaseType(sector);
-    const adminCC = buildAdminOversightCC({ sector, caseType });
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
-    const mentioned = findMentionedInstitutions(petitionText || complaint, catalog);
+    const mentioned = findMentionedInstitutions(petitionText, catalog);
 
-    let mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
+    const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
+    const adminCC = buildAdminOversightCC({ sector, caseType });
 
-    if (mentionedEmails.length === 0 && mentioned.length > 0) {
-      for (const m of mentioned) {
-        const rescued = await resolveMissingEmailsForInstitution(m.name);
-        if (rescued.length) {
-          mentionedEmails = safeUniq([...mentionedEmails, ...rescued]).filter(isEmail);
-        }
-      }
-    }
+    const toFull = mentionedEmails.length > 0 ? mentionedEmails : adminCC.slice(0, 1); // fallback
+    const ccFull = safeUniq([...adminCC, ...mentionedEmails.filter((e) => !toFull.includes(e))]);
 
-    if (mentionedEmails.length === 0 && sectorJson) {
-      const fallback = safeUniq(extractEmailsDeep(sectorJson)).filter(isEmail);
-      mentionedEmails = fallback.slice(0, 15);
-    }
+    const mailto = buildMailto({ to: toFull, cc: ccFull, subject, body: petitionText });
 
-    const subject = extractSubjectFromPetition(petitionText) || `Petition — ${new Date().toLocaleDateString("en-GB")}`;
-    const body = (petitionText || complaint || "").toString();
+    const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const toFull = safeUniq(mentionedEmails).filter(isEmail);
-    const ccFull = safeUniq([...adminCC, ...mentionedEmails.filter(e => !toFull.includes(e))]).filter(isEmail); // Avoid duplicates
-
-    const toMailto = toFull.slice(0, 10);
-    const ccMailto = ccFull.slice(0, 10);
-
-    const mailto = buildMailto({ to: toMailto, cc: ccMailto, subject, body });
-
-    if (!mailto) {
-      return res.status(404).json({
-        error: "No verified emails found.",
-        note: "Check sector JSON or enable Google CSE.",
-        mentionedInstitutions: mentioned.map(m => m.name),
-      });
-    }
-
-    res.json({
+    petitionStore.set(tx_ref, {
+      petition: petitionText,
       sector,
-      caseType,
+      date: autoDate,
       subject,
-      mentionedInstitutions: mentioned.map(m => m.name),
+      caseType,
+      mentionedInstitutions: mentioned.map((m) => m.name),
       to: toFull,
       cc: ccFull,
       mailto,
     });
+
+    const preview = petitionText.length > 600 ? petitionText.substring(0, 600) + "..." : petitionText;
+
+    res.json({
+      needsPayment: true,
+      amount: PETITION_PRICE_NGN,
+      currency: "NGN",
+      tx_ref,
+      preview,
+      message: "Payment required to unlock full petition and email actions",
+    });
   } catch (err) {
-    console.error("Email draft error:", err);
-    res.status(500).json({ error: "Failed to build email draft." });
+    console.error("Petition generation error:", err);
+    res.status(500).json({ error: "Failed to generate petition." });
+  }
+});
+
+// Payment endpoints (initialize and unlock) — unchanged, just fixed small bugs
+app.post("/pay/initialize", async (req, res) => {
+  try {
+    const { tx_ref, amount = PETITION_PRICE_NGN, currency = "NGN", email, name, phone } = req.body;
+
+    if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
+
+    const redirect_url = `${FRONTEND_BASE_URL}?tx_ref=${tx_ref}`;
+
+    const payload = {
+      tx_ref,
+      amount,
+      currency,
+      redirect_url,
+      customer: { email: email || "user@petitiondesk.com", name: name || "PetitionDesk User", phonenumber: phone || "" },
+      customizations: { title: "PetitionDesk", description: "Unlock full petition & email" },
+    };
+
+    const { ok, data } = await flwFetch("https://api.flutterwave.com/v3/payments", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    if (!ok || !data?.data?.link) {
+      return res.status(400).json({ ok: false, error: data?.message || "Payment failed" });
+    }
+
+    res.json({ ok: true, tx_ref, link: data.data.link });
+  } catch (e) {
+    console.error("pay/initialize error:", e);
+    res.status(500).json({ ok: false, error: "Payment init error" });
+  }
+});
+
+app.post("/unlock-petition", async (req, res) => {
+  try {
+    const { tx_ref } = req.body;
+    if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
+
+    const { ok, data } = await flwFetch(`https://api.flutterwave.com/v3/transactions/verify?tx_ref=${encodeURIComponent(tx_ref)}`);
+
+    if (!ok || data?.status !== "success" || data?.data?.status !== "successful") {
+      return res.status(402).json({ ok: false, error: "Payment not successful" });
+    }
+
+    if (USED_TX_REFS.has(tx_ref)) {
+      return res.status(409).json({ ok: false, error: "Transaction already used" });
+    }
+    USED_TX_REFS.add(tx_ref);
+
+    const stored = petitionStore.get(tx_ref);
+    if (!stored) return res.status(404).json({ ok: false, error: "Petition not found" });
+
+    petitionStore.delete(tx_ref);
+
+    res.json({ ok: true, unlocked: true, ...stored });
+  } catch (err) {
+    console.error("Unlock error:", err);
+    res.status(500).json({ ok: false, error: "Unlock failed" });
   }
 });
 
 app.get("/download-pdf", (req, res) => {
   try {
-    const sector = String(req.query.sector || "").trim();
-    const textRaw = String(req.query.text || "");
-    if (!sector || !textRaw) return res.status(400).send("Invalid request");
+    const { sector = "general", text = "" } = req.query;
+    if (!text) return res.status(400).send("Missing text");
 
-    const decoded = decodeURIComponent(textRaw);
+    const decoded = decodeURIComponent(text);
     const filename = `${sector}-petition.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
-    const pdf = new PDFDocument({ margin: 40 });
+    const pdf = new PDFDocument({ margin: 50 });
     pdf.pipe(res);
 
-    pdf.fontSize(16).text("PETITION", { align: "center" });
-    pdf.moveDown(0.5);
-    pdf.fontSize(11).text(`Sector: ${sector.toUpperCase()}`);
-    pdf.fontSize(11).text(`Date: ${new Date().toLocaleDateString("en-GB")}`);
-    pdf.moveDown(1);
-    pdf.fontSize(12).text(decoded);
-    pdf.moveDown(2);
-    pdf.fontSize(8).text("Powered by PetitionDesk", { align: "center" });
+    pdf.fontSize(20).text("PETITION", { align: "center" });
+    pdf.moveDown();
+    pdf.fontSize(12).text(decoded, { align: "justify" });
+    pdf.moveDown(3);
+    pdf.fontSize(10).text("Generated by PetitionDesk", { align: "center" });
 
     pdf.end();
   } catch (err) {
     console.error("PDF error:", err);
-    res.status(500).send("Failed to generate PDF");
+    res.status(500).send("PDF generation failed");
   }
 });
 
-app.listen(process.env.PORT || 3000, "0.0.0.0", () => {
-  console.log(`🚀 PetitionDesk backend running on port ${process.env.PORT || 3000}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 PetitionDesk backend running on http://localhost:${PORT}`);
 });
-

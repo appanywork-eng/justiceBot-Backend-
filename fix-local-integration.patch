@@ -1,0 +1,35 @@
+diff --git a/server.mjs b/server.mjs
+index 0000000..1111111 100644
+--- a/server.mjs
++++ b/server.mjs
+@@ -1,5 +1,6 @@
+ // server.mjs
+ import express from "express";
++import cors from "cors";
+ import OpenAI from "openai";
+ import dotenv from "dotenv";
+ import fs from "fs";
+
+@@ -10,7 +11,16 @@ dotenv.config();
+ const app = express();
+
+-app.use(
+-cors({
+-origin: "*",
+-methods: ["GET", "POST", "OPTIONS"],
+-allowedHeaders: ["Content-Type", "Authorization"],
+-})
+-);
++// Fix CORS setup
++app.use(cors({
++  origin: "*",
++  methods: ["GET", "POST", "OPTIONS"],
++  allowedHeaders: ["Content-Type", "Authorization"],
++}));
+
+ // Add missing classify-sector endpoint
++app.post("/classify-sector", (req, res) => {
++  const { complaint = "" } = req.body || {};
++  const sec = detectSector(complaint);
++  res.json({ ok: true, sector: sec });
++});

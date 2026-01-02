@@ -1,0 +1,159 @@
+diff --git a/server.mjs b/server.mjs
+index 1111111..2222222 100644
+--- a/server.mjs
++++ b/server.mjs
+@@ -1,9999 +1,9999 @@
+ app.post("/email-draft", async (req, res) => {
+   try {
+     const { complaint = "", sector: sectorIn = "", petitionText = "" } = req.body;
+     const sector = (sectorIn || detectSector(complaint) || "unknown").toLowerCase();
+-    if (sector === "unknown") return res.status(400).json({ error: "Sector not recognized." });
+-
+-    const caseType = inferCaseType(sector);
+-    const adminCC = buildAdminOversightCC({ sector, caseType });
+-    const sectorJson = loadSectorJson(sector);
+-    const catalog = buildInstitutionCatalog(sectorJson);
+-    const mentioned = findMentionedInstitutions(petitionText || complaint, catalog);
+-
+-    let mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
+-
+-    if (mentionedEmails.length === 0 && mentioned.length > 0) {
+-      for (const m of mentioned) {
+-        const rescued = await resolveMissingEmailsForInstitution(m.name);
+-        if (rescued.length) {
+-          mentionedEmails = safeUniq([...mentionedEmails, ...rescued]).filter(isEmail);
+-        }
+-      }
+-    }
+-
+-    if (mentionedEmails.length === 0 && sectorJson) {
+-      const fallback = safeUniq(extractEmailsDeep(sectorJson)).filter(isEmail);
+-      mentionedEmails = fallback.slice(0, 15);
+-    }
+-
+-    const subject = extractSubjectFromPetition(petitionText) || `Petition — ${new Date().toLocaleDateString("en-GB")}`;
+-    const body = (petitionText || complaint || "").toString();
+-
+-    const toFull = safeUniq(mentionedEmails).filter(isEmail);
+-    const ccFull = safeUniq([...adminCC, ...mentionedEmails.filter(e => !toFull.includes(e))]).filter(isEmail); // Avoid duplicates
+-
+-    const toMailto = toFull.slice(0, 10);
+-    const ccMailto = ccFull.slice(0, 10);
+-
+-    const mailto = buildMailto({ to: toMailto, cc: ccMailto, subject, body });
+-
+-    if (!mailto) {
+-      return res.status(404).json({
+-        error: "No verified emails found.",
+-        note: "Check sector JSON or enable Google CSE.",
+-        mentionedInstitutions: mentioned.map(m => m.name),
+-      });
+-    }
+-
+-    res.json({
+-      sector,
+-      caseType,
+-      subject,
+-      mentionedInstitutions: mentioned.map(m => m.name),
+-      to: toFull,
+-      cc: ccFull,
+-      mailto,
+-    });
++    if (sector === "unknown") {
++      return res.status(400).json({ ok: false, error: "Sector not recognized." });
++    }
++
++    // Load sector data
++    const sectorJson = loadSectorJson(sector);
++    if (!sectorJson) {
++      return res.status(404).json({
++        ok: false,
++        error: `Sector data file not found for "${sector}".`,
++        sector,
++      });
++    }
++
++    const catalog = buildInstitutionCatalog(sectorJson);
++    const textToScan = (petitionText || complaint || "").toString();
++    const matched = findMentionedInstitutions(textToScan, catalog);
++
++    // CC ONLY PCC + FCCPC (prefer sectorJson.watchdogs, fallback to env)
++    const pccFromJson =
++      sectorJson.watchdogs?.find((w) => String(w?.name || "").toLowerCase().includes("public complaints commission"))?.emails?.[0] ||
++      sectorJson.watchdogs?.find((w) => String(w?.name || "").toLowerCase().includes("(pcc)"))?.emails?.[0] ||
++      "";
++    const fccpcFromJson =
++      sectorJson.watchdogs?.find((w) => String(w?.name || "").toLowerCase().includes("federal competition and consumer"))?.emails?.[0] ||
++      sectorJson.watchdogs?.find((w) => String(w?.name || "").toLowerCase().includes("(fccpc)"))?.emails?.[0] ||
++      "";
++
++    const watchdogCC = safeUniq([pccFromJson, fccpcFromJson, OVERSIGHT_EMAILS.PCC, OVERSIGHT_EMAILS.FCCPC])
++      .filter(isEmail);
++
++    if (matched.length === 0) {
++      return res.status(404).json({
++        ok: false,
++        error: "No institution matched in petition text.",
++        sector,
++        to: [],
++        cc: watchdogCC,
++        note: "Include institution names in the petition text for routing (e.g., 'Central Bank of Nigeria', 'GTBank', etc.).",
++      });
++    }
++
++    // STRICT: Extract emails ONLY from matched institutions
++    let toEmails = safeUniq(matched.flatMap((m) => m.emails || []))
++      .filter(isEmail)
++      .filter(isLikelyOfficialEmail);
++
++    // Rescue ONLY for matched institutions (no global fallback scan)
++    if (toEmails.length === 0) {
++      for (const m of matched) {
++        const rescued = await resolveMissingEmailsForInstitution(m.name);
++        if (rescued?.length) {
++          toEmails = safeUniq([...toEmails, ...rescued])
++            .filter(isEmail)
++            .filter(isLikelyOfficialEmail);
++        }
++      }
++    }
++
++    toEmails = safeUniq(toEmails).slice(0, 10);
++
++    if (toEmails.length === 0) {
++      return res.status(404).json({
++        ok: false,
++        error: "Matched institutions contain no valid HQ emails.",
++        sector,
++        mentionedInstitutions: matched.map((m) => m.name),
++        to: [],
++        cc: watchdogCC,
++        note: "Add HQ emails to the matched institutions in the sector JSON, or enable Google CSE for rescue lookup.",
++      });
++    }
++
++    const subject =
++      extractSubjectFromPetition(petitionText) || `Petition — ${new Date().toLocaleDateString("en-GB")}`;
++    const body = (petitionText || complaint || "").toString();
++
++    const mailto = buildMailto({ to: toEmails, cc: watchdogCC, subject, body });
++    if (!mailto) {
++      return res.status(500).json({ ok: false, error: "Failed to build mailto link.", sector });
++    }
++
++    return res.json({
++      ok: true,
++      sector,
++      subject,
++      mentionedInstitutions: matched.map((m) => m.name),
++      to: toEmails,
++      cc: watchdogCC,
++      mailto,
++      note: "Emails extracted ONLY from institutions explicitly mentioned in the petition text.",
++    });
+   } catch (err) {
+     console.error("Email draft error:", err);
+-    res.status(500).json({ error: "Failed to build email draft." });
++    return res.status(500).json({ ok: false, error: "Failed to build email draft." });
+   }
+ });

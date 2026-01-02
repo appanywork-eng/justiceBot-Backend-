@@ -1,0 +1,19 @@
+diff --git a/server.mjs b/server.mjs
+--- a/server.mjs
++++ b/server.mjs
+@@ -54,6 +54,12 @@ function isLikelyOfficialEmail(email) {
+   return true;
+ }
+
++function collectInstitutionEmails(inst) {
++  const out = [];
++  inst && extractEmailsDeep(inst, out);
++  return safeUniq(out).filter(isEmail).filter(isLikelyOfficialEmail);
++}
+
+@@ -87,9 +93,7 @@ app.post("/email-draft", async (req, res) => {
+-    let toEmails = safeUniq(targets.flatMap((m) => m.emails))
+-      .filter(isEmail)
+-      .filter(isLikelyOfficialEmail);
++    let toEmails = safeUniq(targets.flatMap((m) => collectInstitutionEmails(m)));
+
