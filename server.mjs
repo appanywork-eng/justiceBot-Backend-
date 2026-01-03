@@ -11,15 +11,20 @@ dotenv.config();
 
 const app = express();
 
-// Allow all origins — no more CORS issues
+// Allow all origins — eliminates CORS issues completely
 app.use(cors({ origin: "*" }));
 
-// Important for webhook: parse raw body for signature verification
-app.use(express.json({ limit: "5mb", verify: (req, res, buf) => { req.rawBody = buf; } }));
+// Required for webhook signature verification
+app.use(express.json({
+  limit: "5mb",
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Config
+// ==================== CONFIG ====================
 const OVERSIGHT_EMAILS = {
   PCC: process.env.PCC_EMAIL || "",
   NHRC: process.env.NHRC_EMAIL || "",
@@ -36,7 +41,7 @@ const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 const petitionStore = new Map();
 const USED_TX_REFS = new Set();
 
-// Flutterwave helper
+// ==================== FLUTTERWAVE HELPER ====================
 async function flwFetch(url, options = {}) {
   if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY missing");
 
@@ -53,11 +58,11 @@ async function flwFetch(url, options = {}) {
   return { ok: res.ok, data };
 }
 
-// Paths
+// ==================== PATHS ====================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Utilities (same as before)
+// ==================== UTILITIES ====================
 function safeUniq(arr) {
   return [...new Set((arr || []).filter(Boolean))];
 }
@@ -206,10 +211,9 @@ function findMentionedInstitutions(petitionText, catalog) {
   return safeUniq(mentioned);
 }
 
-// === NEW: FLUTTERWAVE WEBHOOK (RELIABLE UNLOCK) ===
+// ==================== NEW: FLUTTERWAVE WEBHOOK ====================
 app.post("/flw-webhook", express.raw({ type: "application/json" }), (req, res) => {
   try {
-    // Verify signature
     const hash = req.headers["verif-hash"];
     if (!hash || hash !== FLW_SECRET_KEY) {
       return res.status(401).end();
@@ -235,7 +239,7 @@ app.post("/flw-webhook", express.raw({ type: "application/json" }), (req, res) =
   }
 });
 
-// Endpoints
+// ==================== ENDPOINTS ====================
 app.get("/health", (req, res) => {
   res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
 });
@@ -261,7 +265,7 @@ app.post("/generate-petition", async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // Use valid model
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
@@ -338,15 +342,26 @@ app.post("/pay/initialize", async (req, res) => {
     const { tx_ref, email, name, phone } = req.body;
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
-    const redirect_url = FRONTEND_BASE_URL; // Redirect to home page
+    // ALWAYS append tx_ref so frontend can unlock immediately on return
+    const redirect_url = `${FRONTEND_BASE_URL}?tx_ref=${tx_ref}&unlocked=true`;
 
     const payload = {
       tx_ref,
       amount: PETITION_PRICE_NGN,
       currency: "NGN",
       redirect_url,
-      customer: { email: email || "user@petitiondesk.com", name: name || "User", phonenumber: phone || "" },
-      customizations: { title: "PetitionDesk", description: "Unlock full petition" },
+      customer: { 
+        email: email || "user@petitiondesk.com", 
+        name: name || "User", 
+        phonenumber: phone || "" 
+      },
+      customizations: { 
+        title: "PetitionDesk", 
+        description: "Unlock your full petition" 
+      },
+      meta: {
+        return_url: redirect_url  // Force redirect even on mobile
+      }
     };
 
     const { ok, data } = await flwFetch("https://api.flutterwave.com/v3/payments", {
@@ -354,11 +369,13 @@ app.post("/pay/initialize", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    if (!ok || !data?.data?.link) return res.status(400).json({ ok: false, error: "Payment failed" });
+    if (!ok || !data?.data?.link) {
+      return res.status(400).json({ ok: false, error: "Payment failed to initialize" });
+    }
 
     res.json({ ok: true, tx_ref, link: data.data.link });
   } catch (err) {
-    console.error(err);
+    console.error("Pay init error:", err);
     res.status(500).json({ ok: false, error: "Payment error" });
   }
 });
@@ -368,7 +385,7 @@ app.post("/unlock-petition", async (req, res) => {
     const { tx_ref } = req.body;
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
-    // Accept unlock if either webhook marked it OR we verify again
+    // Accept unlock if webhook already marked it OR verify again
     if (!USED_TX_REFS.has(tx_ref)) {
       const { ok, data } = await flwFetch(`https://api.flutterwave.com/v3/transactions/verify?tx_ref=${encodeURIComponent(tx_ref)}`);
       if (!ok || data?.data?.status !== "successful" || Number(data?.data?.amount) < PETITION_PRICE_NGN) {
@@ -377,7 +394,7 @@ app.post("/unlock-petition", async (req, res) => {
     }
 
     const stored = petitionStore.get(tx_ref);
-    if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
+    if (!stored) return res.status(404).json({ ok: false, error: "Petition expired or not found" });
 
     USED_TX_REFS.add(tx_ref);
     petitionStore.delete(tx_ref);
@@ -400,7 +417,7 @@ app.post("/unlock-petition", async (req, res) => {
       mailto,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Unlock error:", err);
     res.status(500).json({ ok: false, error: "Unlock failed" });
   }
 });
@@ -430,5 +447,6 @@ app.get("/download-pdf", (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
-  console.log(`Webhook URL: ${process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`}/flw-webhook`);
+  console.log(`Frontend redirect URL: ${FRONTEND_BASE_URL}`);
+  console.log(`Webhook URL: https://your-app.onrender.com/flw-webhook`);
 });
