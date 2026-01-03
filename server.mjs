@@ -37,7 +37,8 @@ const OVERSIGHT_EMAILS = {
 };
 
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
-const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
+const FRONTEND_BASE_URL =
+  process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 
 // In-memory storage
@@ -58,7 +59,7 @@ async function flwFetch(url, options = {}) {
   });
 
   const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, data };
+  return { ok: res.ok, status: res.status, data };
 }
 
 // Paths
@@ -230,7 +231,6 @@ function findMentionedInstitutions(petitionText, catalog) {
 // ✅ Option A redirect builder: always return to SAME page with tx_ref
 function buildFrontendRedirectUrl(tx_ref) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
-  // Always send user back to your homepage with tx_ref for unlock
   return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
 }
 
@@ -343,6 +343,9 @@ Sector: ${sector} | Case: ${caseType}`,
       mentionedInstitutions: mentioned.map((m) => m.name),
       toEmails: mentionedEmails.length ? mentionedEmails : [],
       ccEmails: adminCC,
+
+      // ✅ Added: track payment init time (helps “pending” flow)
+      paymentInitializedAt: null,
     });
 
     const preview = petitionText.length > 600 ? petitionText.substring(0, 600) + "..." : petitionText;
@@ -365,10 +368,15 @@ app.post("/pay/initialize", async (req, res) => {
     const { tx_ref, email, name, phone } = req.body;
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
-    // (Optional safety) Ensure tx_ref exists
-    if (!petitionStore.has(tx_ref)) {
+    // Ensure tx_ref exists
+    const stored = petitionStore.get(tx_ref);
+    if (!stored) {
       return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
     }
+
+    // ✅ Mark payment initialized time (for better unlock UX)
+    stored.paymentInitializedAt = Date.now();
+    petitionStore.set(tx_ref, stored);
 
     // ✅ IMPORTANT FIX: redirect back to SAME PAGE WITH tx_ref
     const redirect_url = buildFrontendRedirectUrl(tx_ref);
@@ -405,27 +413,73 @@ app.post("/unlock-petition", async (req, res) => {
     const { tx_ref } = req.body;
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
-    // Accept unlock if webhook marked it OR verify again
-    if (!USED_TX_REFS.has(tx_ref)) {
-      const { ok, data } = await flwFetch(
-        `https://api.flutterwave.com/v3/transactions/verify?tx_ref=${encodeURIComponent(tx_ref)}`
-      );
-
-      const status = String(data?.data?.status || "").toLowerCase();
-      const amount = Number(data?.data?.amount || 0);
-      const currency = String(data?.data?.currency || "").toUpperCase();
-
-      const verified =
-        ok && status === "successful" && currency === "NGN" && amount >= PETITION_PRICE_NGN;
-
-      if (!verified) {
-        return res.status(402).json({ ok: false, error: "Payment not verified" });
-      }
-    }
-
     const stored = petitionStore.get(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
 
+    // ✅ If already confirmed by webhook, unlock immediately
+    if (USED_TX_REFS.has(tx_ref)) {
+      const mailto = buildMailto({
+        to: stored.toEmails,
+        cc: stored.ccEmails,
+        subject: stored.subject,
+        body: stored.petition,
+      });
+
+      USED_TX_REFS.add(tx_ref);
+      petitionStore.delete(tx_ref);
+
+      return res.json({
+        ok: true,
+        unlocked: true,
+        petition: stored.petition,
+        sector: stored.sector,
+        mentionedInstitutions: stored.mentionedInstitutions,
+        to: stored.toEmails,
+        cc: stored.ccEmails,
+        mailto,
+      });
+    }
+
+    // ✅ Otherwise, verify with Flutterwave
+    let verifyResponse;
+    try {
+      verifyResponse = await flwFetch(
+        `https://api.flutterwave.com/v3/transactions/verify?tx_ref=${encodeURIComponent(tx_ref)}`
+      );
+    } catch (e) {
+      verifyResponse = { ok: false, status: 0, data: {} };
+    }
+
+    // ✅ If Flutterwave verify is temporarily failing, return “pending” not “not verified”
+    if (!verifyResponse.ok) {
+      // only allow pending if payment was initialized recently (anti-abuse)
+      const initAt = Number(stored.paymentInitializedAt || 0);
+      const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000; // 15 mins
+
+      if (recentlyInitialized) {
+        return res.status(202).json({
+          ok: false,
+          pending: true,
+          error: "Payment processing. Please wait a moment...",
+        });
+      }
+
+      return res.status(402).json({ ok: false, error: "Payment not verified" });
+    }
+
+    const data = verifyResponse.data || {};
+    const status = String(data?.data?.status || "").toLowerCase();
+    const amount = Number(data?.data?.amount || 0);
+    const currency = String(data?.data?.currency || "").toUpperCase();
+
+    const verified =
+      status === "successful" && currency === "NGN" && amount >= PETITION_PRICE_NGN;
+
+    if (!verified) {
+      return res.status(402).json({ ok: false, error: "Payment not verified" });
+    }
+
+    // ✅ Mark used and unlock
     USED_TX_REFS.add(tx_ref);
     petitionStore.delete(tx_ref);
 
@@ -436,7 +490,7 @@ app.post("/unlock-petition", async (req, res) => {
       body: stored.petition,
     });
 
-    res.json({
+    return res.json({
       ok: true,
       unlocked: true,
       petition: stored.petition,
