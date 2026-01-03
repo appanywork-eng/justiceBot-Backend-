@@ -12,27 +12,38 @@ dotenv.config();
 
 const app = express();
 
-/**
- * ENV
- * - OPENAI_API_KEY (Render)
- * - FLW_SECRET_KEY (Render)
- * - FRONTEND_BASE_URL (Render)   e.g. https://your-site.netlify.app
- * - ALLOWED_ORIGINS (Render)     e.g. https://your-site.netlify.app,http://localhost:5173
- * - PETITION_PRICE_NGN (optional)
- */
+/* ============================================================
+   ENV
+============================================================ */
 const {
   OPENAI_API_KEY = "",
   FLW_SECRET_KEY = "",
   FRONTEND_BASE_URL = "http://localhost:5173",
   ALLOWED_ORIGINS = "http://localhost:5173",
-  PETITION_PRICE_NGN: PETITION_PRICE_RAW = "1050",
-} = process.env;
+  PETITION_PRICE_NGN = "1050",
 
-const PETITION_PRICE_NGN = Number(PETITION_PRICE_RAW || 1050);
+  // Oversight
+  PCC_EMAIL = "", // set on Render
+  NHRC_EMAIL = "",
+  FCCPC_EMAIL = "",
+  SERVICOM_EMAIL = "",
+  AGF_EMAIL = "",
+} = process.env;
 
 if (!OPENAI_API_KEY) console.warn("⚠️ OPENAI_API_KEY missing");
 if (!FLW_SECRET_KEY) console.warn("⚠️ FLW_SECRET_KEY missing");
 
+const PRICE_NGN = Number(PETITION_PRICE_NGN) || 1050;
+
+/* ============================================================
+   PATHS
+============================================================ */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/* ============================================================
+   CORS (PRODUCTION SAFE: NEVER THROW)
+============================================================ */
 const allowedOrigins = new Set(
   String(ALLOWED_ORIGINS)
     .split(",")
@@ -40,55 +51,37 @@ const allowedOrigins = new Set(
     .filter(Boolean)
 );
 
-// ---- CORS (fixed) ----
 app.use(
   cors({
     origin(origin, cb) {
-      // allow server-to-server or curl
+      // allow server-to-server, health checks, some mobile webviews
       if (!origin) return cb(null, true);
 
-      // allow listed origins only
       if (allowedOrigins.has(origin)) return cb(null, true);
 
-      return cb(new Error(`CORS blocked for origin: ${origin}`));
+      // IMPORTANT: do not throw -> prevents browser “Failed to fetch”
+      console.warn("CORS blocked:", origin);
+      return cb(null, false);
     },
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// required for preflight
 app.options("*", cors());
-
 app.use(express.json({ limit: "5mb" }));
 
+/* ============================================================
+   OPENAI
+============================================================ */
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-// ---------- CONFIG ----------
-const OVERSIGHT_EMAILS = {
-  PCC: process.env.PCC_EMAIL || "",
-  NHRC: process.env.NHRC_EMAIL || "",
-  FCCPC: process.env.FCCPC_EMAIL || "",
-  SERVICOM: process.env.SERVICOM_EMAIL || "",
-  AGF: process.env.AGF_EMAIL || "",
-};
-
-// In-memory storage (temporary)
-const petitionStore = new Map();
-const USED_TX_REFS = new Set();
-
-// TTL cleanup to reduce "not found" surprises on Render restarts
-const TTL_MS = 30 * 60 * 1000;
-setInterval(() => {
-  const now = Date.now();
-  for (const [k, v] of petitionStore.entries()) {
-    if (!v?.createdAt || now - v.createdAt > TTL_MS) petitionStore.delete(k);
-  }
-}, 10 * 60 * 1000);
-
+/* ============================================================
+   FLUTTERWAVE HELPERS
+============================================================ */
 async function flwFetch(url, options = {}) {
   if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY missing");
-  if (typeof fetch !== "function") throw new Error("Global fetch not available. Use Node 18+ on Render.");
+  if (typeof fetch !== "function") throw new Error("Global fetch not available. Use Node 18+.");
 
   const res = await fetch(url, {
     ...options,
@@ -103,10 +96,9 @@ async function flwFetch(url, options = {}) {
   return { ok: res.ok, status: res.status, data };
 }
 
-// ---------- HELPERS ----------
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+/* ============================================================
+   UTIL
+============================================================ */
 function safeUniq(arr) {
   return [...new Set((arr || []).filter(Boolean))];
 }
@@ -118,7 +110,7 @@ function isEmail(s) {
 function isLikelyOfficialEmail(email) {
   if (!isEmail(email)) return false;
   const lower = email.toLowerCase();
-  const badDomains = [
+  const badDomains = new Set([
     "gmail.com",
     "yahoo.com",
     "hotmail.com",
@@ -127,74 +119,27 @@ function isLikelyOfficialEmail(email) {
     "aol.com",
     "proton.me",
     "protonmail.com",
-  ];
+  ]);
   const domain = lower.split("@")[1] || "";
-  if (badDomains.includes(domain)) return false;
+  if (badDomains.has(domain)) return false;
   if (lower.startsWith("noreply@") || lower.startsWith("no-reply@")) return false;
   return true;
 }
 
 function extractEmailsDeep(value, out = []) {
   if (!value) return out;
-  if (typeof value === "string" && isEmail(value)) out.push(value.trim());
-  if (Array.isArray(value)) value.forEach((v) => extractEmailsDeep(v, out));
-  if (typeof value === "object" && value !== null) Object.values(value).forEach((v) => extractEmailsDeep(v, out));
+
+  if (typeof value === "string") {
+    const s = value.trim();
+    const matches = s.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
+    matches.forEach((m) => out.push(m.trim()));
+    if (isEmail(s)) out.push(s);
+  } else if (Array.isArray(value)) {
+    value.forEach((v) => extractEmailsDeep(v, out));
+  } else if (typeof value === "object") {
+    Object.values(value).forEach((v) => extractEmailsDeep(v, out));
+  }
   return out;
-}
-
-function loadSectorJson(sector) {
-  const filePath = path.join(__dirname, "data", sector + ".json");
-  if (!fs.existsSync(filePath)) return null;
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
-}
-
-function detectSector(text) {
-  const lower = (text || "").toLowerCase();
-  const map = {
-    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "light"],
-    aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation"],
-    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "cbn"],
-    telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "glo", "airtel"],
-    education: ["school", "university", "waec", "jamb", "nuc", "education"],
-    health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical"],
-    security: ["police", "army", "navy", "airforce", "nscdc", "unlawful", "arrest"],
-    judiciary: ["court", "judge", "justice", "supreme", "petition", "magistrate"],
-    international_escalation: ["un", "ecowas", "au", "icc", "eu", "international"],
-  };
-
-  for (const [sec, words] of Object.entries(map)) {
-    if (words.some((w) => lower.includes(w))) return sec;
-  }
-  return "unknown";
-}
-
-function inferCaseType(sector) {
-  if (sector === "security" || sector === "judiciary") return "human_rights";
-  if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector)) return "service_delivery";
-  if (sector === "international_escalation") return "international";
-  return "other";
-}
-
-function buildAdminOversightCC({ sector, caseType }) {
-  const cc = [];
-  if (sector !== "international_escalation" && OVERSIGHT_EMAILS.PCC) cc.push(OVERSIGHT_EMAILS.PCC);
-  if (caseType === "human_rights" && OVERSIGHT_EMAILS.NHRC) cc.push(OVERSIGHT_EMAILS.NHRC);
-  if (caseType === "service_delivery") {
-    if (OVERSIGHT_EMAILS.SERVICOM) cc.push(OVERSIGHT_EMAILS.SERVICOM);
-    if (OVERSIGHT_EMAILS.FCCPC) cc.push(OVERSIGHT_EMAILS.FCCPC);
-  }
-  if (sector === "international_escalation" && OVERSIGHT_EMAILS.AGF) cc.push(OVERSIGHT_EMAILS.AGF);
-  return safeUniq(cc).filter(isEmail);
-}
-
-function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
-  const toList = safeUniq(to).filter(isEmail).slice(0, 5).join(",");
-  const ccList = safeUniq(cc).filter(isEmail).slice(0, 10).join(",");
-  if (!toList) return null;
-  const s = encodeURIComponent(subject || "Petition Regarding Complaint");
-  const b = encodeURIComponent(body || "");
-  const ccParam = ccList ? `&cc=${encodeURIComponent(ccList)}` : "";
-  return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
 }
 
 function extractSubjectFromPetition(petitionText = "") {
@@ -213,77 +158,295 @@ function normalizeName(s = "") {
     .trim();
 }
 
+/* ============================================================
+   SECTOR JSON LOADING
+============================================================ */
+function loadSectorJson(sector) {
+  try {
+    const filePath = path.join(__dirname, "data", `${sector}.json`);
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (e) {
+    console.error("Sector JSON load error:", e);
+    return null;
+  }
+}
+
+/* ============================================================
+   AI: SECTOR + CASE META
+============================================================ */
+const SECTORS = [
+  "power",
+  "aviation",
+  "banking",
+  "telecoms",
+  "education",
+  "health",
+  "security",
+  "judiciary",
+  "immigration",
+  "correctional",
+  "consumer_protection",
+  "transport",
+  "oil_and_gas",
+  "international_escalation",
+  "other",
+];
+
+async function detectSectorAI(complaint) {
+  try {
+    const r = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      messages: [
+        {
+          role: "system",
+          content: `
+Classify this Nigerian complaint into ONE sector.
+Allowed sectors:
+${SECTORS.join(", ")}
+
+Return ONLY the sector key. If unsure, return "other".
+          `.trim(),
+        },
+        { role: "user", content: complaint },
+      ],
+    });
+
+    const sector = r.choices?.[0]?.message?.content?.trim().toLowerCase();
+    return SECTORS.includes(sector) ? sector : "other";
+  } catch (e) {
+    console.error("detectSectorAI error:", e);
+    return "other";
+  }
+}
+
+function detectSectorFallback(text = "") {
+  const lower = text.toLowerCase();
+  if (["mtn", "glo", "airtel", "ncc", "airtime", "data", "sim"].some((k) => lower.includes(k))) return "telecoms";
+  if (["bank", "atm", "pos", "cbn", "transfer", "chargeback"].some((k) => lower.includes(k))) return "banking";
+  if (["electric", "nepa", "disco", "transformer", "power"].some((k) => lower.includes(k))) return "power";
+  if (["flight", "airport", "airline", "ncaa", "faan"].some((k) => lower.includes(k))) return "aviation";
+  if (["hospital", "clinic", "doctor", "nhis"].some((k) => lower.includes(k))) return "health";
+  if (["school", "university", "waec", "jamb", "nuc"].some((k) => lower.includes(k))) return "education";
+  if (["police", "arrest", "detain", "nscdc", "army", "navy"].some((k) => lower.includes(k))) return "security";
+  if (["court", "judge", "magistrate", "njc"].some((k) => lower.includes(k))) return "judiciary";
+  return "other";
+}
+
+async function detectCaseMetaAI(complaint) {
+  try {
+    const r = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      messages: [
+        {
+          role: "system",
+          content: `
+You are a Nigerian legal analyst.
+
+Infer:
+- caseType: one of [human_rights, service_delivery, maladministration, criminal, consumer_protection, other]
+- severity: integer 1 (low) to 5 (extreme)
+
+Respond ONLY as valid JSON:
+{"caseType":"...","severity":2}
+          `.trim(),
+        },
+        { role: "user", content: complaint },
+      ],
+    });
+
+    const raw = r.choices?.[0]?.message?.content?.trim() || "";
+    const parsed = JSON.parse(raw);
+
+    const caseType = String(parsed.caseType || "other");
+    const severity = Number(parsed.severity || 2);
+
+    return {
+      caseType: ["human_rights", "service_delivery", "maladministration", "criminal", "consumer_protection", "other"].includes(caseType)
+        ? caseType
+        : "other",
+      severity: Number.isFinite(severity) ? Math.min(5, Math.max(1, severity)) : 2,
+    };
+  } catch (e) {
+    console.error("detectCaseMetaAI error:", e);
+    return { caseType: "service_delivery", severity: 2 };
+  }
+}
+
+function shouldCCPCC(caseType) {
+  return caseType === "maladministration" || caseType === "service_delivery";
+}
+
+/* ============================================================
+   COMPREHENSIVE RECIPIENTS: JSON-DRIVEN (NO HARD-CODE MAP)
+============================================================ */
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
+
   function addItem(name, obj) {
     if (!name) return;
-    const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
+    const emails = safeUniq(extractEmailsDeep(obj)).filter(isLikelyOfficialEmail);
     items.push({ name: String(name), norm: normalizeName(name), emails });
   }
 
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
-  if (sectorJson.oversight && typeof sectorJson.oversight === "object") {
-    for (const key of Object.keys(sectorJson.oversight)) {
-      const node = sectorJson.oversight[key];
-      addItem(node?.name || key, node);
-    }
+  // Arrays
+  ["regulators", "oversight", "ministries", "watchdogs", "players", "core_institutions"].forEach((k) => {
+    if (Array.isArray(sectorJson[k])) sectorJson[k].forEach((x) => addItem(x?.name || x, x));
+  });
+
+  // Oversight can be object-map in some JSONs
+  if (sectorJson.oversight && typeof sectorJson.oversight === "object" && !Array.isArray(sectorJson.oversight)) {
+    Object.keys(sectorJson.oversight).forEach((k) => {
+      const node = sectorJson.oversight[k];
+      addItem(node?.name || k, node);
+    });
   }
 
-  if (Array.isArray(sectorJson.core_institutions)) sectorJson.core_institutions.forEach((inst) => addItem(inst?.name || inst, inst));
-  if (Array.isArray(sectorJson.regulators)) sectorJson.regulators.forEach((r) => addItem(r?.name || r, r));
-  if (Array.isArray(sectorJson.watchdogs)) sectorJson.watchdogs.forEach((w) => addItem(w?.name || w, w));
-  if (Array.isArray(sectorJson.players)) sectorJson.players.forEach((p) => addItem(p?.name || p, p));
+  // Catch-all: pull any embedded official emails anywhere in JSON
+  addItem("Sector Contacts", sectorJson);
 
-  return items;
+  // Dedup by norm
+  const uniq = [];
+  const seen = new Set();
+  for (const it of items) {
+    if (!it.norm || seen.has(it.norm)) continue;
+    seen.add(it.norm);
+    uniq.push(it);
+  }
+  return uniq;
 }
 
-function findMentionedInstitutions(petitionText, catalog) {
-  const text = normalizeName(petitionText);
-  const mentioned = [];
+function findMentionedInstitutions(text, catalog) {
+  const t = normalizeName(text);
+  const matches = [];
 
   for (const item of catalog) {
-    if (item?.norm && text.includes(item.norm)) mentioned.push(item);
+    if (item?.norm && t.includes(item.norm)) matches.push(item);
   }
 
-  const raw = (petitionText || "").toLowerCase();
-  if (raw.includes("police") || raw.includes("igp") || raw.includes("nigerian police")) {
-    const npf = catalog.find((c) => c.norm.includes("nigeria police force"));
-    if (npf) mentioned.push(npf);
-    const psc = catalog.find((c) => c.norm.includes("police service commission"));
-    if (psc) mentioned.push(psc);
-    const policeMin = catalog.find((c) => c.norm.includes("ministry of police affairs"));
-    if (policeMin) mentioned.push(policeMin);
+  // Helpful heuristics for common mentions
+  const raw = String(text || "").toLowerCase();
+  if (raw.includes("police") || raw.includes("igp")) {
+    catalog.forEach((c) => {
+      if (c.norm.includes("police")) matches.push(c);
+      if (c.norm.includes("police service commission")) matches.push(c);
+      if (c.norm.includes("ministry of police")) matches.push(c);
+    });
   }
 
-  const uniqList = [];
+  const uniq = [];
   const seen = new Set();
-  for (const m of mentioned) {
+  for (const m of matches) {
     if (!m?.norm || seen.has(m.norm)) continue;
     seen.add(m.norm);
-    uniqList.push(m);
+    uniq.push(m);
   }
-  return uniqList;
+  return uniq;
 }
 
-// ---------- ENDPOINTS ----------
+function extractOfficialEmailsFromSectorJson(sectorJson) {
+  if (!sectorJson) return [];
+  return safeUniq(extractEmailsDeep(sectorJson)).filter(isLikelyOfficialEmail);
+}
 
+/* ============================================================
+   MAILTO (DEVICE EMAIL)
+============================================================ */
+function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
+  const toList = safeUniq(to).filter(isEmail).slice(0, 10).join(",");
+  const ccList = safeUniq(cc).filter(isEmail).slice(0, 10).join(",");
+  if (!toList) return null;
+
+  const params = new URLSearchParams({
+    subject: subject || "Petition Regarding Complaint",
+    body: body || "",
+  });
+
+  if (ccList) params.append("cc", ccList);
+
+  return `mailto:${toList}?${params.toString()}`;
+}
+
+/* ============================================================
+   OVERSIGHT EMAILS (ENV)
+============================================================ */
+const OVERSIGHT_EMAILS = {
+  PCC: PCC_EMAIL || "",
+  NHRC: NHRC_EMAIL || "",
+  FCCPC: FCCPC_EMAIL || "",
+  SERVICOM: SERVICOM_EMAIL || "",
+  AGF: AGF_EMAIL || "",
+};
+
+function buildAdminOversightCC({ sector, caseType }) {
+  const cc = [];
+
+  // PCC on maladministration/service-delivery injustice (your rule)
+  if (OVERSIGHT_EMAILS.PCC && shouldCCPCC(caseType)) cc.push(OVERSIGHT_EMAILS.PCC);
+
+  // Human rights escalation
+  if (caseType === "human_rights" && OVERSIGHT_EMAILS.NHRC) cc.push(OVERSIGHT_EMAILS.NHRC);
+
+  // Service delivery / consumer cases
+  if ((caseType === "service_delivery" || caseType === "consumer_protection") && OVERSIGHT_EMAILS.SERVICOM) cc.push(OVERSIGHT_EMAILS.SERVICOM);
+  if ((caseType === "service_delivery" || caseType === "consumer_protection") && OVERSIGHT_EMAILS.FCCPC) cc.push(OVERSIGHT_EMAILS.FCCPC);
+
+  // International escalation
+  if (sector === "international_escalation" && OVERSIGHT_EMAILS.AGF) cc.push(OVERSIGHT_EMAILS.AGF);
+
+  return safeUniq(cc).filter(isEmail);
+}
+
+/* ============================================================
+   STORAGE + TTL CLEANUP
+============================================================ */
+const petitionStore = new Map();
+const USED_TX_REFS = new Set();
+
+const TTL_MS = 30 * 60 * 1000;
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of petitionStore.entries()) {
+    if (!v?.createdAt || now - v.createdAt > TTL_MS) petitionStore.delete(k);
+  }
+}, 10 * 60 * 1000);
+
+/* ============================================================
+   DEBUG: CORS (B)
+============================================================ */
+app.get("/debug/cors", (req, res) => {
+  const origin = req.headers.origin || "(none)";
+  res.json({
+    receivedOrigin: origin,
+    isAllowed: origin !== "(none)" ? allowedOrigins.has(origin) : true,
+    allowedOrigins: [...allowedOrigins],
+    hint: "If isAllowed=false, update Render env ALLOWED_ORIGINS and redeploy.",
+  });
+});
+
+/* ============================================================
+   ENDPOINTS
+============================================================ */
 app.get("/health", (req, res) => {
   res.json({ ok: true, service: "justicebot-backend", time: new Date().toISOString() });
 });
 
 app.post("/generate-petition", async (req, res) => {
-  const complaint = String(req.body.complaint || "").trim();
-  const sector = req.body.sector || detectSector(complaint) || "unknown";
-  const petitioner = req.body.petitioner || {};
-
-  if (!complaint) return res.status(400).json({ error: "Complaint is required." });
-  if (sector === "unknown") return res.status(400).json({ error: "Could not detect sector from complaint." });
-  if (!OPENAI_API_KEY) return res.status(500).json({ error: "OPENAI_API_KEY not configured." });
-
   try {
-    const autoDate = new Date().toLocaleDateString("en-GB");
-    const caseType = inferCaseType(sector);
+    const complaint = String(req.body.complaint || "").trim();
+    const petitioner = req.body.petitioner || {};
+
+    if (!complaint) return res.status(400).json({ error: "Complaint is required." });
+    if (!OPENAI_API_KEY) return res.status(500).json({ error: "OPENAI_API_KEY not configured." });
+
+    let sector = await detectSectorAI(complaint);
+    if (sector === "other") sector = detectSectorFallback(complaint);
+
+    const { caseType, severity } = await detectCaseMetaAI(complaint);
 
     const pName = petitioner.fullName?.trim() || "[Your Full Name]";
     const pAddress = petitioner.address?.trim() || "[Your Address]";
@@ -291,12 +454,16 @@ app.post("/generate-petition", async (req, res) => {
     const pPhone = petitioner.phone?.trim() || "[Phone Number]";
     const pEvidence = petitioner.evidenceName || "None";
 
+    const autoDate = new Date().toLocaleDateString("en-GB");
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "system",
-          content: `Draft a well-structured Nigerian petition letter with clear sections.
+          content: `
+Draft a well-structured Nigerian petition letter with clear sections.
+
 MANDATORY OUTPUT FORMAT (exact headings):
 
 Date: ${autoDate}
@@ -328,8 +495,11 @@ SIGNATURE:
 [Name]
 [Phone]
 
-Keep readable with blank lines between sections.
-Sector: ${sector} | CaseType: ${caseType}`.trim(),
+Context:
+Sector: ${sector}
+CaseType: ${caseType}
+Severity: ${severity}/5
+          `.trim(),
         },
         { role: "user", content: `Complaint:\n${complaint}` },
       ],
@@ -342,17 +512,15 @@ Sector: ${sector} | CaseType: ${caseType}`.trim(),
       extractSubjectFromPetition(petitionText) ||
       "Petition Regarding Fundamental Rights Violation / Service Failure";
 
+    // Build recipients early (used again after unlock)
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
     const mentioned = findMentionedInstitutions(petitionText, catalog);
 
     const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
-    const adminCC = buildAdminOversightCC({ sector, caseType });
+    const allSectorEmails = extractOfficialEmailsFromSectorJson(sectorJson);
 
-    const toFull = mentionedEmails.length > 0 ? mentionedEmails : adminCC.slice(0, 1);
-    const ccFull = safeUniq([...adminCC, ...mentionedEmails.filter((e) => !toFull.includes(e))]);
-
-    const mailto = buildMailto({ to: toFull, cc: ccFull, subject, body: petitionText });
+    const initialTo = mentionedEmails.length ? mentionedEmails : allSectorEmails;
 
     const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
@@ -360,20 +528,18 @@ Sector: ${sector} | CaseType: ${caseType}`.trim(),
       createdAt: Date.now(),
       petition: petitionText,
       sector,
-      date: autoDate,
-      subject,
       caseType,
+      severity,
+      subject,
       mentionedInstitutions: mentioned.map((m) => m.name),
-      to: toFull,
-      cc: ccFull,
-      mailto,
+      initialRecipients: { to: initialTo },
     });
 
     const preview = petitionText.length > 600 ? petitionText.slice(0, 600) + "..." : petitionText;
 
     res.json({
       needsPayment: true,
-      amount: PETITION_PRICE_NGN,
+      amount: PRICE_NGN,
       currency: "NGN",
       tx_ref,
       preview,
@@ -387,10 +553,11 @@ Sector: ${sector} | CaseType: ${caseType}`.trim(),
 
 app.post("/pay/initialize", async (req, res) => {
   try {
-    const { tx_ref, amount = PETITION_PRICE_NGN, currency = "NGN", email, name, phone } = req.body;
-    if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
+    const { tx_ref, amount = PRICE_NGN, currency = "NGN", email, name, phone } = req.body;
 
-    // redirect must be your NETLIFY URL in production
+    if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
+    if (!petitionStore.has(tx_ref)) return res.status(404).json({ ok: false, error: "Unknown tx_ref" });
+
     const redirect_url = `${FRONTEND_BASE_URL}?tx_ref=${encodeURIComponent(tx_ref)}`;
 
     const payload = {
@@ -400,13 +567,10 @@ app.post("/pay/initialize", async (req, res) => {
       redirect_url,
       customer: {
         email: email || "user@petitiondesk.com",
-        name: name || "JusticeBot User",
+        name: name || "PetitionDesk User",
         phonenumber: phone || "",
       },
-      customizations: sdkSafeText({
-        title: "JusticeBot",
-        description: "Unlock full petition & email",
-      }),
+      customizations: { title: "PetitionDesk", description: "Unlock full petition & email" },
     };
 
     const { ok, data } = await flwFetch("https://api.flutterwave.com/v3/payments", {
@@ -429,6 +593,7 @@ app.post("/unlock-petition", async (req, res) => {
   try {
     const { tx_ref } = req.body;
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
+    if (USED_TX_REFS.has(tx_ref)) return res.status(409).json({ ok: false, error: "Transaction already used" });
 
     const { ok, data } = await flwFetch(
       `https://api.flutterwave.com/v3/transactions/verify?tx_ref=${encodeURIComponent(tx_ref)}`
@@ -438,20 +603,61 @@ app.post("/unlock-petition", async (req, res) => {
       ok &&
       data?.status === "success" &&
       data?.data?.status === "successful" &&
-      Number(data?.data?.amount) >= PETITION_PRICE_NGN &&
-      String(data?.data?.currency || "NGN").toUpperCase() === "NGN";
+      String(data?.data?.currency || "NGN").toUpperCase() === "NGN" &&
+      Number(data?.data?.amount || 0) >= PRICE_NGN;
 
     if (!paymentOk) return res.status(402).json({ ok: false, error: "Payment not successful" });
-
-    if (USED_TX_REFS.has(tx_ref)) return res.status(409).json({ ok: false, error: "Transaction already used" });
-    USED_TX_REFS.add(tx_ref);
 
     const stored = petitionStore.get(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition not found (expired or server restarted)" });
 
+    USED_TX_REFS.add(tx_ref);
     petitionStore.delete(tx_ref);
 
-    res.json({ ok: true, unlocked: true, ...stored });
+    const sectorJson = loadSectorJson(stored.sector);
+    const catalog = buildInstitutionCatalog(sectorJson);
+
+    // Prefer mentioned institutions (most relevant); fallback to all sector emails
+    const mentioned = findMentionedInstitutions(stored.petition, catalog);
+    const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
+
+    const toEmails = mentionedEmails.length
+      ? mentionedEmails
+      : safeUniq(extractOfficialEmailsFromSectorJson(sectorJson)).filter(isLikelyOfficialEmail);
+
+    // Admin/oversight CC (includes PCC rule)
+    const adminCC = buildAdminOversightCC({ sector: stored.sector, caseType: stored.caseType });
+
+    // Also add oversight/ministry emails from JSON to CC (but avoid duplicating TO)
+    const oversightPool = [];
+    if (sectorJson?.oversight) oversightPool.push(...extractEmailsDeep(sectorJson.oversight));
+    if (sectorJson?.ministries) oversightPool.push(...extractEmailsDeep(sectorJson.ministries));
+    const oversightOfficial = safeUniq(oversightPool).filter(isLikelyOfficialEmail);
+
+    const ccEmails = safeUniq([
+      ...adminCC,
+      ...oversightOfficial.filter((e) => !toEmails.includes(e)),
+    ]).filter(isEmail);
+
+    const mailto = buildMailto({
+      to: toEmails,
+      cc: ccEmails,
+      subject: stored.subject || `FORMAL PETITION: ${String(stored.sector || "GENERAL").toUpperCase()}`,
+      body: stored.petition,
+    });
+
+    res.json({
+      ok: true,
+      unlocked: true,
+      petition: stored.petition,
+      sector: stored.sector,
+      caseType: stored.caseType,
+      severity: stored.severity,
+      subject: stored.subject,
+      mentionedInstitutions: stored.mentionedInstitutions || [],
+      recipients: { to: toEmails, cc: ccEmails }, // A) frontend can edit
+      mailto, // opens device email
+    });
   } catch (err) {
     console.error("Unlock error:", err);
     res.status(500).json({ ok: false, error: "Unlock failed" });
@@ -471,11 +677,13 @@ app.get("/download-pdf", (req, res) => {
 
     const pdf = new PDFDocument({ margin: 50 });
     pdf.pipe(res);
-    pdf.fontSize(20).text("PETITION", { align: "center" });
+
+    pdf.fontSize(18).text("PETITION", { align: "center" });
     pdf.moveDown();
     pdf.fontSize(12).text(decoded, { align: "justify" });
-    pdf.moveDown(3);
-    pdf.fontSize(10).text("Generated by JusticeBot", { align: "center" });
+    pdf.moveDown(2);
+    pdf.fontSize(10).text("Generated by PetitionDesk", { align: "center" });
+
     pdf.end();
   } catch (err) {
     console.error("PDF error:", err);
@@ -483,13 +691,9 @@ app.get("/download-pdf", (req, res) => {
   }
 });
 
-function sdkSafeText(obj) {
-  // Flutterwave is picky about weird chars sometimes.
-  return Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => [k, String(v || "").slice(0, 100)])
-  );
-}
-
+/* ============================================================
+   START
+============================================================ */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Backend running on port ${PORT}`);
