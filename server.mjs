@@ -37,6 +37,12 @@ const OVERSIGHT_EMAILS = {
 };
 
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
+
+// ✅ IMPORTANT FIX: Flutterwave webhook uses a Webhook Secret Hash (verif-hash),
+// not your FLW secret key. Keep backward compatibility by allowing either.
+const FLW_WEBHOOK_HASH =
+  process.env.FLW_WEBHOOK_HASH || process.env.FLW_SECRET_HASH || "";
+
 const FRONTEND_BASE_URL =
   process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
@@ -229,16 +235,44 @@ function findMentionedInstitutions(petitionText, catalog) {
 }
 
 // ✅ Option A redirect builder: always return to SAME page with tx_ref
-function buildFrontendRedirectUrl(tx_ref) {
+function buildFrontendRedirectUrl(tx_ref, status = "") {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
-  return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
+  const s = status ? `&status=${encodeURIComponent(status)}` : "";
+  return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}${s}`;
+}
+
+// ✅ NEW: backend redirect URL (Flutterwave redirects here first)
+// This prevents “fresh random page” issues and guarantees we land back on /?tx_ref=...
+function buildBackendRedirectUrl(req, tx_ref) {
+  const external =
+    String(process.env.RENDER_EXTERNAL_URL || "").trim().replace(/\/+$/, "");
+  if (external) return `${external}/flw-redirect?tx_ref=${encodeURIComponent(tx_ref)}`;
+
+  const proto = (req.headers["x-forwarded-proto"] || req.protocol || "https")
+    .toString()
+    .split(",")[0]
+    .trim();
+
+  const host = (req.headers["x-forwarded-host"] || req.headers.host || "")
+    .toString()
+    .split(",")[0]
+    .trim();
+
+  return `${proto}://${host}/flw-redirect?tx_ref=${encodeURIComponent(tx_ref)}`;
 }
 
 // === FLUTTERWAVE WEBHOOK (RELIABLE UNLOCK MARK) ===
 app.post("/flw-webhook", (req, res) => {
   try {
     const hash = req.headers["verif-hash"];
-    if (!hash || hash !== FLW_SECRET_KEY) {
+
+    // ✅ FIX: allow correct webhook hash; keep backward compatibility with FLW_SECRET_KEY
+    const valid =
+      (FLW_WEBHOOK_HASH && hash === FLW_WEBHOOK_HASH) ||
+      (!FLW_WEBHOOK_HASH && hash === FLW_SECRET_KEY) ||
+      (hash === FLW_SECRET_KEY);
+
+    if (!hash || !valid) {
       return res.status(401).end();
     }
 
@@ -260,6 +294,79 @@ app.post("/flw-webhook", (req, res) => {
   } catch (err) {
     console.error("Webhook error:", err);
     res.sendStatus(400);
+  }
+});
+
+// ✅ NEW: Flutterwave redirect “bridge”
+// Flutterwave sends user here -> we verify quickly -> then redirect to frontend /?tx_ref=...
+app.get("/flw-redirect", async (req, res) => {
+  try {
+    const tx_ref = String(req.query.tx_ref || "").trim();
+    const statusRaw = String(req.query.status || "").trim();
+    const transaction_id = String(req.query.transaction_id || "").trim();
+
+    if (!tx_ref) {
+      return res.redirect(302, buildFrontendRedirectUrl("", "missing_tx_ref"));
+    }
+
+    // If it already got marked by webhook, just send user home.
+    if (USED_TX_REFS.has(tx_ref)) {
+      return res.redirect(302, buildFrontendRedirectUrl(tx_ref, statusRaw || "successful"));
+    }
+
+    // Try verify by transaction_id when available (best)
+    if (transaction_id) {
+      const v = await flwFetch(
+        `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transaction_id)}/verify`,
+        { method: "GET" }
+      );
+
+      const d = v?.data?.data || {};
+      const paidStatus = String(d.status || "").toLowerCase();
+      const paidAmount = Number(d.amount || 0);
+      const paidCurrency = String(d.currency || "").toUpperCase();
+      const paidRef = String(d.tx_ref || tx_ref);
+
+      if (
+        v.ok &&
+        (paidStatus === "successful" || paidStatus === "success") &&
+        paidCurrency === "NGN" &&
+        paidAmount >= PETITION_PRICE_NGN
+      ) {
+        USED_TX_REFS.add(paidRef);
+        return res.redirect(302, buildFrontendRedirectUrl(paidRef, "successful"));
+      }
+
+      return res.redirect(302, buildFrontendRedirectUrl(paidRef, statusRaw || "failed"));
+    }
+
+    // Fallback: verify by reference (tx_ref) — correct Flutterwave endpoint
+    const verify = await flwFetch(
+      `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`,
+      { method: "GET" }
+    );
+
+    const data = verify.data || {};
+    const paidStatus = String(data?.data?.status || "").toLowerCase();
+    const paidAmount = Number(data?.data?.amount || 0);
+    const paidCurrency = String(data?.data?.currency || "").toUpperCase();
+
+    if (
+      verify.ok &&
+      paidStatus === "successful" &&
+      paidCurrency === "NGN" &&
+      paidAmount >= PETITION_PRICE_NGN
+    ) {
+      USED_TX_REFS.add(tx_ref);
+      return res.redirect(302, buildFrontendRedirectUrl(tx_ref, "successful"));
+    }
+
+    return res.redirect(302, buildFrontendRedirectUrl(tx_ref, statusRaw || "failed"));
+  } catch (e) {
+    console.error("flw-redirect error:", e);
+    // Still send user home with tx_ref if possible; frontend will retry unlock.
+    const tx_ref = String(req.query.tx_ref || "").trim();
+    return res.redirect(302, buildFrontendRedirectUrl(tx_ref, "processing"));
   }
 });
 
@@ -344,7 +451,7 @@ Sector: ${sector} | Case: ${caseType}`,
       toEmails: mentionedEmails.length ? mentionedEmails : [],
       ccEmails: adminCC,
 
-      // ✅ Added: track payment init time (helps “pending” flow)
+      // ✅ track payment init time (helps “pending” flow)
       paymentInitializedAt: null,
     });
 
@@ -374,12 +481,13 @@ app.post("/pay/initialize", async (req, res) => {
       return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
     }
 
-    // ✅ Mark payment initialized time (for better unlock UX)
+    // Mark payment initialized time (for better unlock UX)
     stored.paymentInitializedAt = Date.now();
     petitionStore.set(tx_ref, stored);
 
-    // ✅ IMPORTANT FIX: redirect back to SAME PAGE WITH tx_ref
-    const redirect_url = buildFrontendRedirectUrl(tx_ref);
+    // ✅ IMPORTANT FIX:
+    // redirect_url should point to BACKEND bridge which then redirects to FRONTEND /?tx_ref=...
+    const redirect_url = buildBackendRedirectUrl(req, tx_ref);
 
     const payload = {
       tx_ref,
@@ -399,7 +507,9 @@ app.post("/pay/initialize", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    if (!ok || !data?.data?.link) return res.status(400).json({ ok: false, error: "Payment failed" });
+    if (!ok || !data?.data?.link) {
+      return res.status(400).json({ ok: false, error: data?.message || "Payment failed" });
+    }
 
     res.json({ ok: true, tx_ref, link: data.data.link });
   } catch (err) {
@@ -416,7 +526,7 @@ app.post("/unlock-petition", async (req, res) => {
     const stored = petitionStore.get(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
 
-    // ✅ If already confirmed by webhook, unlock immediately
+    // If already confirmed by webhook/redirect, unlock immediately
     if (USED_TX_REFS.has(tx_ref)) {
       const mailto = buildMailto({
         to: stored.toEmails,
@@ -440,19 +550,19 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
-    // ✅ Otherwise, verify with Flutterwave
+    // Otherwise, verify with Flutterwave (✅ correct endpoint)
     let verifyResponse;
     try {
       verifyResponse = await flwFetch(
-        `https://api.flutterwave.com/v3/transactions/verify?tx_ref=${encodeURIComponent(tx_ref)}`
+        `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`,
+        { method: "GET" }
       );
     } catch (e) {
       verifyResponse = { ok: false, status: 0, data: {} };
     }
 
-    // ✅ If Flutterwave verify is temporarily failing, return “pending” not “not verified”
+    // If Flutterwave verify is temporarily failing, return “pending” not “not verified”
     if (!verifyResponse.ok) {
-      // only allow pending if payment was initialized recently (anti-abuse)
       const initAt = Number(stored.paymentInitializedAt || 0);
       const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000; // 15 mins
 
@@ -472,14 +582,13 @@ app.post("/unlock-petition", async (req, res) => {
     const amount = Number(data?.data?.amount || 0);
     const currency = String(data?.data?.currency || "").toUpperCase();
 
-    const verified =
-      status === "successful" && currency === "NGN" && amount >= PETITION_PRICE_NGN;
+    const verified = status === "successful" && currency === "NGN" && amount >= PETITION_PRICE_NGN;
 
     if (!verified) {
       return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
 
-    // ✅ Mark used and unlock
+    // Mark used and unlock
     USED_TX_REFS.add(tx_ref);
     petitionStore.delete(tx_ref);
 
@@ -535,5 +644,10 @@ app.listen(PORT, "0.0.0.0", () => {
     `Webhook URL: ${
       process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`
     }/flw-webhook`
+  );
+  console.log(
+    `Redirect Bridge URL: ${
+      process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`
+    }/flw-redirect`
   );
 });
