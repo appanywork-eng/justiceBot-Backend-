@@ -22,7 +22,7 @@ const {
   PETITION_PRICE_NGN = "1050",
 
   // Oversight
-  PCC_EMAIL = "",
+  PCC_EMAIL = "", // set on Render
   NHRC_EMAIL = "",
   FCCPC_EMAIL = "",
   SERVICOM_EMAIL = "",
@@ -41,9 +41,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* ============================================================
-   CORS — FIXED FOR “FAILED TO FETCH”
-   Key rule: NEVER return cb(null,false) because it strips headers.
-   We must ALWAYS respond with correct CORS headers + 204 for OPTIONS.
+   CORS (PRODUCTION SAFE: NEVER THROW)
 ============================================================ */
 const allowedOrigins = new Set(
   String(ALLOWED_ORIGINS)
@@ -52,44 +50,24 @@ const allowedOrigins = new Set(
     .filter(Boolean)
 );
 
-function applyCorsHeaders(req, res) {
-  const origin = req.headers.origin;
+app.use(
+  cors({
+    origin(origin, cb) {
+      // allow server-to-server, health checks, some mobile webviews
+      if (!origin) return cb(null, true);
 
-  // Allow server-to-server / curl / some webviews
-  if (!origin || origin === "null") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-    return true;
-  }
+      if (allowedOrigins.has(origin)) return cb(null, true);
 
-  // Allow only known origins
-  if (allowedOrigins.has(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Vary", "Origin");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-    return true;
-  }
+      // IMPORTANT: do not throw -> prevents browser “Failed to fetch”
+      console.warn("CORS blocked:", origin);
+      return cb(null, false);
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-  // IMPORTANT: still set headers so browser doesn’t show “Failed to fetch”
-  res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Vary", "Origin");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-  return false;
-}
-
-app.use((req, res, next) => {
-  const ok = applyCorsHeaders(req, res);
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  if (!ok) {
-    console.warn("CORS blocked:", req.headers.origin);
-    return res.status(400).json({ ok: false, error: "Origin not allowed. Update ALLOWED_ORIGINS on Render." });
-  }
-  next();
-});
-
+app.options("*", cors());
 app.use(express.json({ limit: "5mb" }));
 
 /* ============================================================
@@ -314,10 +292,12 @@ function buildInstitutionCatalog(sectorJson) {
 
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
+  // Arrays
   ["regulators", "oversight", "ministries", "watchdogs", "players", "core_institutions"].forEach((k) => {
     if (Array.isArray(sectorJson[k])) sectorJson[k].forEach((x) => addItem(x?.name || x, x));
   });
 
+  // Oversight can be object-map in some JSONs
   if (sectorJson.oversight && typeof sectorJson.oversight === "object" && !Array.isArray(sectorJson.oversight)) {
     Object.keys(sectorJson.oversight).forEach((k) => {
       const node = sectorJson.oversight[k];
@@ -325,8 +305,10 @@ function buildInstitutionCatalog(sectorJson) {
     });
   }
 
+  // Catch-all: pull any embedded official emails anywhere in JSON
   addItem("Sector Contacts", sectorJson);
 
+  // Dedup by norm
   const uniq = [];
   const seen = new Set();
   for (const it of items) {
@@ -345,6 +327,7 @@ function findMentionedInstitutions(text, catalog) {
     if (item?.norm && t.includes(item.norm)) matches.push(item);
   }
 
+  // Helpful heuristics for common mentions
   const raw = String(text || "").toLowerCase();
   if (raw.includes("police") || raw.includes("igp")) {
     catalog.forEach((c) => {
@@ -401,12 +384,17 @@ const OVERSIGHT_EMAILS = {
 function buildAdminOversightCC({ sector, caseType }) {
   const cc = [];
 
+  // PCC on maladministration/service-delivery injustice (your rule)
   if (OVERSIGHT_EMAILS.PCC && shouldCCPCC(caseType)) cc.push(OVERSIGHT_EMAILS.PCC);
+
+  // Human rights escalation
   if (caseType === "human_rights" && OVERSIGHT_EMAILS.NHRC) cc.push(OVERSIGHT_EMAILS.NHRC);
 
+  // Service delivery / consumer cases
   if ((caseType === "service_delivery" || caseType === "consumer_protection") && OVERSIGHT_EMAILS.SERVICOM) cc.push(OVERSIGHT_EMAILS.SERVICOM);
   if ((caseType === "service_delivery" || caseType === "consumer_protection") && OVERSIGHT_EMAILS.FCCPC) cc.push(OVERSIGHT_EMAILS.FCCPC);
 
+  // International escalation
   if (sector === "international_escalation" && OVERSIGHT_EMAILS.AGF) cc.push(OVERSIGHT_EMAILS.AGF);
 
   return safeUniq(cc).filter(isEmail);
@@ -434,7 +422,7 @@ app.get("/debug/cors", (req, res) => {
   res.json({
     receivedOrigin: origin,
     isAllowed: origin !== "(none)" ? allowedOrigins.has(origin) : true,
-    allowedOrigins: [...allowedOrigins],
+    allowedOrigins: [...allowedOrigins].join(", "),
     hint: "If isAllowed=false, update Render env ALLOWED_ORIGINS and redeploy.",
   });
 });
@@ -523,6 +511,7 @@ Severity: ${severity}/5
       extractSubjectFromPetition(petitionText) ||
       "Petition Regarding Fundamental Rights Violation / Service Failure";
 
+    // Build recipients early (used again after unlock)
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
     const mentioned = findMentionedInstitutions(petitionText, catalog);
@@ -627,6 +616,7 @@ app.post("/unlock-petition", async (req, res) => {
     const sectorJson = loadSectorJson(stored.sector);
     const catalog = buildInstitutionCatalog(sectorJson);
 
+    // Prefer mentioned institutions (most relevant); fallback to all sector emails
     const mentioned = findMentionedInstitutions(stored.petition, catalog);
     const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
 
@@ -634,8 +624,10 @@ app.post("/unlock-petition", async (req, res) => {
       ? mentionedEmails
       : safeUniq(extractOfficialEmailsFromSectorJson(sectorJson)).filter(isLikelyOfficialEmail);
 
+    // Admin/oversight CC (includes PCC rule)
     const adminCC = buildAdminOversightCC({ sector: stored.sector, caseType: stored.caseType });
 
+    // Also add oversight/ministry emails from JSON to CC (but avoid duplicating TO)
     const oversightPool = [];
     if (sectorJson?.oversight) oversightPool.push(...extractEmailsDeep(sectorJson.oversight));
     if (sectorJson?.ministries) oversightPool.push(...extractEmailsDeep(sectorJson.ministries));
@@ -662,8 +654,8 @@ app.post("/unlock-petition", async (req, res) => {
       severity: stored.severity,
       subject: stored.subject,
       mentionedInstitutions: stored.mentionedInstitutions || [],
-      recipients: { to: toEmails, cc: ccEmails },
-      mailto,
+      recipients: { to: toEmails, cc: ccEmails }, // A) frontend can edit
+      mailto, // opens device email
     });
   } catch (err) {
     console.error("Unlock error:", err);
@@ -676,7 +668,7 @@ app.get("/download-pdf", (req, res) => {
     const { sector = "general", text = "" } = req.query;
     if (!text) return res.status(400).send("Missing text");
 
-    const decoded = decodeURIComponent(String(text));
+    const decoded = decodeURIComponent(text);
     const filename = `${sector}-petition.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
@@ -685,10 +677,10 @@ app.get("/download-pdf", (req, res) => {
     const pdf = new PDFDocument({ margin: 50 });
     pdf.pipe(res);
 
-    pdf.fontSize(18).text("PETITION", { align: "center" });
+    pdf.fontSize(20).text("PETITION", { align: "center" });
     pdf.moveDown();
     pdf.fontSize(12).text(decoded, { align: "justify" });
-    pdf.moveDown(2);
+    pdf.moveDown(3);
     pdf.fontSize(10).text("Generated by PetitionDesk", { align: "center" });
 
     pdf.end();
