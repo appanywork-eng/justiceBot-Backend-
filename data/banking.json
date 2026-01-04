@@ -1,35 +1,40 @@
 {
   "sector": "banking",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "country": "Nigeria",
-  "last_updated": "2025-12-31",
+  "last_updated": "2026-01-04",
   "regulators": [
     {
       "name": "Central Bank of Nigeria (CBN)",
+      "aliases": ["CBN", "Central Bank"],
       "role": "Primary regulator and supervisor for banks and financial institutions",
       "hq_address": "CBN Headquarters, Central Business District, Abuja, Nigeria",
       "emails": ["contactcbn@cbn.gov.ng", "cpd@cbn.gov.ng"]
     },
     {
       "name": "Nigeria Deposit Insurance Corporation (NDIC)",
+      "aliases": ["NDIC"],
       "role": "Deposit insurer and bank resolution authority",
       "hq_address": "Plot 447/448 Constitution Avenue, CBD, Abuja, Nigeria",
       "emails": ["info@ndic.gov.ng", "helpdesk@ndic.gov.ng"]
     },
     {
       "name": "Securities and Exchange Commission (SEC) Nigeria",
+      "aliases": ["SEC Nigeria", "SEC"],
       "role": "Capital markets oversight, investment disputes involving banks/fintechs",
       "hq_address": "Plot 272, Samuel Ademulegun Street, CBD, Abuja, Nigeria",
       "emails": ["info@sec.gov.ng"]
     },
     {
       "name": "Nigeria Police Force (NPF)",
+      "aliases": ["NPF", "Nigerian Police", "Police"],
       "role": "Criminal investigations (fraud, theft, extortion)",
       "hq_address": "Louis Edet House, Garki, Abuja, Nigeria",
       "emails": ["info@npf.gov.ng"]
     },
     {
       "name": "Economic and Financial Crimes Commission (EFCC)",
+      "aliases": ["EFCC"],
       "role": "Financial crimes enforcement and prosecution",
       "hq_address": "EFCC Headquarters, Jabi, Abuja, Nigeria",
       "emails": ["info@efcc.gov.ng"]
@@ -38,12 +43,14 @@
   "watchdogs": [
     {
       "name": "Public Complaints Commission (PCC)",
+      "aliases": ["PCC"],
       "role": "Ombudsman watchdog for unfair banking treatment",
       "hq_address": "25 Aguiyi Ironsi St, Maitama, Abuja, Nigeria",
       "emails": ["info@pcc.gov.ng"]
     },
     {
-      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
+      "name": "Federal Competition & Consumer Protection Commission (FCCPC)",
+      "aliases": ["FCCPC"],
       "role": "Consumer rights enforcement watchdog",
       "hq_address": "FCCPC Headquarters, Abuja, Nigeria",
       "emails": ["contact@fccpc.gov.ng"]
@@ -52,66 +59,77 @@
   "banks": [
     {
       "name": "Guaranty Trust Bank (GTBank)",
+      "aliases": ["GTBank", "GTB", "Guaranty Trust"],
       "role": "Commercial Bank",
       "hq_address": "635 Akin Adesola Street, Victoria Island, Lagos, Nigeria",
       "emails": ["gtbank@gtbank.com"]
     },
     {
       "name": "Access Bank Plc",
+      "aliases": ["Access Bank", "AccessBank"],
       "role": "Commercial Bank",
       "hq_address": "14/15 Prince Alaba Oniru Road, Victoria Island, Lagos, Nigeria",
       "emails": ["contact@accessbankplc.com"]
     },
     {
       "name": "United Bank for Africa (UBA) Plc",
+      "aliases": ["UBA", "United Bank for Africa"],
       "role": "Commercial Bank",
       "hq_address": "57 Marina, Lagos Island, Lagos, Nigeria",
       "emails": ["cfc@ubagroup.com"]
     },
     {
       "name": "Zenith Bank Plc",
+      "aliases": ["Zenith Bank", "Zenith"],
       "role": "Commercial Bank",
       "hq_address": "84 Ajose Adeogun Street, Victoria Island, Lagos, Nigeria",
       "emails": ["contact@zenithbank.com"]
     },
     {
       "name": "Polaris Bank Ltd",
+      "aliases": ["Polaris Bank", "Polaris"],
       "role": "Commercial Bank",
       "hq_address": "3 Akin Adesola Street, Victoria Island, Lagos, Nigeria",
       "emails": ["yescenter@polarisbanklimited.com"]
     },
     {
       "name": "Jaiz Bank Plc",
+      "aliases": ["Jaiz Bank", "Jaiz"],
       "role": "Non-Interest Islamic Bank",
       "hq_address": "30A Adeola Odeku Street, Victoria Island, Lagos, Nigeria",
       "emails": ["contact@jaizbankplc.com"]
     },
     {
       "name": "Lotus Bank Ltd",
+      "aliases": ["Lotus Bank"],
       "role": "Non-Interest Islamic Bank",
       "hq_address": "42 Ahmadu Bello Way, CBD, Abuja, Nigeria",
       "emails": ["hello@lotusbank.com"]
     },
     {
       "name": "Wema Bank Plc",
+      "aliases": ["Wema Bank", "Wema"],
       "role": "Commercial Bank",
       "hq_address": "54 Marina, Lagos Island, Lagos, Nigeria",
       "emails": ["info@wemabank.com"]
     },
     {
       "name": "Sterling Bank Plc",
+      "aliases": ["Sterling Bank", "Sterling"],
       "role": "Commercial Bank",
       "hq_address": "20 Marina, Lagos Island, Lagos, Nigeria",
       "emails": ["contact@sterling.ng"]
     },
     {
       "name": "Fidelity Bank Plc",
+      "aliases": ["Fidelity Bank", "Fidelity"],
       "role": "Commercial Bank",
       "hq_address": "2 Kofo Abayomi Street, Victoria Island, Lagos, Nigeria",
       "emails": ["true.serve@fidelitybank.ng"]
     },
     {
       "name": "Ecobank Nigeria",
+      "aliases": ["Ecobank", "Eco Bank"],
       "role": "Commercial Bank",
       "hq_address": "21 Ahmadu Bello Way, Victoria Island, Lagos, Nigeria",
       "emails": ["info@ecobank.com"]
