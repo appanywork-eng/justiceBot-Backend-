@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
+import Redis from "ioredis";
 
 dotenv.config();
 
@@ -27,6 +28,97 @@ app.use(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// =====================
+// ✅ Redis (Render Redis)
+// =====================
+const REDIS_URL = process.env.REDIS_URL || "";
+let redis = null;
+
+if (REDIS_URL) {
+  try {
+    redis = new Redis(REDIS_URL, {
+      maxRetriesPerRequest: 2,
+      enableReadyCheck: true,
+      lazyConnect: true,
+    });
+    redis.on("error", (e) => console.error("Redis error:", e?.message || e));
+    redis.on("connect", () => console.log("✅ Redis connected"));
+    // connect lazily
+    redis.connect().catch(() => {});
+  } catch (e) {
+    console.error("Redis init error:", e?.message || e);
+    redis = null;
+  }
+} else {
+  console.log("⚠️ REDIS_URL not set — counters disabled");
+}
+
+async function redisIncr(key) {
+  if (!redis) return;
+  try {
+    await redis.incr(key);
+  } catch {}
+}
+
+async function redisSAdd(key, value) {
+  if (!redis) return;
+  try {
+    await redis.sadd(key, value);
+  } catch {}
+}
+
+async function redisGetInt(key) {
+  if (!redis) return 0;
+  try {
+    const v = await redis.get(key);
+    return Number(v || 0);
+  } catch {
+    return 0;
+  }
+}
+
+async function redisSCard(key) {
+  if (!redis) return 0;
+  try {
+    const v = await redis.scard(key);
+    return Number(v || 0);
+  } catch {
+    return 0;
+  }
+}
+
+// =====================
+// ✅ Admin Session (Option A)
+// =====================
+const ADMIN_UNLOCK_KEY = process.env.ADMIN_UNLOCK_KEY || "";
+const ADMIN_SESSION_TTL_SECONDS = 30 * 60; // 30 mins
+
+function randomToken(len = 48) {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let out = "";
+  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+
+async function createAdminSession() {
+  const token = `pdadm_${Date.now()}_${randomToken(24)}`;
+  if (redis) {
+    await redis.set(`pd:admin:${token}`, "1", "EX", ADMIN_SESSION_TTL_SECONDS);
+  }
+  return token;
+}
+
+async function isAdminTokenValid(token) {
+  if (!token) return false;
+  if (!redis) return false; // admin sessions rely on Redis so they expire correctly
+  try {
+    const ok = await redis.get(`pd:admin:${token}`);
+    return ok === "1";
+  } catch {
+    return false;
+  }
+}
+
 // Config
 const OVERSIGHT_EMAILS = {
   PCC: process.env.PCC_EMAIL || "",
@@ -37,17 +129,10 @@ const OVERSIGHT_EMAILS = {
 };
 
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
-
-// ✅ IMPORTANT FIX: Flutterwave webhook uses a Webhook Secret Hash (verif-hash),
-// not your FLW secret key. Keep backward compatibility by allowing either.
-const FLW_WEBHOOK_HASH =
-  process.env.FLW_WEBHOOK_HASH || process.env.FLW_SECRET_HASH || "";
-
-const FRONTEND_BASE_URL =
-  process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 
-// In-memory storage
+// In-memory storage (kept as-is to not break working logic)
 const petitionStore = new Map();
 const USED_TX_REFS = new Set();
 
@@ -136,6 +221,7 @@ function loadSectorJson(sector) {
   }
 }
 
+// ✅ YOUR AI SECTOR DETECTOR (kept)
 function detectSector(text) {
   const lower = (text || "").toLowerCase();
   const map = {
@@ -235,44 +321,81 @@ function findMentionedInstitutions(petitionText, catalog) {
 }
 
 // ✅ Option A redirect builder: always return to SAME page with tx_ref
-function buildFrontendRedirectUrl(tx_ref, status = "") {
+function buildFrontendRedirectUrl(tx_ref) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
-  const s = status ? `&status=${encodeURIComponent(status)}` : "";
-  return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}${s}`;
+  return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
 }
 
-// ✅ NEW: backend redirect URL (Flutterwave redirects here first)
-// This prevents “fresh random page” issues and guarantees we land back on /?tx_ref=...
-function buildBackendRedirectUrl(req, tx_ref) {
-  const external =
-    String(process.env.RENDER_EXTERNAL_URL || "").trim().replace(/\/+$/, "");
-  if (external) return `${external}/flw-redirect?tx_ref=${encodeURIComponent(tx_ref)}`;
+// =====================
+// ✅ Funnel counters helper keys
+// =====================
+const METRICS = {
+  visits: "pd:metrics:visits",
+  generated: "pd:metrics:generated",
+  previewed: "pd:metrics:previewed",
+  paymentInitiated: "pd:metrics:payment_initiated",
+  paymentSuccess: "pd:metrics:payment_success",
+  unlockedPaid: "pd:metrics:unlocked_paid",
+  adminSessions: "pd:metrics:admin_sessions",
+  uniquePayInit: "pd:set:payinit_txrefs",
+  uniquePaySuccess: "pd:set:paysuccess_txrefs",
+};
 
-  const proto = (req.headers["x-forwarded-proto"] || req.protocol || "https")
-    .toString()
-    .split(",")[0]
-    .trim();
+// =====================
+// ✅ Admin endpoints
+// =====================
 
-  const host = (req.headers["x-forwarded-host"] || req.headers.host || "")
-    .toString()
-    .split(",")[0]
-    .trim();
+// Create admin session (30 mins)
+app.post("/admin/session", async (req, res) => {
+  try {
+    const key = String(req.body?.key || "");
+    if (!ADMIN_UNLOCK_KEY) return res.status(500).json({ ok: false, error: "ADMIN_UNLOCK_KEY not configured" });
+    if (!key || key !== ADMIN_UNLOCK_KEY) return res.status(401).json({ ok: false, error: "Invalid admin key" });
 
-  return `${proto}://${host}/flw-redirect?tx_ref=${encodeURIComponent(tx_ref)}`;
-}
+    const token = await createAdminSession();
+    await redisIncr(METRICS.adminSessions);
 
-// === FLUTTERWAVE WEBHOOK (RELIABLE UNLOCK MARK) ===
-app.post("/flw-webhook", (req, res) => {
+    return res.json({
+      ok: true,
+      token,
+      expiresInSeconds: ADMIN_SESSION_TTL_SECONDS,
+    });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: "Admin session failed" });
+  }
+});
+
+// Simple admin stats (optional)
+app.get("/admin/stats", async (req, res) => {
+  try {
+    const token = String(req.headers["x-admin-token"] || "");
+    const valid = await isAdminTokenValid(token);
+    if (!valid) return res.status(401).json({ ok: false, error: "Unauthorized" });
+
+    const stats = {
+      visits: await redisGetInt(METRICS.visits),
+      generated: await redisGetInt(METRICS.generated),
+      previewed: await redisGetInt(METRICS.previewed),
+      payment_initiated: await redisGetInt(METRICS.paymentInitiated),
+      payment_success: await redisGetInt(METRICS.paymentSuccess),
+      unlocked_paid: await redisGetInt(METRICS.unlockedPaid),
+      unique_payinit_txrefs: await redisSCard(METRICS.uniquePayInit),
+      unique_paysuccess_txrefs: await redisSCard(METRICS.uniquePaySuccess),
+    };
+
+    res.json({ ok: true, stats });
+  } catch {
+    res.status(500).json({ ok: false, error: "Stats error" });
+  }
+});
+
+// =====================
+// ✅ Flutterwave webhook
+// =====================
+app.post("/flw-webhook", async (req, res) => {
   try {
     const hash = req.headers["verif-hash"];
-
-    // ✅ FIX: allow correct webhook hash; keep backward compatibility with FLW_SECRET_KEY
-    const valid =
-      (FLW_WEBHOOK_HASH && hash === FLW_WEBHOOK_HASH) ||
-      (!FLW_WEBHOOK_HASH && hash === FLW_SECRET_KEY) ||
-      (hash === FLW_SECRET_KEY);
-
-    if (!hash || !valid) {
+    if (!hash || hash !== FLW_SECRET_KEY) {
       return res.status(401).end();
     }
 
@@ -286,6 +409,11 @@ app.post("/flw-webhook", (req, res) => {
 
       if (tx_ref?.startsWith("pd_") && amount >= PETITION_PRICE_NGN && currency === "NGN") {
         USED_TX_REFS.add(tx_ref);
+
+        // ✅ metrics
+        await redisIncr(METRICS.paymentSuccess);
+        await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
+
         console.log(`✅ Payment confirmed via webhook: ${tx_ref}`);
       }
     }
@@ -297,80 +425,16 @@ app.post("/flw-webhook", (req, res) => {
   }
 });
 
-// ✅ NEW: Flutterwave redirect “bridge”
-// Flutterwave sends user here -> we verify quickly -> then redirect to frontend /?tx_ref=...
-app.get("/flw-redirect", async (req, res) => {
-  try {
-    const tx_ref = String(req.query.tx_ref || "").trim();
-    const statusRaw = String(req.query.status || "").trim();
-    const transaction_id = String(req.query.transaction_id || "").trim();
+// =====================
+// ✅ Endpoints
+// =====================
 
-    if (!tx_ref) {
-      return res.redirect(302, buildFrontendRedirectUrl("", "missing_tx_ref"));
-    }
-
-    // If it already got marked by webhook, just send user home.
-    if (USED_TX_REFS.has(tx_ref)) {
-      return res.redirect(302, buildFrontendRedirectUrl(tx_ref, statusRaw || "successful"));
-    }
-
-    // Try verify by transaction_id when available (best)
-    if (transaction_id) {
-      const v = await flwFetch(
-        `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transaction_id)}/verify`,
-        { method: "GET" }
-      );
-
-      const d = v?.data?.data || {};
-      const paidStatus = String(d.status || "").toLowerCase();
-      const paidAmount = Number(d.amount || 0);
-      const paidCurrency = String(d.currency || "").toUpperCase();
-      const paidRef = String(d.tx_ref || tx_ref);
-
-      if (
-        v.ok &&
-        (paidStatus === "successful" || paidStatus === "success") &&
-        paidCurrency === "NGN" &&
-        paidAmount >= PETITION_PRICE_NGN
-      ) {
-        USED_TX_REFS.add(paidRef);
-        return res.redirect(302, buildFrontendRedirectUrl(paidRef, "successful"));
-      }
-
-      return res.redirect(302, buildFrontendRedirectUrl(paidRef, statusRaw || "failed"));
-    }
-
-    // Fallback: verify by reference (tx_ref) — correct Flutterwave endpoint
-    const verify = await flwFetch(
-      `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`,
-      { method: "GET" }
-    );
-
-    const data = verify.data || {};
-    const paidStatus = String(data?.data?.status || "").toLowerCase();
-    const paidAmount = Number(data?.data?.amount || 0);
-    const paidCurrency = String(data?.data?.currency || "").toUpperCase();
-
-    if (
-      verify.ok &&
-      paidStatus === "successful" &&
-      paidCurrency === "NGN" &&
-      paidAmount >= PETITION_PRICE_NGN
-    ) {
-      USED_TX_REFS.add(tx_ref);
-      return res.redirect(302, buildFrontendRedirectUrl(tx_ref, "successful"));
-    }
-
-    return res.redirect(302, buildFrontendRedirectUrl(tx_ref, statusRaw || "failed"));
-  } catch (e) {
-    console.error("flw-redirect error:", e);
-    // Still send user home with tx_ref if possible; frontend will retry unlock.
-    const tx_ref = String(req.query.tx_ref || "").trim();
-    return res.redirect(302, buildFrontendRedirectUrl(tx_ref, "processing"));
-  }
+// Track visits (this is a real “service open” ping you can call from frontend)
+app.post("/track/visit", async (req, res) => {
+  await redisIncr(METRICS.visits);
+  res.json({ ok: true });
 });
 
-// Endpoints
 app.get("/health", (req, res) => {
   res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
 });
@@ -378,6 +442,8 @@ app.get("/health", (req, res) => {
 app.post("/generate-petition", async (req, res) => {
   const { complaint = "", petitioner = {} } = req.body;
   if (!complaint.trim()) return res.status(400).json({ error: "Complaint is required" });
+
+  await redisIncr(METRICS.generated);
 
   const sector = detectSector(complaint);
   if (sector === "unknown") return res.status(400).json({ error: "Could not detect sector" });
@@ -447,13 +513,17 @@ Sector: ${sector} | Case: ${caseType}`,
       sector,
       caseType,
       subject,
+
+      // keep these (frontend uses them)
       mentionedInstitutions: mentioned.map((m) => m.name),
       toEmails: mentionedEmails.length ? mentionedEmails : [],
       ccEmails: adminCC,
 
-      // ✅ track payment init time (helps “pending” flow)
+      // payment timing for pending behavior
       paymentInitializedAt: null,
     });
+
+    await redisIncr(METRICS.previewed);
 
     const preview = petitionText.length > 600 ? petitionText.substring(0, 600) + "..." : petitionText;
 
@@ -475,19 +545,21 @@ app.post("/pay/initialize", async (req, res) => {
     const { tx_ref, email, name, phone } = req.body;
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
-    // Ensure tx_ref exists
     const stored = petitionStore.get(tx_ref);
     if (!stored) {
       return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
     }
 
-    // Mark payment initialized time (for better unlock UX)
+    // mark init time
     stored.paymentInitializedAt = Date.now();
     petitionStore.set(tx_ref, stored);
 
-    // ✅ IMPORTANT FIX:
-    // redirect_url should point to BACKEND bridge which then redirects to FRONTEND /?tx_ref=...
-    const redirect_url = buildBackendRedirectUrl(req, tx_ref);
+    // ✅ metrics
+    await redisIncr(METRICS.paymentInitiated);
+    await redisSAdd(METRICS.uniquePayInit, tx_ref);
+
+    // redirect back with tx_ref
+    const redirect_url = buildFrontendRedirectUrl(tx_ref);
 
     const payload = {
       tx_ref,
@@ -507,9 +579,7 @@ app.post("/pay/initialize", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    if (!ok || !data?.data?.link) {
-      return res.status(400).json({ ok: false, error: data?.message || "Payment failed" });
-    }
+    if (!ok || !data?.data?.link) return res.status(400).json({ ok: false, error: "Payment failed" });
 
     res.json({ ok: true, tx_ref, link: data.data.link });
   } catch (err) {
@@ -526,7 +596,32 @@ app.post("/unlock-petition", async (req, res) => {
     const stored = petitionStore.get(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
 
-    // If already confirmed by webhook/redirect, unlock immediately
+    // ✅ Admin override (TEST MODE) — does NOT delete petition, does NOT mark USED
+    const adminToken = String(req.headers["x-admin-token"] || "");
+    const adminOk = await isAdminTokenValid(adminToken);
+
+    if (adminOk) {
+      const mailto = buildMailto({
+        to: stored.toEmails,
+        cc: stored.ccEmails,
+        subject: stored.subject,
+        body: stored.petition,
+      });
+
+      return res.json({
+        ok: true,
+        unlocked: true,
+        admin: true,
+        petition: stored.petition,
+        sector: stored.sector,
+        mentionedInstitutions: stored.mentionedInstitutions,
+        to: stored.toEmails,
+        cc: stored.ccEmails,
+        mailto,
+      });
+    }
+
+    // ✅ If already confirmed by webhook, unlock immediately
     if (USED_TX_REFS.has(tx_ref)) {
       const mailto = buildMailto({
         to: stored.toEmails,
@@ -537,6 +632,8 @@ app.post("/unlock-petition", async (req, res) => {
 
       USED_TX_REFS.add(tx_ref);
       petitionStore.delete(tx_ref);
+
+      await redisIncr(METRICS.unlockedPaid);
 
       return res.json({
         ok: true,
@@ -550,18 +647,17 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
-    // Otherwise, verify with Flutterwave (✅ correct endpoint)
+    // ✅ Otherwise, verify with Flutterwave
     let verifyResponse;
     try {
       verifyResponse = await flwFetch(
-        `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`,
-        { method: "GET" }
+        `https://api.flutterwave.com/v3/transactions/verify?tx_ref=${encodeURIComponent(tx_ref)}`
       );
-    } catch (e) {
+    } catch {
       verifyResponse = { ok: false, status: 0, data: {} };
     }
 
-    // If Flutterwave verify is temporarily failing, return “pending” not “not verified”
+    // ✅ If verify temporarily fails, return pending if recently initialized
     if (!verifyResponse.ok) {
       const initAt = Number(stored.paymentInitializedAt || 0);
       const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000; // 15 mins
@@ -588,9 +684,11 @@ app.post("/unlock-petition", async (req, res) => {
       return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
 
-    // Mark used and unlock
+    // ✅ Mark used and unlock
     USED_TX_REFS.add(tx_ref);
     petitionStore.delete(tx_ref);
+
+    await redisIncr(METRICS.unlockedPaid);
 
     const mailto = buildMailto({
       to: stored.toEmails,
@@ -641,13 +739,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
   console.log(
-    `Webhook URL: ${
-      process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`
-    }/flw-webhook`
-  );
-  console.log(
-    `Redirect Bridge URL: ${
-      process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`
-    }/flw-redirect`
+    `Webhook URL: ${process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`}/flw-webhook`
   );
 });
