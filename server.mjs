@@ -277,7 +277,11 @@ function buildInstitutionCatalog(sectorJson) {
   function addItem(name, obj) {
     if (!name) return;
     const emails = safeUniq(extractEmailsDeep(obj)).filter(isLikelyOfficialEmail);
-    items.push({ name: String(name), norm: normalizeName(name), emails });
+    const primaryNorm = normalizeName(name);
+    const aliasNorms = Array.isArray(obj?.aliases)
+      ? safeUniq(obj.aliases.map(normalizeName)).filter(n => n && n !== primaryNorm)
+      : [];
+    items.push({ name: String(name), norm: primaryNorm, aliasNorms, emails });
   }
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
@@ -298,11 +302,15 @@ function buildInstitutionCatalog(sectorJson) {
 }
 
 function findMentionedInstitutions(petitionText, catalog) {
-  const text = normalizeName(petitionText);
-  const mentioned = [];
+  const textNorm = normalizeName(petitionText);
+  const mentionedSet = new Set();
 
   for (const item of catalog) {
-    if (item?.norm && text.includes(item.norm)) mentioned.push(item);
+    const matchesPrimary = item?.norm && textNorm.includes(item.norm);
+    const matchesAlias = item.aliasNorms?.some(aliasNorm => aliasNorm && textNorm.includes(aliasNorm));
+    if (matchesPrimary || matchesAlias) {
+      mentionedSet.add(item);
+    }
   }
 
   const raw = (petitionText || "").toLowerCase();
@@ -312,12 +320,13 @@ function findMentionedInstitutions(petitionText, catalog) {
         c.norm.includes("police") ||
         c.norm.includes("nigeria police") ||
         c.norm.includes("police service commission") ||
-        c.norm.includes("ministry of police")
+        c.norm.includes("ministry of police") ||
+        (c.aliasNorms && c.aliasNorms.some(a => a.includes("police")))
     );
-    mentioned.push(...policeItems);
+    policeItems.forEach(p => mentionedSet.add(p));
   }
 
-  return safeUniq(mentioned);
+  return Array.from(mentionedSet);
 }
 
 // ✅ Option A redirect builder: always return to SAME page with tx_ref
@@ -480,15 +489,23 @@ async function aiPickInstitutionsFromCatalog({ complaint, petitionText, catalogN
 function mapAiNamesToCatalogItems(aiNames, catalog) {
   const byNorm = new Map();
   for (const item of catalog || []) {
-    if (!item?.norm) continue;
-    byNorm.set(item.norm, item);
+    if (item?.norm) byNorm.set(item.norm, item);
+    if (item.aliasNorms) {
+      for (const an of item.aliasNorms) {
+        if (an) byNorm.set(an, item);
+      }
+    }
   }
 
   const out = [];
+  const seen = new Set(); // dedup by primary norm
   for (const name of aiNames || []) {
     const norm = normalizeName(name);
     const hit = byNorm.get(norm);
-    if (hit) out.push(hit);
+    if (hit && !seen.has(hit.norm)) {
+      seen.add(hit.norm);
+      out.push(hit);
+    }
   }
   return out;
 }
@@ -655,7 +672,7 @@ Sector: ${sector} | Case: ${caseType}`,
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
 
-    // Existing exact string matching
+    // Existing exact string matching (now enhanced with aliases)
     let mentioned = findMentionedInstitutions(petitionText, catalog);
     let mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
 
