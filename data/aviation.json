@@ -1,8 +1,8 @@
 {
   "sector": "aviation",
   "country": "Nigeria",
-  "version": "1.0.0",
-  "last_updated": "2025-12-31",
+  "version": "1.0.1",
+  "last_updated": "2026-01-04",
   "notes": {
     "consumer_complaints_escalation": [
       "1) First complain directly to the Airline (customer care / ticketing / baggage / refunds) and keep evidence (PNR, ticket number, receipts, screenshots).",
@@ -19,6 +19,7 @@
 
   "oversight_ministry": {
     "name": "Federal Ministry of Aviation and Aerospace Development",
+    "aliases": ["FMAA", "Ministry of Aviation", "Aviation Ministry"],
     "role": "Policy direction, sector oversight and coordination (FGN)",
     "website": "https://aviation.gov.ng/",
     "address": "Federal Secretariat Complex, Phase 1, Shehu Shagari Way, Abuja, FCT, Nigeria",
@@ -40,12 +41,14 @@
   "core_regulators_and_public_agencies": [
     {
       "name": "Nigeria Civil Aviation Authority (NCAA)",
+      "aliases": ["NCAA", "Nigerian Civil Aviation Authority"],
       "type": "Sector Regulator",
       "mandate_summary": "Regulation of civil aviation safety, consumer protection, licensing/certification and compliance enforcement.",
       "hq_address": "Nnamdi Azikiwe International Airport, Abuja, FCT, Nigeria",
-      "emails": ["info@ncaa.gov.ng"],
-      "phones": ["09162011222"],
+      "emails": ["info@ncaa.gov.ng", "consumer@ncaa.gov.ng"],
+      "phones": ["09162011222", "09162016222", "09055029506"],
       "website": "https://ncaa.gov.ng/",
+      "consumer_portal": "https://cpd.ncaa.gov.ng/",
       "how_to_address_head": {
         "title": "Director-General, Nigeria Civil Aviation Authority",
         "salutation": "The Director-General",
@@ -60,6 +63,7 @@
     },
     {
       "name": "Nigerian Safety Investigation Bureau (NSIB)",
+      "aliases": ["NSIB", "AIB Nigeria", "Accident Investigation Bureau"],
       "type": "Safety Investigation (Aviation / Marine / Rail / Road occurrences)",
       "mandate_summary": "Independent safety investigations and occurrence reporting support.",
       "hq_address": "Nnamdi Azikiwe International Airport, Abuja, Nigeria",
@@ -80,6 +84,7 @@
     },
     {
       "name": "Accident Investigation Bureau (AIB)",
+      "aliases": ["AIB", "AIB Nigeria"],
       "type": "Legacy aviation accident investigation contacts (historical/FOI/reporting references)",
       "note": "Nigeria’s investigation system references NSIB; AIB pages still publish emergency lines and emails useful for aviation safety communications.",
       "addresses": [
@@ -106,6 +111,7 @@
   "training_and_capacity_building": [
     {
       "name": "Nigerian College of Aviation Technology (NCAT), Zaria",
+      "aliases": ["NCAT", "NCAT Zaria"],
       "type": "Aviation training institution",
       "address": "Nigerian College of Aviation Technology, Zaria, Kaduna State, Nigeria",
       "emails": ["info@ncat.gov.ng", "academics@ncat.gov.ng", "support@ncat.gov.ng"],
@@ -122,6 +128,7 @@
   "watchdogs": [
     {
       "name": "Public Complaints Commission (PCC)",
+      "aliases": ["PCC", "Ombudsman Nigeria"],
       "role": "Maladministration oversight for public institutions; escalation where agencies/airport operators fail to act fairly or respond.",
       "emails": [],
       "phones": [],
@@ -134,6 +141,7 @@
     },
     {
       "name": "Federal Competition & Consumer Protection Commission (FCCPC)",
+      "aliases": ["FCCPC", "Consumer Protection Commission"],
       "role": "Consumer protection and unfair practices oversight (where applicable).",
       "emails": ["contact@fccpc.gov.ng"],
       "phones": [],
@@ -149,10 +157,11 @@
     "domestic_scheduled_airlines": [
       {
         "name": "Air Peace",
+        "aliases": ["AirPeace", "FlyAirPeace", "Air Peace Limited"],
         "status_note": "Active (domestic + regional/international services).",
         "hq_address": "25, Sobo Arobiodu Street GRA, Ikeja, Lagos, Nigeria",
         "emails": ["info@flyairpeace.com", "callcenter@flyairpeace.com"],
-        "phones": ["+234-201-343-8133"],
+        "phones": ["+234-201-343-8133", "0700FLYAIRPEACE"],
         "website": "https://flyairpeace.com/",
         "how_to_address_head": {
           "title": "Managing Director/Chief Executive",
@@ -162,6 +171,7 @@
       },
       {
         "name": "Ibom Air",
+        "aliases": ["IbomAir"],
         "status_note": "Active (Akwa Ibom State owned airline).",
         "hq_address": "Victor Attah International Airport, Uyo, Akwa Ibom, Nigeria",
         "emails": ["info@ibomair.com", "reservations@ibomair.com", "ibomflyersupport@ibomair.com"],
@@ -175,6 +185,7 @@
       },
       {
         "name": "United Nigeria Airlines",
+        "aliases": ["United Nigeria", "FlyUnitedNigeria"],
         "status_note": "Active.",
         "hq_addresses": [
           "Plot C2A Garden Avenue, GRA, Enugu, Enugu State, Nigeria",
@@ -191,6 +202,7 @@
       },
       {
         "name": "Green Africa Airways",
+        "aliases": ["Green Africa", "GreenAfrica"],
         "status_note": "Active.",
         "hq_address": "43B, Oduduwa Crescent, GRA, Ikeja, Lagos, Nigeria",
         "emails": ["gcare@greenafrica.com", "info@greenafrica.com"],
@@ -204,6 +216,7 @@
       },
       {
         "name": "Max Air",
+        "aliases": ["MaxAir"],
         "status_note": "Active.",
         "hq_address": "No. 16 Ashton Road, Kano, Nigeria",
         "emails": ["info@maxair.com.ng", "cs@maxair.com.ng", "reservation@maxair.com.ng"],
@@ -217,6 +230,7 @@
       },
       {
         "name": "Azman Air",
+        "aliases": ["AzmanAir", "AirAzman"],
         "status_note": "Active (domestic operations have varied historically; use official contacts here).",
         "hq_address": "1 Zaria Road, Beside FIRS, Kano, Nigeria",
         "emails": ["info@airazman.com", "customercare@airazman.com"],
@@ -230,6 +244,7 @@
       },
       {
         "name": "Overland Airways",
+        "aliases": ["OverlandAirways"],
         "status_note": "Active (scheduled + charter).",
         "hq_address": "17 Simbiat Abiola Road, Ikeja, Lagos, Nigeria",
         "emails": ["fly@overlandairways.com"],
@@ -243,6 +258,7 @@
       },
       {
         "name": "Aero Contractors",
+        "aliases": ["AeroContractors", "FlyAero"],
         "status_note": "Active (scheduled + helicopter services; multiple published emails across properties).",
         "hq_address": "Private Terminal, Murtala Muhammed Airport, PMB 21090, Ikeja, Lagos, Nigeria",
         "emails": ["aero@acn.aero", "ticket-helpdesk@acn.aero"],
@@ -254,9 +270,9 @@
         },
         "sources": ["https://www.flyaero.com/?page=privacy-policy", "https://www.flyaero.com/?page=complaints"]
       },
-
       {
         "name": "Arik Air",
+        "aliases": ["ArikAir"],
         "status_note": "Listed for completeness. Public HQ contact email not verified in this build due to limited verification window.",
         "hq_address": null,
         "emails": [],
@@ -266,6 +282,7 @@
       },
       {
         "name": "ValueJet",
+        "aliases": ["ValueJet"],
         "status_note": "Listed for completeness. Public HQ contact email not verified in this build due to limited verification window.",
         "hq_address": null,
         "emails": [],
@@ -275,6 +292,7 @@
       },
       {
         "name": "Rano Air",
+        "aliases": ["RanoAir"],
         "status_note": "Listed for completeness. Public HQ contact email not verified in this build due to limited verification window.",
         "hq_address": null,
         "emails": [],
@@ -284,6 +302,7 @@
       },
       {
         "name": "Dana Air",
+        "aliases": ["DanaAir", "FlyDana"],
         "status_note": "Listed for completeness. Dana Air has had operational suspensions historically; verify current operating status and official contacts before routing.",
         "hq_address": null,
         "emails": [],
