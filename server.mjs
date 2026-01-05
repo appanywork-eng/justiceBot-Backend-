@@ -954,5 +954,3 @@ console.log(
 Webhook URL: ${process.env.RENDER_EXTERNAL_URL || https://your-app.onrender.com}/flw-webhook
 );
 });
-
-Make all the patches in this file and give me the full file for easy copy and paste
