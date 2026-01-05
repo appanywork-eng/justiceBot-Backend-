@@ -300,7 +300,7 @@ function buildInstitutionCatalog(sectorJson) {
     }
   });
 
-  // === PATCH: Sector-specific primary entities (operators, companies, discos, etc.) ===
+  // === Sector-specific primary entities (operators, companies, discos, etc.) ===
   if (currentSector === "aviation" && Array.isArray(sectorJson.airlines_operating_in_nigeria?.domestic_scheduled_airlines)) {
     sectorJson.airlines_operating_in_nigeria.domestic_scheduled_airlines.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
@@ -726,24 +726,29 @@ Sector: ${sector} | Case: ${caseType}`,
     // String matching (with aliases + primaries)
     let mentioned = findMentionedInstitutions(petitionText, catalog);
 
-    // === NEW PATCH: Separate primary entities (operators/companies) from oversight (regulators/watchdogs) ===
+    // === SURGICAL FIX: All matched institutions receive email ===
+    // Primary (operators/companies) → TO
+    // Non-primary (regulators/watchdogs) → CC
+    // Always add admin oversight to CC
+    // If no primary, non-primary become TO
+
     const primaryMentioned = mentioned.filter(item => item.isPrimary);
-    const oversightMentioned = mentioned.filter(item => !item.isPrimary);
+    const nonPrimaryMentioned = mentioned.filter(item => !item.isPrimary);
 
     let toEmails = safeUniq(primaryMentioned.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+    let ccEmails = safeUniq(nonPrimaryMentioned.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
 
-    let ccEmails = safeUniq(oversightMentioned.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
-
-    // Always add admin oversight CCs
+    // Always add admin oversight CCs (SERVICOM, FCCPC, PCC, NHRC, etc.)
     const adminCC = buildAdminOversightCC({ sector, caseType });
-    ccEmails = safeUniq(ccEmails.concat(adminCC));
+    ccEmails = safeUniq([...ccEmails, ...adminCC]);
 
-    // Fallback: if no primary entity mentioned, use oversight/regulators as TO
-    if (toEmails.length === 0 && oversightMentioned.length > 0) {
-      toEmails = safeUniq(oversightMentioned.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+    // Fallback: if no primary mentioned, promote non-primary to TO (pure escalation case)
+    if (toEmails.length === 0 && nonPrimaryMentioned.length > 0) {
+      toEmails = safeUniq(nonPrimaryMentioned.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+      // Keep admin CC
     }
 
-    // ✅ PATCH: Option B AI fallback (if no string matches at all)
+    // ✅ AI fallback (if no string matches)
     if (mentioned.length === 0 && catalog.length > 0) {
       const catalogNames = catalog.map((x) => x.name).filter(Boolean);
 
@@ -758,15 +763,15 @@ Sector: ${sector} | Case: ${caseType}`,
         if (aiItems.length > 0) {
           mentioned = aiItems;
 
-          // Re-apply primary/oversight separation for AI picks
           const aiPrimary = aiItems.filter(item => item.isPrimary);
-          const aiOversight = aiItems.filter(item => !item.isPrimary);
+          const aiNonPrimary = aiItems.filter(item => !item.isPrimary);
 
           toEmails = safeUniq(aiPrimary.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
-          ccEmails = safeUniq(aiOversight.flatMap(m => m.emails)).filter(isLikelyOfficialEmail).concat(adminCC);
+          ccEmails = safeUniq(aiNonPrimary.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+          ccEmails = safeUniq([...ccEmails, ...adminCC]);
 
-          if (toEmails.length === 0 && aiOversight.length > 0) {
-            toEmails = safeUniq(aiOversight.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+          if (toEmails.length === 0 && aiNonPrimary.length > 0) {
+            toEmails = safeUniq(aiNonPrimary.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
           }
         }
       }
