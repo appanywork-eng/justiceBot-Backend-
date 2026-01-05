@@ -285,6 +285,8 @@ function buildInstitutionCatalog(sectorJson) {
   }
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
+  const currentSector = (sectorJson.sector || "").toLowerCase();
+
   if (sectorJson.oversight && typeof sectorJson.oversight === "object") {
     for (const key of Object.keys(sectorJson.oversight)) {
       const node = sectorJson.oversight[key];
@@ -297,6 +299,66 @@ function buildInstitutionCatalog(sectorJson) {
       sectorJson[key].forEach((inst) => addItem(inst?.name || inst, inst));
     }
   });
+
+  // === PATCH: Include sector-specific companies/operators (primary entities like airlines, banks, telcos, discos, etc.) ===
+  // Aviation: airlines
+  if (currentSector === "aviation" && Array.isArray(sectorJson.airlines_operating_in_nigeria?.domestic_scheduled_airlines)) {
+    sectorJson.airlines_operating_in_nigeria.domestic_scheduled_airlines.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // Banking: banks
+  if (currentSector === "banking" && Array.isArray(sectorJson.banks)) {
+    sectorJson.banks.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // Telecoms: mobile operators
+  if (currentSector === "telecoms" && Array.isArray(sectorJson.major_operators?.mobile_network_operators)) {
+    sectorJson.major_operators.mobile_network_operators.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // Power: likely discos/gencos (adjust key when JSON is built)
+  if (currentSector === "power" && Array.isArray(sectorJson.discos)) {
+    sectorJson.discos.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+  if (currentSector === "power" && Array.isArray(sectorJson.gencos)) {
+    sectorJson.gencos.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // Health: likely hospitals/providers (adjust key when JSON is built)
+  if (currentSector === "health" && Array.isArray(sectorJson.hospitals)) {
+    sectorJson.hospitals.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+  if (currentSector === "health" && Array.isArray(sectorJson.providers)) {
+    sectorJson.providers.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // Education: likely universities/schools (adjust key when JSON is built)
+  if (currentSector === "education" && Array.isArray(sectorJson.universities)) {
+    sectorJson.universities.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+  if (currentSector === "education" && Array.isArray(sectorJson.schools)) {
+    sectorJson.schools.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // Judiciary: likely courts (adjust key when JSON is built)
+  if (currentSector === "judiciary" && Array.isArray(sectorJson.courts)) {
+    sectorJson.courts.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // Security: likely forces/commands (adjust key when JSON is built)
+  if (currentSector === "security" && Array.isArray(sectorJson.forces)) {
+    sectorJson.forces.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+  if (currentSector === "security" && Array.isArray(sectorJson.police_commands)) {
+    sectorJson.police_commands.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // International escalation: likely organizations (adjust key when JSON is built)
+  if (currentSector === "international_escalation" && Array.isArray(sectorJson.organizations)) {
+    sectorJson.organizations.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // Add more sector-specific arrays here as you build the JSON files
 
   return items;
 }
@@ -672,7 +734,7 @@ Sector: ${sector} | Case: ${caseType}`,
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
 
-    // Existing exact string matching (now enhanced with aliases)
+    // Existing exact string matching (now enhanced with aliases + companies)
     let mentioned = findMentionedInstitutions(petitionText, catalog);
     let mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
 
