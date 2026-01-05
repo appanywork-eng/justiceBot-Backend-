@@ -274,14 +274,14 @@ function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
 
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
-  function addItem(name, obj) {
+  function addItem(name, obj, isPrimary = false) {
     if (!name) return;
     const emails = safeUniq(extractEmailsDeep(obj)).filter(isLikelyOfficialEmail);
     const primaryNorm = normalizeName(name);
     const aliasNorms = Array.isArray(obj?.aliases)
       ? safeUniq(obj.aliases.map(normalizeName)).filter(n => n && n !== primaryNorm)
       : [];
-    items.push({ name: String(name), norm: primaryNorm, aliasNorms, emails });
+    items.push({ name: String(name), norm: primaryNorm, aliasNorms, emails, isPrimary });
   }
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
@@ -290,75 +290,64 @@ function buildInstitutionCatalog(sectorJson) {
   if (sectorJson.oversight && typeof sectorJson.oversight === "object") {
     for (const key of Object.keys(sectorJson.oversight)) {
       const node = sectorJson.oversight[key];
-      addItem(node?.name || key, node);
+      addItem(node?.name || key, node, false);
     }
   }
 
   ["core_institutions", "regulators", "watchdogs", "players"].forEach((key) => {
     if (Array.isArray(sectorJson[key])) {
-      sectorJson[key].forEach((inst) => addItem(inst?.name || inst, inst));
+      sectorJson[key].forEach((inst) => addItem(inst?.name || inst, inst, false));
     }
   });
 
-  // === PATCH: Include sector-specific companies/operators (primary entities like airlines, banks, telcos, discos, etc.) ===
-  // Aviation: airlines
+  // === PATCH: Sector-specific primary entities (operators, companies, discos, etc.) ===
   if (currentSector === "aviation" && Array.isArray(sectorJson.airlines_operating_in_nigeria?.domestic_scheduled_airlines)) {
-    sectorJson.airlines_operating_in_nigeria.domestic_scheduled_airlines.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.airlines_operating_in_nigeria.domestic_scheduled_airlines.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
 
-  // Banking: banks
   if (currentSector === "banking" && Array.isArray(sectorJson.banks)) {
-    sectorJson.banks.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.banks.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
 
-  // Telecoms: mobile operators
   if (currentSector === "telecoms" && Array.isArray(sectorJson.major_operators?.mobile_network_operators)) {
-    sectorJson.major_operators.mobile_network_operators.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.major_operators.mobile_network_operators.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
 
-  // Power: likely discos/gencos (adjust key when JSON is built)
   if (currentSector === "power" && Array.isArray(sectorJson.discos)) {
-    sectorJson.discos.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.discos.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
   if (currentSector === "power" && Array.isArray(sectorJson.gencos)) {
-    sectorJson.gencos.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.gencos.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
 
-  // Health: likely hospitals/providers (adjust key when JSON is built)
   if (currentSector === "health" && Array.isArray(sectorJson.hospitals)) {
-    sectorJson.hospitals.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.hospitals.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
   if (currentSector === "health" && Array.isArray(sectorJson.providers)) {
-    sectorJson.providers.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.providers.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
 
-  // Education: likely universities/schools (adjust key when JSON is built)
   if (currentSector === "education" && Array.isArray(sectorJson.universities)) {
-    sectorJson.universities.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.universities.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
   if (currentSector === "education" && Array.isArray(sectorJson.schools)) {
-    sectorJson.schools.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.schools.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
 
-  // Judiciary: likely courts (adjust key when JSON is built)
   if (currentSector === "judiciary" && Array.isArray(sectorJson.courts)) {
-    sectorJson.courts.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.courts.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
 
-  // Security: likely forces/commands (adjust key when JSON is built)
   if (currentSector === "security" && Array.isArray(sectorJson.forces)) {
-    sectorJson.forces.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.forces.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
   if (currentSector === "security" && Array.isArray(sectorJson.police_commands)) {
-    sectorJson.police_commands.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.police_commands.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
 
-  // International escalation: likely organizations (adjust key when JSON is built)
   if (currentSector === "international_escalation" && Array.isArray(sectorJson.organizations)) {
-    sectorJson.organizations.forEach((inst) => addItem(inst?.name || inst, inst));
+    sectorJson.organizations.forEach((inst) => addItem(inst?.name || inst, inst, true));
   }
-
-  // Add more sector-specific arrays here as you build the JSON files
 
   return items;
 }
@@ -734,12 +723,28 @@ Sector: ${sector} | Case: ${caseType}`,
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
 
-    // Existing exact string matching (now enhanced with aliases + companies)
+    // String matching (with aliases + primaries)
     let mentioned = findMentionedInstitutions(petitionText, catalog);
-    let mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
 
-    // ✅ PATCH: Option B fallback (ONLY if none matched)
-    if ((!mentioned || mentioned.length === 0) && catalog.length > 0) {
+    // === NEW PATCH: Separate primary entities (operators/companies) from oversight (regulators/watchdogs) ===
+    const primaryMentioned = mentioned.filter(item => item.isPrimary);
+    const oversightMentioned = mentioned.filter(item => !item.isPrimary);
+
+    let toEmails = safeUniq(primaryMentioned.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+
+    let ccEmails = safeUniq(oversightMentioned.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+
+    // Always add admin oversight CCs
+    const adminCC = buildAdminOversightCC({ sector, caseType });
+    ccEmails = safeUniq(ccEmails.concat(adminCC));
+
+    // Fallback: if no primary entity mentioned, use oversight/regulators as TO
+    if (toEmails.length === 0 && oversightMentioned.length > 0) {
+      toEmails = safeUniq(oversightMentioned.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+    }
+
+    // ✅ PATCH: Option B AI fallback (if no string matches at all)
+    if (mentioned.length === 0 && catalog.length > 0) {
       const catalogNames = catalog.map((x) => x.name).filter(Boolean);
 
       const aiNames = await aiPickInstitutionsFromCatalog({
@@ -750,16 +755,22 @@ Sector: ${sector} | Case: ${caseType}`,
 
       if (aiNames.length > 0) {
         const aiItems = mapAiNamesToCatalogItems(aiNames, catalog);
-
-        // only accept if validation hits at least 1 real catalog item
         if (aiItems.length > 0) {
           mentioned = aiItems;
-          mentionedEmails = safeUniq(aiItems.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
+
+          // Re-apply primary/oversight separation for AI picks
+          const aiPrimary = aiItems.filter(item => item.isPrimary);
+          const aiOversight = aiItems.filter(item => !item.isPrimary);
+
+          toEmails = safeUniq(aiPrimary.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+          ccEmails = safeUniq(aiOversight.flatMap(m => m.emails)).filter(isLikelyOfficialEmail).concat(adminCC);
+
+          if (toEmails.length === 0 && aiOversight.length > 0) {
+            toEmails = safeUniq(aiOversight.flatMap(m => m.emails)).filter(isLikelyOfficialEmail);
+          }
         }
       }
     }
-
-    const adminCC = buildAdminOversightCC({ sector, caseType });
 
     const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -770,11 +781,9 @@ Sector: ${sector} | Case: ${caseType}`,
       subject,
       mentionedInstitutions: mentioned.map((m) => m.name),
 
-      // ✅ IMPORTANT: keep your routing outputs
-      toEmails: mentionedEmails.length ? mentionedEmails : [],
-      ccEmails: adminCC,
+      toEmails: toEmails.length ? toEmails : [],
+      ccEmails: ccEmails,
 
-      // ✅ Added: track payment init time (helps “pending” flow)
       paymentInitializedAt: null,
     });
 
