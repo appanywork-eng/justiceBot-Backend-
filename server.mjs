@@ -520,7 +520,7 @@ Sector: ${sector} | Case: ${caseType}`,
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
     const mentioned = findMentionedInstitutions(petitionText, catalog);
-    const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
+    const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
 
     const adminCC = buildAdminOversightCC({ sector, caseType });
 
