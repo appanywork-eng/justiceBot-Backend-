@@ -298,52 +298,41 @@ function buildInstitutionCatalog(sectorJson) {
 }
 
 function findMentionedInstitutions(petitionText, catalog) {
-  const text = normalizeName(petitionText);
+  const raw = String(petitionText || "").toLowerCase();
+  const text = normalizeName(raw);
+  const textNoSpace = text.replace(/\s+/g, "");
+
   const mentioned = [];
-  const weakMatches = [];
 
   for (const item of catalog) {
-    if (!item?.norm) continue;
+    if (!item?.name || !item?.norm) continue;
 
-    // Exact / strong match
-    if (text.includes(item.norm)) {
+    const norm = item.norm;
+    const normNoSpace = norm.replace(/\s+/g, "");
+
+    // 1️⃣ Exact legal name match
+    if (text.includes(norm)) {
       mentioned.push(item);
       continue;
     }
 
-    // Partial match: any significant word overlap
-    const parts = item.norm.split(" ").filter(p => p.length >= 4);
-    const hits = parts.filter(p => text.includes(p));
-
-    if (hits.length >= Math.max(1, Math.floor(parts.length / 2))) {
-      weakMatches.push(item);
+    // 2️⃣ Brand-style match (Airpeace vs Air Peace)
+    if (textNoSpace.includes(normNoSpace)) {
+      mentioned.push(item);
+      continue;
     }
-  }
 
-  // If no strong matches, allow weak matches
-  if (mentioned.length === 0 && weakMatches.length > 0) {
-    mentioned.push(...weakMatches);
-  }
+    // 3️⃣ Acronym match (NCAA, FCCPC, etc.)
+    const acronym = norm
+      .split(" ")
+      .map(w => w[0])
+      .join("")
+      .toLowerCase();
 
-  // Explicit generic handling (police, ministry, bank, etc.)
-  const raw = (petitionText || "").toLowerCase();
-
-  if (raw.includes("police")) {
-    mentioned.push(
-      ...catalog.filter(c => c.norm.includes("police"))
-    );
-  }
-
-  if (raw.includes("ministry")) {
-    mentioned.push(
-      ...catalog.filter(c => c.norm.includes("ministry"))
-    );
-  }
-
-  if (raw.includes("bank")) {
-    mentioned.push(
-      ...catalog.filter(c => c.norm.includes("bank"))
-    );
+    if (acronym.length >= 3 && raw.includes(acronym)) {
+      mentioned.push(item);
+      continue;
+    }
   }
 
   return safeUniq(mentioned);
