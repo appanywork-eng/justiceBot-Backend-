@@ -311,46 +311,48 @@ function buildInstitutionCatalog(sectorJson) {
 }
 
 function findMentionedInstitutions(petitionText, catalog) {
-  const raw = String(petitionText || "").toLowerCase();
-  const text = normalizeName(raw);
-  const textNoSpace = text.replace(/\s+/g, "");
-
+  const textNorm = normalizeName(petitionText);
   const mentioned = [];
+  const tokens = new Set(textNorm.split(" ").filter(w => w.length > 2));
 
   for (const item of catalog) {
-    if (!item?.name || !item?.norm) continue;
+    if (!item?.norm) continue;
 
-    const norm = item.norm;
-    const normNoSpace = norm.replace(/\s+/g, "");
-
-    // 1️⃣ Exact legal name match
-    if (text.includes(norm)) {
+    // 1️⃣ Exact match (old behavior, preserved)
+    if (textNorm.includes(item.norm)) {
       mentioned.push(item);
       continue;
     }
 
-    // 2️⃣ Brand-style match (Airpeace vs Air Peace)
-    if (textNoSpace.includes(normNoSpace)) {
-      mentioned.push(item);
-      continue;
+    // 2️⃣ Partial word overlap (NEW)
+    const itemWords = item.norm.split(" ");
+    let matchCount = 0;
+
+    for (const w of itemWords) {
+      if (tokens.has(w)) matchCount++;
     }
 
-    // 3️⃣ Acronym match (NCAA, FCCPC, etc.)
-    const acronym = norm
-      .split(" ")
-      .map(w => w[0])
-      .join("")
-      .toLowerCase();
-
-    if (acronym.length >= 3 && raw.includes(acronym)) {
+    // Require meaningful overlap (prevents false positives)
+    if (matchCount >= Math.min(2, itemWords.length)) {
       mentioned.push(item);
-      continue;
     }
   }
 
-  return safeUniq(mentioned);
-}
+  // 3️⃣ Keep your police safety-net (UNCHANGED)
+  const raw = (petitionText || "").toLowerCase();
+  if (raw.includes("police")) {
+    const policeItems = catalog.filter(
+      (c) =>
+        c.norm.includes("police") ||
+        c.norm.includes("nigeria police") ||
+        c.norm.includes("police service commission") ||
+        c.norm.includes("ministry of police")
+    );
+    mentioned.push(...policeItems);
+  }
 
+  return safeUniq(mentioned);
+      }
 // ✅ Option A redirect builder: always return to SAME page with tx_ref
 function buildFrontendRedirectUrl(tx_ref) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
