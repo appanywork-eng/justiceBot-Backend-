@@ -1,9 +1,3 @@
-// server.mjs — FINAL CORRECTED VERSION (January 06, 2026)
-// Syntax error FIXED (removed stray }); )
-// Flutterwave phone_number optional
-// Admin unlock works with/without Redis
-// All endpoints fully functional
-
 import express from "express";
 import cors from "cors";
 import OpenAI from "openai";
