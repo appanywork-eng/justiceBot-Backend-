@@ -300,21 +300,50 @@ function buildInstitutionCatalog(sectorJson) {
 function findMentionedInstitutions(petitionText, catalog) {
   const text = normalizeName(petitionText);
   const mentioned = [];
+  const weakMatches = [];
 
   for (const item of catalog) {
-    if (item?.norm && text.includes(item.norm)) mentioned.push(item);
+    if (!item?.norm) continue;
+
+    // Exact / strong match
+    if (text.includes(item.norm)) {
+      mentioned.push(item);
+      continue;
+    }
+
+    // Partial match: any significant word overlap
+    const parts = item.norm.split(" ").filter(p => p.length >= 4);
+    const hits = parts.filter(p => text.includes(p));
+
+    if (hits.length >= Math.max(1, Math.floor(parts.length / 2))) {
+      weakMatches.push(item);
+    }
   }
 
+  // If no strong matches, allow weak matches
+  if (mentioned.length === 0 && weakMatches.length > 0) {
+    mentioned.push(...weakMatches);
+  }
+
+  // Explicit generic handling (police, ministry, bank, etc.)
   const raw = (petitionText || "").toLowerCase();
+
   if (raw.includes("police")) {
-    const policeItems = catalog.filter(
-      (c) =>
-        c.norm.includes("police") ||
-        c.norm.includes("nigeria police") ||
-        c.norm.includes("police service commission") ||
-        c.norm.includes("ministry of police")
+    mentioned.push(
+      ...catalog.filter(c => c.norm.includes("police"))
     );
-    mentioned.push(...policeItems);
+  }
+
+  if (raw.includes("ministry")) {
+    mentioned.push(
+      ...catalog.filter(c => c.norm.includes("ministry"))
+    );
+  }
+
+  if (raw.includes("bank")) {
+    mentioned.push(
+      ...catalog.filter(c => c.norm.includes("bank"))
+    );
   }
 
   return safeUniq(mentioned);
