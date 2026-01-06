@@ -444,7 +444,6 @@ app.post("/flw-webhook", async (req, res) => {
       if (tx_ref?.startsWith("pd_") && amount >= PETITION_PRICE_NGN && currency === "NGN") {
         USED_TX_REFS.add(tx_ref);
 
-        // ✅ metrics
         await redisIncr(METRICS.paymentSuccess);
         await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
 
@@ -514,12 +513,10 @@ Email: ${pEmail}
 Phone: ${pPhone}
 
 TO:
-[Full official name of primary institution]
-[If known: Official email address of the institution, e.g. info@ncc.gov.ng]
-[If known: Physical address if relevant]
+[Full official name of primary institution ONLY — DO NOT add email or address]
 
 CC:
-[List any relevant oversight/regulatory bodies with their emails if known, e.g. complaints@fccpc.gov.ng]
+[List any relevant oversight/regulatory bodies by name ONLY — DO NOT add emails]
 
 SUBJECT: [Clear, specific subject line]
 
@@ -544,8 +541,8 @@ ${pEmail}
 
 Additional instructions:
 - Sector: ${sector} | Case Type: ${caseType}
-- When mentioning ANY institution (primary or oversight), ALWAYS include its known official email if possible (e.g., NCC → info@ncc.gov.ng or complaints@ncc.gov.ng).
-- If multiple emails are available for an institution, use the most relevant one (complaints, info, customer care, etc.).
+- DO NOT include any email addresses, physical addresses, or other contact details in TO/CC or the body.
+- Only mention institution names.
 - Keep the letter professional, factual, and under 800 words.`,
         },
         { role: "user", content: `Complaint: ${complaint}` },
@@ -559,12 +556,7 @@ Additional instructions:
     const catalog = buildInstitutionCatalog(sectorJson);
     const mentioned = findMentionedInstitutions(petitionText, catalog);
 
-    // === FIXED: Prefer verified emails from your JSON files first ===
-    const jsonEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
-    const aiEmails = extractEmailsDeep(petitionText);
-
-    // Use JSON emails if available (your verified ones), otherwise fall back to what AI wrote
-    const finalToEmails = jsonEmails.length > 0 ? jsonEmails : aiEmails;
+    const toEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
 
     const adminCC = buildAdminOversightCC({ sector, caseType });
 
@@ -575,13 +567,9 @@ Additional instructions:
       sector,
       caseType,
       subject,
-
-      // keep these (frontend uses them)
       mentionedInstitutions: mentioned.map((m) => m.name),
-      toEmails: finalToEmails,
+      toEmails,
       ccEmails: adminCC,
-
-      // payment timing for pending behavior
       paymentInitializedAt: null,
     });
 
@@ -612,15 +600,12 @@ app.post("/pay/initialize", async (req, res) => {
       return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
     }
 
-    // mark init time
     stored.paymentInitializedAt = Date.now();
     petitionStore.set(tx_ref, stored);
 
-    // ✅ metrics
     await redisIncr(METRICS.paymentInitiated);
     await redisSAdd(METRICS.uniquePayInit, tx_ref);
 
-    // redirect back with tx_ref
     const redirect_url = buildFrontendRedirectUrl(tx_ref);
 
     const payload = {
@@ -658,7 +643,6 @@ app.post("/unlock-petition", async (req, res) => {
     const stored = petitionStore.get(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
 
-    // ✅ Admin override (TEST MODE) — does NOT delete petition, does NOT mark USED
     const adminToken = String(req.headers["x-admin-token"] || "");
     const adminOk = await isAdminTokenValid(adminToken);
 
@@ -683,7 +667,6 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
-    // ✅ If already confirmed by webhook, unlock immediately
     if (USED_TX_REFS.has(tx_ref)) {
       const mailto = buildMailto({
         to: stored.toEmails,
@@ -709,7 +692,6 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
-    // ✅ Otherwise, verify with Flutterwave
     let verifyResponse;
     try {
       verifyResponse = await flwFetch(
@@ -719,10 +701,9 @@ app.post("/unlock-petition", async (req, res) => {
       verifyResponse = { ok: false, status: 0, data: {} };
     }
 
-    // ✅ If verify temporarily fails, return pending if recently initialized
     if (!verifyResponse.ok) {
       const initAt = Number(stored.paymentInitializedAt || 0);
-      const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000; // 15 mins
+      const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000;
 
       if (recentlyInitialized) {
         return res.status(202).json({
@@ -746,7 +727,6 @@ app.post("/unlock-petition", async (req, res) => {
       return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
 
-    // ✅ Mark used and unlock
     USED_TX_REFS.add(tx_ref);
     petitionStore.delete(tx_ref);
 
