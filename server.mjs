@@ -31,15 +31,23 @@ let PDFDocument;
 let OpenAI;
 let Redis;
 let Canvas;
+// When importing CJS modules like express and cors dynamically, the
+// returned object may be the function itself or wrapped under a
+// `.default` property. To support either case we normalise the import
+// by assigning `module.default ?? module`.
 try {
-  expressMod = await import('express');
+  const mod = await import('express');
+  expressMod = mod.default ?? mod;
 } catch {
-  /* express is optional; fallback HTTP server will be used */
+  // express is optional; fallback HTTP server will be used
+  expressMod = null;
 }
 try {
-  corsMod = await import('cors');
+  const mod = await import('cors');
+  corsMod = mod.default ?? mod;
 } catch {
-  /* CORS middleware is optional */
+  // CORS middleware is optional
+  corsMod = null;
 }
 try {
   // pdfkit exports its constructor directly; some bundlers wrap it in
@@ -603,9 +611,9 @@ async function generatePdfBuffer(lines) {
 // and starts the appropriate server implementation. This function is
 // executed at the bottom of the file.
 async function startServer() {
-  if (expressMod && expressMod.default) {
+  if (expressMod) {
     // EXPRESS IMPLEMENTATION
-    const express = expressMod.default;
+    const express = expressMod;
     const app = express();
     // Apply JSON parser with 5MB limit and store raw body for
     // signature verification on webhooks
@@ -618,14 +626,14 @@ async function startServer() {
       }),
     );
     // Enable CORS if cors middleware is available
-    if (corsMod && corsMod.default) {
-      app.use(corsMod.default({ origin: '*' }));
+    if (corsMod) {
+      app.use(corsMod({ origin: '*' }));
     }
     // /admin-unlock
     app.post('/admin-unlock', async (req, res) => {
       const { key } = req.body || {};
       if (!key || key !== ADMIN_UNLOCK_KEY) {
-        return res.status(401).json({ error: 'Invalid admin key' });
+      return res.status(401).json({ error: 'Invalid admin key' });
       }
       const token = await createAdminSession();
       return res.json({ success: true, token });
