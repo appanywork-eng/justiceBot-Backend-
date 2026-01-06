@@ -1,5 +1,3 @@
-Current working code for server.mjs below 
-
 // server.mjs
 import express from "express";
 import cors from "cors";
