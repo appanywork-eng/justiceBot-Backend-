@@ -276,7 +276,7 @@ function buildInstitutionCatalog(sectorJson) {
   const items = [];
   function addItem(name, obj) {
     if (!name) return;
-    const emails = safeUniq(extractEmailsDeep(obj)).filter(isLikelyOfficialEmail);
+    const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
     items.push({ name: String(name), norm: normalizeName(name), emails });
   }
   if (!sectorJson || typeof sectorJson !== "object") return items;
