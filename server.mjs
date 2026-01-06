@@ -1,3 +1,5 @@
+Current working code for server.mjs below 
+
 // server.mjs
 import express from "express";
 import cors from "cors";
@@ -221,7 +223,7 @@ function loadSectorJson(sector) {
   }
 }
 
-// ✅ YOUR SECTOR DETECTOR (kept)
+// ✅ YOUR AI SECTOR DETECTOR (kept)
 function detectSector(text) {
   const lower = (text || "").toLowerCase();
   const map = {
@@ -342,158 +344,6 @@ const METRICS = {
 };
 
 // =====================
-// ✅ HYBRID SECTOR VALIDATION (PATCH)
-// AI validates meaning; your rule-detector is the guard rail.
-// =====================
-const ALLOWED_SECTORS = [
-  "power",
-  "aviation",
-  "banking",
-  "telecoms",
-  "education",
-  "health",
-  "security",
-  "judiciary",
-  "international_escalation",
-];
-
-async function aiDetectSector(complaint) {
-  try {
-    const r = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            `Classify this complaint into exactly ONE sector from: ${ALLOWED_SECTORS.join(
-              ", "
-            )}. Respond with ONLY the sector name.`,
-        },
-        { role: "user", content: String(complaint || "") },
-      ],
-      temperature: 0,
-    });
-
-    const raw = String(r.choices?.[0]?.message?.content || "").trim().toLowerCase();
-    return ALLOWED_SECTORS.includes(raw) ? raw : "unknown";
-  } catch {
-    return "unknown";
-  }
-}
-
-async function detectSectorHybrid(complaint) {
-  const ruleSector = detectSector(complaint);
-  const aiSector = await aiDetectSector(complaint);
-
-  // If both agree and valid
-  if (ruleSector !== "unknown" && aiSector !== "unknown" && ruleSector === aiSector) {
-    return ruleSector;
-  }
-
-  // If rule has a confident answer, keep it (guard rail)
-  if (ruleSector !== "unknown") return ruleSector;
-
-  // If rule fails but AI got it, use AI
-  if (aiSector !== "unknown") return aiSector;
-
-  return "unknown";
-}
-
-// =====================
-// ✅ OPTION B: AI institution-name fallback (PATCH)
-// - ONLY runs if string matching found none
-// - AI sees ONLY institution names (never emails)
-// - Output is validated strictly against catalog
-// =====================
-function pickTopUnique(arr = [], limit = 6) {
-  const out = [];
-  const seen = new Set();
-  for (const x of arr) {
-    const v = String(x || "").trim();
-    if (!v) continue;
-    const key = v.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(v);
-    if (out.length >= limit) break;
-  }
-  return out;
-}
-
-async function aiPickInstitutionsFromCatalog({ complaint, petitionText, catalogNames }) {
-  if (!Array.isArray(catalogNames) || catalogNames.length === 0) return [];
-
-  // keep token usage sane
-  const names = catalogNames.slice(0, 120);
-
-  try {
-    const r = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are helping route a Nigerian petition to the correct institutions. " +
-            "You will be given a complaint, a drafted petition, and a list of institution NAMES. " +
-            "Select the best matching institutions from the list ONLY. " +
-            "Return ONLY a JSON array of institution names (strings). No extra text.",
-        },
-        {
-          role: "user",
-          content: JSON.stringify(
-            {
-              complaint: String(complaint || "").slice(0, 1500),
-              petition_excerpt: String(petitionText || "").slice(0, 1800),
-              institution_names: names,
-              instruction:
-                "Pick 3 to 6 institutions that should receive the petition (most relevant first). Use exact names from the list.",
-            },
-            null,
-            2
-          ),
-        },
-      ],
-    });
-
-    const raw = String(r.choices?.[0]?.message?.content || "").trim();
-
-    // parse JSON array safely
-    let parsed = [];
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      // fallback: try to extract quoted lines if model misbehaves
-      parsed = raw
-        .split("\n")
-        .map((x) => x.replace(/^[-*\d.\s"]+|"+$/g, "").trim())
-        .filter(Boolean);
-    }
-
-    if (!Array.isArray(parsed)) return [];
-    return pickTopUnique(parsed, 6);
-  } catch {
-    return [];
-  }
-}
-
-function mapAiNamesToCatalogItems(aiNames, catalog) {
-  const byNorm = new Map();
-  for (const item of catalog || []) {
-    if (!item?.norm) continue;
-    byNorm.set(item.norm, item);
-  }
-
-  const out = [];
-  for (const name of aiNames || []) {
-    const norm = normalizeName(name);
-    const hit = byNorm.get(norm);
-    if (hit) out.push(hit);
-  }
-  return out;
-}
-
-// =====================
 // ✅ Admin endpoints
 // =====================
 
@@ -597,8 +447,7 @@ app.post("/generate-petition", async (req, res) => {
 
   await redisIncr(METRICS.generated);
 
-  // ✅ PATCH: hybrid sector validation (AI + your detector)
-  const sector = await detectSectorHybrid(complaint);
+  const sector = detectSector(complaint);
   if (sector === "unknown") return res.status(400).json({ error: "Could not detect sector" });
 
   const pName = petitioner.fullName?.trim() || "[Your Full Name]";
@@ -654,31 +503,8 @@ Sector: ${sector} | Case: ${caseType}`,
 
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
-
-    // Existing exact string matching
-    let mentioned = findMentionedInstitutions(petitionText, catalog);
-    let mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
-
-    // ✅ PATCH: Option B fallback (ONLY if none matched)
-    if ((!mentioned || mentioned.length === 0) && catalog.length > 0) {
-      const catalogNames = catalog.map((x) => x.name).filter(Boolean);
-
-      const aiNames = await aiPickInstitutionsFromCatalog({
-        complaint,
-        petitionText,
-        catalogNames,
-      });
-
-      if (aiNames.length > 0) {
-        const aiItems = mapAiNamesToCatalogItems(aiNames, catalog);
-
-        // only accept if validation hits at least 1 real catalog item
-        if (aiItems.length > 0) {
-          mentioned = aiItems;
-          mentionedEmails = safeUniq(aiItems.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
-        }
-      }
-    }
+    const mentioned = findMentionedInstitutions(petitionText, catalog);
+    const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isLikelyOfficialEmail);
 
     const adminCC = buildAdminOversightCC({ sector, caseType });
 
@@ -689,13 +515,13 @@ Sector: ${sector} | Case: ${caseType}`,
       sector,
       caseType,
       subject,
-      mentionedInstitutions: mentioned.map((m) => m.name),
 
-      // ✅ IMPORTANT: keep your routing outputs
+      // keep these (frontend uses them)
+      mentionedInstitutions: mentioned.map((m) => m.name),
       toEmails: mentionedEmails.length ? mentionedEmails : [],
       ccEmails: adminCC,
 
-      // ✅ Added: track payment init time (helps “pending” flow)
+      // payment timing for pending behavior
       paymentInitializedAt: null,
     });
 
@@ -726,7 +552,7 @@ app.post("/pay/initialize", async (req, res) => {
       return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
     }
 
-    // ✅ Mark payment initialized time (for better unlock UX)
+    // mark init time
     stored.paymentInitializedAt = Date.now();
     petitionStore.set(tx_ref, stored);
 
@@ -734,7 +560,7 @@ app.post("/pay/initialize", async (req, res) => {
     await redisIncr(METRICS.paymentInitiated);
     await redisSAdd(METRICS.uniquePayInit, tx_ref);
 
-    // ✅ IMPORTANT FIX: redirect back to SAME PAGE WITH tx_ref
+    // redirect back with tx_ref
     const redirect_url = buildFrontendRedirectUrl(tx_ref);
 
     const payload = {
@@ -829,13 +655,12 @@ app.post("/unlock-petition", async (req, res) => {
       verifyResponse = await flwFetch(
         `https://api.flutterwave.com/v3/transactions/verify?tx_ref=${encodeURIComponent(tx_ref)}`
       );
-    } catch (e) {
+    } catch {
       verifyResponse = { ok: false, status: 0, data: {} };
     }
 
-    // ✅ If Flutterwave verify is temporarily failing, return “pending” not “not verified”
+    // ✅ If verify temporarily fails, return pending if recently initialized
     if (!verifyResponse.ok) {
-      // only allow pending if payment was initialized recently (anti-abuse)
       const initAt = Number(stored.paymentInitializedAt || 0);
       const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000; // 15 mins
 
@@ -855,8 +680,7 @@ app.post("/unlock-petition", async (req, res) => {
     const amount = Number(data?.data?.amount || 0);
     const currency = String(data?.data?.currency || "").toUpperCase();
 
-    const verified =
-      status === "successful" && currency === "NGN" && amount >= PETITION_PRICE_NGN;
+    const verified = status === "successful" && currency === "NGN" && amount >= PETITION_PRICE_NGN;
 
     if (!verified) {
       return res.status(402).json({ ok: false, error: "Payment not verified" });
