@@ -559,13 +559,12 @@ Additional instructions:
     const catalog = buildInstitutionCatalog(sectorJson);
     const mentioned = findMentionedInstitutions(petitionText, catalog);
 
-    // Extract emails that the AI placed in the petition text
-    const emailsFromPetition = extractEmailsDeep(petitionText);
+    // === FIXED: Prefer verified emails from your JSON files first ===
+    const jsonEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
+    const aiEmails = extractEmailsDeep(petitionText);
 
-    // Fallback: use emails from your sector JSON files if AI didn't include any
-    const fallbackEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
-
-    const finalToEmails = emailsFromPetition.length > 0 ? emailsFromPetition : fallbackEmails;
+    // Use JSON emails if available (your verified ones), otherwise fall back to what AI wrote
+    const finalToEmails = jsonEmails.length > 0 ? jsonEmails : aiEmails;
 
     const adminCC = buildAdminOversightCC({ sector, caseType });
 
