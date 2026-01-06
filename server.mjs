@@ -185,13 +185,35 @@ function isLikelyOfficialEmail(email) {
   return true;
 }
 
+function extractEmailsFromString(str) {
+  if (typeof str !== "string") return [];
+  const s = str.trim();
+  if (!s) return [];
+
+  // Pull emails even if they appear inside text, commas, "Email:", "mailto:", etc.
+  const matches = s.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
+  return matches.map((m) => m.trim());
+}
+
 function extractEmailsDeep(value, out = []) {
   if (!value) return out;
-  if (typeof value === "string" && isEmail(value.trim())) out.push(value.trim());
-  if (Array.isArray(value)) value.forEach((v) => extractEmailsDeep(v, out));
+
+  if (typeof value === "string") {
+    const emails = extractEmailsFromString(value);
+    if (emails.length) out.push(...emails);
+    return out;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((v) => extractEmailsDeep(v, out));
+    return out;
+  }
+
   if (typeof value === "object" && value !== null) {
     Object.values(value).forEach((v) => extractEmailsDeep(v, out));
+    return out;
   }
+
   return out;
 }
 
