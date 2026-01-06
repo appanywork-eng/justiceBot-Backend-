@@ -169,19 +169,10 @@ function isEmail(s) {
 function isLikelyOfficialEmail(email) {
   if (!isEmail(email)) return false;
   const lower = email.toLowerCase();
-  const badDomains = [
-    "gmail.com",
-    "yahoo.com",
-    "hotmail.com",
-    "outlook.com",
-    "live.com",
-    "aol.com",
-    "proton.me",
-    "protonmail.com",
-  ];
-  const domain = lower.split("@")[1] || "";
-  if (badDomains.includes(domain)) return false;
+
+  // still block obvious junk
   if (lower.startsWith("noreply@") || lower.startsWith("no-reply@")) return false;
+
   return true;
 }
 
