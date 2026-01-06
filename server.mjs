@@ -352,7 +352,8 @@ function findMentionedInstitutions(petitionText, catalog) {
   }
 
   return safeUniq(mentioned);
-      }
+}
+
 // ✅ Option A redirect builder: always return to SAME page with tx_ref
 function buildFrontendRedirectUrl(tx_ref) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
@@ -499,31 +500,53 @@ app.post("/generate-petition", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `Draft a professional Nigerian petition letter.
-MANDATORY FORMAT:
+          content: `You are an expert in drafting formal Nigerian petitions/complaints.
+Draft a professional, concise petition letter addressed to the PRIMARY institution responsible for the complaint.
+
+MANDATORY STRUCTURE (use exactly this format, no deviations):
+
 Date: ${autoDate}
+
 PETITIONER DETAILS:
 Name: ${pName}
 Address: ${pAddress}
 Email: ${pEmail}
 Phone: ${pPhone}
 
-TO: [Primary institution]
-CC: [Oversight bodies]
+TO:
+[Full official name of primary institution]
+[If known: Official email address of the institution, e.g. info@ncc.gov.ng]
+[If known: Physical address if relevant]
 
-SUBJECT: [Clear subject]
+CC:
+[List any relevant oversight/regulatory bodies with their emails if known, e.g. complaints@fccpc.gov.ng]
 
-FACTS: [Numbered]
+SUBJECT: [Clear, specific subject line]
 
-LEGAL FRAMEWORK: [Relevant laws]
+Dear Sir/Madam,
 
-RELIEFS SOUGHT: [Numbered]
+FACTS:
+1. [Numbered facts from the complaint]
+2. ...
 
-SIGNATURE:
+LEGAL FRAMEWORK:
+- [Relevant laws, regulations, consumer rights, etc.]
+
+RELIEFS SOUGHT:
+1. [Specific remedies requested]
+2. ...
+
+Yours faithfully,
+
 ${pName}
 ${pPhone}
+${pEmail}
 
-Sector: ${sector} | Case: ${caseType}`,
+Additional instructions:
+- Sector: ${sector} | Case Type: ${caseType}
+- When mentioning ANY institution (primary or oversight), ALWAYS include its known official email if possible (e.g., NCC → info@ncc.gov.ng or complaints@ncc.gov.ng).
+- If multiple emails are available for an institution, use the most relevant one (complaints, info, customer care, etc.).
+- Keep the letter professional, factual, and under 800 words.`,
         },
         { role: "user", content: `Complaint: ${complaint}` },
       ],
@@ -535,7 +558,14 @@ Sector: ${sector} | Case: ${caseType}`,
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
     const mentioned = findMentionedInstitutions(petitionText, catalog);
-    const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
+
+    // Extract emails that the AI placed in the petition text
+    const emailsFromPetition = extractEmailsDeep(petitionText);
+
+    // Fallback: use emails from your sector JSON files if AI didn't include any
+    const fallbackEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
+
+    const finalToEmails = emailsFromPetition.length > 0 ? emailsFromPetition : fallbackEmails;
 
     const adminCC = buildAdminOversightCC({ sector, caseType });
 
@@ -549,7 +579,7 @@ Sector: ${sector} | Case: ${caseType}`,
 
       // keep these (frontend uses them)
       mentionedInstitutions: mentioned.map((m) => m.name),
-      toEmails: mentionedEmails.length ? mentionedEmails : [],
+      toEmails: finalToEmails,
       ccEmails: adminCC,
 
       // payment timing for pending behavior
