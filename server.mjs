@@ -129,6 +129,9 @@ const OVERSIGHT_EMAILS = {
 };
 
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
+// ✅ IMPORTANT: Flutterwave webhook "verif-hash" should match this (set it in Render)
+const FLW_WEBHOOK_HASH = process.env.FLW_WEBHOOK_HASH || "";
+
 const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 
@@ -139,6 +142,11 @@ const USED_TX_REFS = new Set();
 // Flutterwave helper
 async function flwFetch(url, options = {}) {
   if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY missing");
+
+  // Node 18+ has global fetch
+  if (typeof fetch !== "function") {
+    throw new Error("Global fetch not found. Use Node 18+ runtime.");
+  }
 
   const res = await fetch(url, {
     ...options,
@@ -169,10 +177,8 @@ function isEmail(s) {
 function isLikelyOfficialEmail(email) {
   if (!isEmail(email)) return false;
   const lower = email.toLowerCase();
-
   // still block obvious junk
   if (lower.startsWith("noreply@") || lower.startsWith("no-reply@")) return false;
-
   return true;
 }
 
@@ -180,8 +186,6 @@ function extractEmailsFromString(str) {
   if (typeof str !== "string") return [];
   const s = str.trim();
   if (!s) return [];
-
-  // Pull emails even if they appear inside text, commas, "Email:", "mailto:", etc.
   const matches = s.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
   return matches.map((m) => m.trim());
 }
@@ -222,6 +226,24 @@ function normalizeName(s = "") {
     .replace(/[^a-z0-9\s().,&/-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// ✅ Create acronym: "Nigerian Civil Aviation Authority" -> "NCAA"
+function makeAcronym(name = "") {
+  const stop = new Set(["of", "and", "the", "for", "to", "in", "on", "at", "by", "with"]);
+  const parts = String(name || "")
+    .replace(/[()]/g, " ")
+    .replace(/[.,]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const letters = parts
+    .filter((w) => !stop.has(w.toLowerCase()))
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+
+  return letters.length >= 3 ? letters : "";
 }
 
 function loadSectorJson(sector) {
@@ -285,13 +307,75 @@ function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
   return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
 }
 
+/**
+ * ✅ Parse TO / CC lines from AI petition.
+ * This is the KEY to stop FCCPC becoming TO wrongly.
+ */
+function parseToCcLines(petitionText = "") {
+  const lines = String(petitionText || "")
+    .split(/\r?\n/)
+    .map((l) => l.trim());
+
+  let toLine = "";
+  let ccLine = "";
+
+  for (const l of lines) {
+    if (!toLine && /^to\s*:/i.test(l)) toLine = l.replace(/^to\s*:/i, "").trim();
+    if (!ccLine && /^cc\s*:/i.test(l)) ccLine = l.replace(/^cc\s*:/i, "").trim();
+  }
+
+  const ccItems = ccLine
+    ? ccLine.split(/[;,]/).map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  return { toLine, ccItems };
+}
+
+/**
+ * ✅ Catalog now supports aliases/abbr/short_name + auto acronym
+ * Your JSON can include: aliases, abbreviations, short_name
+ */
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
+
+  function collectAliases(name, obj) {
+    const a = [];
+    const push = (v) => {
+      if (!v) return;
+      if (typeof v === "string") a.push(v);
+      if (Array.isArray(v)) v.forEach((x) => typeof x === "string" && a.push(x));
+    };
+
+    push(name);
+    push(obj?.name);
+    push(obj?.short_name);
+    push(obj?.abbreviations);
+    push(obj?.abbreviation);
+    push(obj?.aliases);
+    push(obj?.alias);
+
+    const ac = makeAcronym(name || obj?.name || "");
+    if (ac) a.push(ac);
+
+    return safeUniq(a).map(normalizeName).filter(Boolean);
+  }
+
   function addItem(name, obj) {
     if (!name) return;
-    const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
-    items.push({ name: String(name), norm: normalizeName(name), emails });
+    const emails = safeUniq(extractEmailsDeep(obj))
+      .filter(isEmail)
+      .filter(isLikelyOfficialEmail);
+
+    const aliasNorms = collectAliases(name, obj);
+
+    items.push({
+      name: String(name),
+      norm: normalizeName(name),
+      aliasNorms,
+      emails,
+    });
   }
+
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
   if (sectorJson.oversight && typeof sectorJson.oversight === "object") {
@@ -310,48 +394,62 @@ function buildInstitutionCatalog(sectorJson) {
   return items;
 }
 
-function findMentionedInstitutions(petitionText, catalog) {
-  const textNorm = normalizeName(petitionText);
-  const mentioned = [];
-  const tokens = new Set(textNorm.split(" ").filter(w => w.length > 2));
+/**
+ * ✅ Match a single phrase (e.g., "Airpeace Limited", "NCAA") to catalog
+ */
+function matchInstitutionByPhrase(phrase, catalog) {
+  const p = normalizeName(phrase || "");
+  if (!p) return [];
 
+  // Strong: exact contains on aliases
+  const hits = [];
   for (const item of catalog) {
-    if (!item?.norm) continue;
-
-    // 1️⃣ Exact match (old behavior, preserved)
-    if (textNorm.includes(item.norm)) {
-      mentioned.push(item);
-      continue;
-    }
-
-    // 2️⃣ Partial word overlap (NEW)
-    const itemWords = item.norm.split(" ");
-    let matchCount = 0;
-
-    for (const w of itemWords) {
-      if (tokens.has(w)) matchCount++;
-    }
-
-    // Require meaningful overlap (prevents false positives)
-    if (matchCount >= Math.min(2, itemWords.length)) {
-      mentioned.push(item);
+    if (!item) continue;
+    if (item.aliasNorms?.some((a) => a && (p === a || p.includes(a) || a.includes(p)))) {
+      hits.push(item);
     }
   }
 
-  // 3️⃣ Keep your police safety-net (UNCHANGED)
-  const raw = (petitionText || "").toLowerCase();
-  if (raw.includes("police")) {
-    const policeItems = catalog.filter(
-      (c) =>
-        c.norm.includes("police") ||
-        c.norm.includes("nigeria police") ||
-        c.norm.includes("police service commission") ||
-        c.norm.includes("ministry of police")
-    );
-    mentioned.push(...policeItems);
+  // de-dupe by name
+  const seen = new Set();
+  const out = [];
+  for (const h of hits) {
+    if (!seen.has(h.name)) {
+      seen.add(h.name);
+      out.push(h);
+    }
   }
+  return out;
+}
 
-  return safeUniq(mentioned);
+/**
+ * ✅ Resolve recipients from petition text using TO/CC lines.
+ * This prevents watchdogs from becoming TO by accident.
+ */
+function resolveRecipientsFromPetition(petitionText, catalog, adminCCEmails) {
+  const { toLine, ccItems } = parseToCcLines(petitionText);
+
+  const toMatches = matchInstitutionByPhrase(toLine, catalog);
+  const ccMatches = ccItems.flatMap((c) => matchInstitutionByPhrase(c, catalog));
+
+  // ✅ TO emails = ONLY from TO line institutions
+  const toEmails = safeUniq(toMatches.flatMap((m) => m.emails))
+    .filter(isEmail)
+    .filter(isLikelyOfficialEmail);
+
+  // ✅ CC emails = CC line institutions + your oversight CC
+  const ccEmailsFromJson = safeUniq(ccMatches.flatMap((m) => m.emails))
+    .filter(isEmail)
+    .filter(isLikelyOfficialEmail);
+
+  const ccEmails = safeUniq([...(ccEmailsFromJson || []), ...(adminCCEmails || [])]).filter(isEmail);
+
+  const mentionedInstitutions = safeUniq([
+    ...toMatches.map((m) => m.name),
+    ...ccMatches.map((m) => m.name),
+  ]);
+
+  return { toEmails, ccEmails, mentionedInstitutions };
 }
 
 // ✅ Option A redirect builder: always return to SAME page with tx_ref
@@ -361,7 +459,7 @@ function buildFrontendRedirectUrl(tx_ref) {
 }
 
 // =====================
- // ✅ Funnel counters helper keys
+// ✅ Funnel counters helper keys
 // =====================
 const METRICS = {
   visits: "pd:metrics:visits",
@@ -376,7 +474,7 @@ const METRICS = {
 };
 
 // =====================
- // ✅ Admin endpoints
+// ✅ Admin endpoints
 // =====================
 
 // Create admin session (30 mins)
@@ -428,8 +526,12 @@ app.get("/admin/stats", async (req, res) => {
 // =====================
 app.post("/flw-webhook", async (req, res) => {
   try {
-    const hash = req.headers["verif-hash"];
-    if (!hash || hash !== FLW_SECRET_KEY) {
+    const hash = String(req.headers["verif-hash"] || "");
+
+    // ✅ BEST PRACTICE: use FLW_WEBHOOK_HASH. fallback to FLW_SECRET_KEY only if not set.
+    const expected = FLW_WEBHOOK_HASH || FLW_SECRET_KEY;
+
+    if (!hash || hash !== expected) {
       return res.status(401).end();
     }
 
@@ -463,7 +565,7 @@ app.post("/flw-webhook", async (req, res) => {
 // ✅ Endpoints
 // =====================
 
-// Track visits (this is a real “service open” ping you can call from frontend)
+// Track visits
 app.post("/track/visit", async (req, res) => {
   await redisIncr(METRICS.visits);
   res.json({ ok: true });
@@ -474,8 +576,8 @@ app.get("/health", (req, res) => {
 });
 
 app.post("/generate-petition", async (req, res) => {
-  const { complaint = "", petitioner = {} } = req.body;
-  if (!complaint.trim()) return res.status(400).json({ error: "Complaint is required" });
+  const { complaint = "", petitioner = {} } = req.body || {};
+  if (!String(complaint).trim()) return res.status(400).json({ error: "Complaint is required" });
 
   await redisIncr(METRICS.generated);
 
@@ -483,7 +585,7 @@ app.post("/generate-petition", async (req, res) => {
   if (sector === "unknown") return res.status(400).json({ error: "Could not detect sector" });
 
   const pName = petitioner.fullName?.trim() || "[Your Full Name]";
-  const pAddress: petitioner.address?.trim() || "[Your Address]";
+  const pAddress = petitioner.address?.trim() || "[Your Address]"; // ✅ FIXED
   const pEmail = petitioner.email?.trim() || "[Your Email]";
   const pPhone = petitioner.phone?.trim() || "[Phone Number]";
 
@@ -500,8 +602,7 @@ app.post("/generate-petition", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are an expert in drafting formal Nigerian petitions/complaints.
-Draft a professional, concise petition letter addressed to the PRIMARY institution responsible for the complaint.
+          content: `You are an expert in drafting formal Nigerian petitions/complaints. Draft a professional, concise petition letter addressed to the PRIMARY institution responsible for the complaint.
 
 MANDATORY STRUCTURE (use exactly this format, no deviations):
 
@@ -513,12 +614,8 @@ Address: ${pAddress}
 Email: ${pEmail}
 Phone: ${pPhone}
 
-TO:
-[Full official name of primary institution ONLY — DO NOT add email or address]
-
-CC:
-[List any relevant oversight/regulatory bodies by name ONLY — DO NOT add emails]
-
+TO: [Full official name of primary institution ONLY — DO NOT add email or address]
+CC: [List any relevant oversight/regulatory bodies by name ONLY — DO NOT add emails]
 SUBJECT: [Clear, specific subject line]
 
 Dear Sir/Madam,
@@ -556,10 +653,15 @@ CRITICAL RULES:
 
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
-    const mentioned = findMentionedInstitutions(petitionText, catalog);
-    const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
 
     const adminCC = buildAdminOversightCC({ sector, caseType });
+
+    // ✅ IMPORTANT: resolve recipients from TO/CC lines (fixes FCCPC-as-TO bug)
+    const { toEmails, ccEmails, mentionedInstitutions } = resolveRecipientsFromPetition(
+      petitionText,
+      catalog,
+      adminCC
+    );
 
     const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -568,13 +670,9 @@ CRITICAL RULES:
       sector,
       caseType,
       subject,
-
-      // keep these (frontend uses them)
-      mentionedInstitutions: mentioned.map((m) => m.name),
-      toEmails: mentionedEmails.length ? mentionedEmails : [],
-      ccEmails: adminCC,
-
-      // payment timing for pending behavior
+      mentionedInstitutions,
+      toEmails, // ✅ now only TO institution emails
+      ccEmails, // ✅ CC institution emails + oversight
       paymentInitializedAt: null,
     });
 
@@ -588,6 +686,8 @@ CRITICAL RULES:
       currency: "NGN",
       tx_ref,
       preview,
+      // helpful debug info for frontend (optional)
+      recipients: { to: toEmails, cc: ccEmails },
     });
   } catch (err) {
     console.error("Generation error:", err);
@@ -597,7 +697,7 @@ CRITICAL RULES:
 
 app.post("/pay/initialize", async (req, res) => {
   try {
-    const { tx_ref, email, name, phone } = req.body;
+    const { tx_ref, email, name, phone } = req.body || {};
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
     const stored = petitionStore.get(tx_ref);
@@ -605,15 +705,12 @@ app.post("/pay/initialize", async (req, res) => {
       return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
     }
 
-    // mark init time
     stored.paymentInitializedAt = Date.now();
     petitionStore.set(tx_ref, stored);
 
-    // ✅ metrics
     await redisIncr(METRICS.paymentInitiated);
     await redisSAdd(METRICS.uniquePayInit, tx_ref);
 
-    // redirect back with tx_ref
     const redirect_url = buildFrontendRedirectUrl(tx_ref);
 
     const payload = {
@@ -638,20 +735,19 @@ app.post("/pay/initialize", async (req, res) => {
 
     res.json({ ok: true, tx_ref, link: data.data.link });
   } catch (err) {
-    console.error(err);
+    console.error("pay/initialize error:", err);
     res.status(500).json({ ok: false, error: "Payment error" });
   }
 });
 
 app.post("/unlock-petition", async (req, res) => {
   try {
-    const { tx_ref } = req.body;
+    const { tx_ref } = req.body || {};
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
     const stored = petitionStore.get(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
 
-    // ✅ Admin override (TEST MODE) — does NOT delete petition, does NOT mark USED
     const adminToken = String(req.headers["x-admin-token"] || "");
     const adminOk = await isAdminTokenValid(adminToken);
 
@@ -676,7 +772,6 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
-    // ✅ If already confirmed by webhook, unlock immediately
     if (USED_TX_REFS.has(tx_ref)) {
       const mailto = buildMailto({
         to: stored.toEmails,
@@ -702,7 +797,6 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
-    // ✅ Otherwise, verify with Flutterwave
     let verifyResponse;
     try {
       verifyResponse = await flwFetch(
@@ -712,10 +806,9 @@ app.post("/unlock-petition", async (req, res) => {
       verifyResponse = { ok: false, status: 0, data: {} };
     }
 
-    // ✅ If verify temporarily fails, return pending if recently initialized
     if (!verifyResponse.ok) {
       const initAt = Number(stored.paymentInitializedAt || 0);
-      const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000; // 15 mins
+      const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000;
 
       if (recentlyInitialized) {
         return res.status(202).json({
@@ -734,12 +827,8 @@ app.post("/unlock-petition", async (req, res) => {
     const currency = String(data?.data?.currency || "").toUpperCase();
 
     const verified = status === "successful" && currency === "NGN" && amount >= PETITION_PRICE_NGN;
+    if (!verified) return res.status(402).json({ ok: false, error: "Payment not verified" });
 
-    if (!verified) {
-      return res.status(402).json({ ok: false, error: "Payment not verified" });
-    }
-
-    // ✅ Mark used and unlock
     USED_TX_REFS.add(tx_ref);
     petitionStore.delete(tx_ref);
 
@@ -763,7 +852,7 @@ app.post("/unlock-petition", async (req, res) => {
       mailto,
     });
   } catch (err) {
-    console.error(err);
+    console.error("unlock error:", err);
     res.status(500).json({ ok: false, error: "Unlock failed" });
   }
 });
