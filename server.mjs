@@ -129,24 +129,18 @@ const OVERSIGHT_EMAILS = {
 };
 
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
-// ✅ IMPORTANT: Flutterwave webhook "verif-hash" should match this (set it in Render)
-const FLW_WEBHOOK_HASH = process.env.FLW_WEBHOOK_HASH || "";
-
+const FLW_WEBHOOK_HASH = process.env.FLW_WEBHOOK_HASH || ""; // ✅ set this in Render for webhook verif-hash
 const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 
-// In-memory storage (kept as-is to not break working logic)
+// In-memory storage
 const petitionStore = new Map();
 const USED_TX_REFS = new Set();
 
 // Flutterwave helper
 async function flwFetch(url, options = {}) {
   if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY missing");
-
-  // Node 18+ has global fetch
-  if (typeof fetch !== "function") {
-    throw new Error("Global fetch not found. Use Node 18+ runtime.");
-  }
+  if (typeof fetch !== "function") throw new Error("Global fetch not found. Use Node 18+ runtime.");
 
   const res = await fetch(url, {
     ...options,
@@ -177,7 +171,6 @@ function isEmail(s) {
 function isLikelyOfficialEmail(email) {
   if (!isEmail(email)) return false;
   const lower = email.toLowerCase();
-  // still block obvious junk
   if (lower.startsWith("noreply@") || lower.startsWith("no-reply@")) return false;
   return true;
 }
@@ -228,7 +221,14 @@ function normalizeName(s = "") {
     .trim();
 }
 
-// ✅ Create acronym: "Nigerian Civil Aviation Authority" -> "NCAA"
+// ✅ Organization-friendly normalize: remove common suffixes that break matching
+function normalizeOrg(s = "") {
+  return normalizeName(s)
+    .replace(/\b(plc|ltd|limited|inc|corporation|company|co)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function makeAcronym(name = "") {
   const stop = new Set(["of", "and", "the", "for", "to", "in", "on", "at", "by", "with"]);
   const parts = String(name || "")
@@ -260,7 +260,7 @@ function loadSectorJson(sector) {
 function detectSector(text) {
   const lower = (text || "").toLowerCase();
   const map = {
-    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "tcn", "nberc"],
+    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "tcn", "nberc", "nerc"],
     aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation"],
     banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit"],
     telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "airtel", "glo", "9mobile"],
@@ -307,10 +307,9 @@ function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
   return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
 }
 
-/**
- * ✅ Parse TO / CC lines from AI petition.
- * This is the KEY to stop FCCPC becoming TO wrongly.
- */
+// =====================
+// ✅ New: Parse TO/CC lines from petition (fixes "only CC picked")
+// =====================
 function parseToCcLines(petitionText = "") {
   const lines = String(petitionText || "")
     .split(/\r?\n/)
@@ -324,55 +323,53 @@ function parseToCcLines(petitionText = "") {
     if (!ccLine && /^cc\s*:/i.test(l)) ccLine = l.replace(/^cc\s*:/i, "").trim();
   }
 
-  const ccItems = ccLine
-    ? ccLine.split(/[;,]/).map((s) => s.trim()).filter(Boolean)
-    : [];
-
+  const ccItems = ccLine ? ccLine.split(/[;,]/).map((s) => s.trim()).filter(Boolean) : [];
   return { toLine, ccItems };
 }
 
-/**
- * ✅ Catalog now supports aliases/abbr/short_name + auto acronym
- * Your JSON can include: aliases, abbreviations, short_name
- */
+// =====================
+// ✅ New: Catalog with aliases/abbr + robust email extraction
+// =====================
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
 
-  function collectAliases(name, obj) {
-    const a = [];
-    const push = (v) => {
-      if (!v) return;
-      if (typeof v === "string") a.push(v);
-      if (Array.isArray(v)) v.forEach((x) => typeof x === "string" && a.push(x));
-    };
+  function pushAlias(arr, v) {
+    if (!v) return;
+    if (typeof v === "string") arr.push(v);
+    else if (Array.isArray(v)) v.forEach((x) => typeof x === "string" && arr.push(x));
+  }
 
-    push(name);
-    push(obj?.name);
-    push(obj?.short_name);
-    push(obj?.abbreviations);
-    push(obj?.abbreviation);
-    push(obj?.aliases);
-    push(obj?.alias);
-
-    const ac = makeAcronym(name || obj?.name || "");
-    if (ac) a.push(ac);
-
-    return safeUniq(a).map(normalizeName).filter(Boolean);
+  function collectEmails(obj) {
+    // allow common shapes: emails, contact.emails, contact.email, etc.
+    const emails = safeUniq(extractEmailsDeep(obj))
+      .filter(isEmail)
+      .filter(isLikelyOfficialEmail);
+    return emails;
   }
 
   function addItem(name, obj) {
     if (!name) return;
-    const emails = safeUniq(extractEmailsDeep(obj))
-      .filter(isEmail)
-      .filter(isLikelyOfficialEmail);
+    const aliases = [];
+    pushAlias(aliases, name);
+    pushAlias(aliases, obj?.name);
+    pushAlias(aliases, obj?.short_name);
+    pushAlias(aliases, obj?.abbreviations);
+    pushAlias(aliases, obj?.abbreviation);
+    pushAlias(aliases, obj?.aliases);
+    pushAlias(aliases, obj?.alias);
 
-    const aliasNorms = collectAliases(name, obj);
+    // auto acronym from the main name
+    const ac = makeAcronym(obj?.name || name);
+    if (ac) aliases.push(ac);
+
+    const emails = collectEmails(obj);
 
     items.push({
-      name: String(name),
-      norm: normalizeName(name),
-      aliasNorms,
+      name: String(obj?.name || name),
       emails,
+      aliases: safeUniq(aliases).filter(Boolean),
+      norm: normalizeOrg(obj?.name || name),
+      aliasNorms: safeUniq(aliases).map(normalizeOrg).filter(Boolean),
     });
   }
 
@@ -394,50 +391,43 @@ function buildInstitutionCatalog(sectorJson) {
   return items;
 }
 
-/**
- * ✅ Match a single phrase (e.g., "Airpeace Limited", "NCAA") to catalog
- */
-function matchInstitutionByPhrase(phrase, catalog) {
-  const p = normalizeName(phrase || "");
+// ✅ New: match a single phrase (TO or CC entry) to catalog
+function matchByPhrase(phrase, catalog) {
+  const p = normalizeOrg(phrase || "");
   if (!p) return [];
+  const out = [];
 
-  // Strong: exact contains on aliases
-  const hits = [];
   for (const item of catalog) {
     if (!item) continue;
-    if (item.aliasNorms?.some((a) => a && (p === a || p.includes(a) || a.includes(p)))) {
-      hits.push(item);
+
+    // strongest: phrase equals alias or name
+    if (item.aliasNorms?.some((a) => a && (a === p || a.includes(p) || p.includes(a)))) {
+      out.push(item);
+      continue;
+    }
+
+    // fallback: phrase contains key words from name
+    if (item.norm && (item.norm.includes(p) || p.includes(item.norm))) {
+      out.push(item);
     }
   }
 
   // de-dupe by name
   const seen = new Set();
-  const out = [];
-  for (const h of hits) {
-    if (!seen.has(h.name)) {
-      seen.add(h.name);
-      out.push(h);
-    }
-  }
-  return out;
+  return out.filter((x) => (seen.has(x.name) ? false : (seen.add(x.name), true)));
 }
 
-/**
- * ✅ Resolve recipients from petition text using TO/CC lines.
- * This prevents watchdogs from becoming TO by accident.
- */
+// ✅ New: resolve recipients strictly from TO/CC lines (prevents FCCPC becoming TO wrongly)
 function resolveRecipientsFromPetition(petitionText, catalog, adminCCEmails) {
   const { toLine, ccItems } = parseToCcLines(petitionText);
 
-  const toMatches = matchInstitutionByPhrase(toLine, catalog);
-  const ccMatches = ccItems.flatMap((c) => matchInstitutionByPhrase(c, catalog));
+  const toMatches = matchByPhrase(toLine, catalog);
+  const ccMatches = ccItems.flatMap((c) => matchByPhrase(c, catalog));
 
-  // ✅ TO emails = ONLY from TO line institutions
   const toEmails = safeUniq(toMatches.flatMap((m) => m.emails))
     .filter(isEmail)
     .filter(isLikelyOfficialEmail);
 
-  // ✅ CC emails = CC line institutions + your oversight CC
   const ccEmailsFromJson = safeUniq(ccMatches.flatMap((m) => m.emails))
     .filter(isEmail)
     .filter(isLikelyOfficialEmail);
@@ -449,7 +439,7 @@ function resolveRecipientsFromPetition(petitionText, catalog, adminCCEmails) {
     ...ccMatches.map((m) => m.name),
   ]);
 
-  return { toEmails, ccEmails, mentionedInstitutions };
+  return { toEmails, ccEmails, mentionedInstitutions, toLine, ccItems };
 }
 
 // ✅ Option A redirect builder: always return to SAME page with tx_ref
@@ -476,8 +466,6 @@ const METRICS = {
 // =====================
 // ✅ Admin endpoints
 // =====================
-
-// Create admin session (30 mins)
 app.post("/admin/session", async (req, res) => {
   try {
     const key = String(req.body?.key || "");
@@ -497,7 +485,6 @@ app.post("/admin/session", async (req, res) => {
   }
 });
 
-// Simple admin stats (optional)
 app.get("/admin/stats", async (req, res) => {
   try {
     const token = String(req.headers["x-admin-token"] || "");
@@ -527,8 +514,6 @@ app.get("/admin/stats", async (req, res) => {
 app.post("/flw-webhook", async (req, res) => {
   try {
     const hash = String(req.headers["verif-hash"] || "");
-
-    // ✅ BEST PRACTICE: use FLW_WEBHOOK_HASH. fallback to FLW_SECRET_KEY only if not set.
     const expected = FLW_WEBHOOK_HASH || FLW_SECRET_KEY;
 
     if (!hash || hash !== expected) {
@@ -546,7 +531,6 @@ app.post("/flw-webhook", async (req, res) => {
       if (tx_ref?.startsWith("pd_") && amount >= PETITION_PRICE_NGN && currency === "NGN") {
         USED_TX_REFS.add(tx_ref);
 
-        // ✅ metrics
         await redisIncr(METRICS.paymentSuccess);
         await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
 
@@ -564,8 +548,6 @@ app.post("/flw-webhook", async (req, res) => {
 // =====================
 // ✅ Endpoints
 // =====================
-
-// Track visits
 app.post("/track/visit", async (req, res) => {
   await redisIncr(METRICS.visits);
   res.json({ ok: true });
@@ -585,7 +567,7 @@ app.post("/generate-petition", async (req, res) => {
   if (sector === "unknown") return res.status(400).json({ error: "Could not detect sector" });
 
   const pName = petitioner.fullName?.trim() || "[Your Full Name]";
-  const pAddress = petitioner.address?.trim() || "[Your Address]"; // ✅ FIXED
+  const pAddress = petitioner.address?.trim() || "[Your Address]";
   const pEmail = petitioner.email?.trim() || "[Your Email]";
   const pPhone = petitioner.phone?.trim() || "[Phone Number]";
 
@@ -656,8 +638,8 @@ CRITICAL RULES:
 
     const adminCC = buildAdminOversightCC({ sector, caseType });
 
-    // ✅ IMPORTANT: resolve recipients from TO/CC lines (fixes FCCPC-as-TO bug)
-    const { toEmails, ccEmails, mentionedInstitutions } = resolveRecipientsFromPetition(
+    // ✅ FIX: resolve recipients from TO/CC lines (not from "mentions anywhere")
+    const { toEmails, ccEmails, mentionedInstitutions, toLine, ccItems } = resolveRecipientsFromPetition(
       petitionText,
       catalog,
       adminCC
@@ -671,8 +653,8 @@ CRITICAL RULES:
       caseType,
       subject,
       mentionedInstitutions,
-      toEmails, // ✅ now only TO institution emails
-      ccEmails, // ✅ CC institution emails + oversight
+      toEmails,
+      ccEmails,
       paymentInitializedAt: null,
     });
 
@@ -686,8 +668,9 @@ CRITICAL RULES:
       currency: "NGN",
       tx_ref,
       preview,
-      // helpful debug info for frontend (optional)
       recipients: { to: toEmails, cc: ccEmails },
+      // ✅ helpful debug so you can confirm it parses TO/CC correctly
+      debug: { toLine, ccItems, mentionedInstitutions },
     });
   } catch (err) {
     console.error("Generation error:", err);
