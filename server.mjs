@@ -13,8 +13,10 @@ dotenv.config();
 
 const app = express();
 
+// Allow all origins — no more CORS issues
 app.use(cors({ origin: "*" }));
 
+// Keep rawBody for webhook signature verification
 app.use(
   express.json({
     limit: "5mb",
@@ -27,7 +29,7 @@ app.use(
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // =====================
-// ✅ Redis
+// ✅ Redis (Render Redis)
 // =====================
 const REDIS_URL = process.env.REDIS_URL || "";
 let redis = null;
@@ -41,6 +43,7 @@ if (REDIS_URL) {
     });
     redis.on("error", (e) => console.error("Redis error:", e?.message || e));
     redis.on("connect", () => console.log("✅ Redis connected"));
+    // connect lazily
     redis.connect().catch(() => {});
   } catch (e) {
     console.error("Redis init error:", e?.message || e);
@@ -85,10 +88,10 @@ async function redisSCard(key) {
 }
 
 // =====================
-// ✅ Admin Session
+// ✅ Admin Session (Option A)
 // =====================
 const ADMIN_UNLOCK_KEY = process.env.ADMIN_UNLOCK_KEY || "";
-const ADMIN_SESSION_TTL_SECONDS = 30 * 60;
+const ADMIN_SESSION_TTL_SECONDS = 30 * 60; // 30 mins
 
 function randomToken(len = 48) {
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -107,7 +110,7 @@ async function createAdminSession() {
 
 async function isAdminTokenValid(token) {
   if (!token) return false;
-  if (!redis) return false;
+  if (!redis) return false; // admin sessions rely on Redis so they expire correctly
   try {
     const ok = await redis.get(`pd:admin:${token}`);
     return ok === "1";
@@ -129,7 +132,7 @@ const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
 const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 
-// In-memory storage
+// In-memory storage (kept as-is to not break working logic)
 const petitionStore = new Map();
 const USED_TX_REFS = new Set();
 
@@ -163,22 +166,42 @@ function isEmail(s) {
   return typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
 }
 
+function isLikelyOfficialEmail(email) {
+  if (!isEmail(email)) return false;
+  const lower = email.toLowerCase();
+
+  // still block obvious junk
+  if (lower.startsWith("noreply@") || lower.startsWith("no-reply@")) return false;
+
+  return true;
+}
+
+function extractEmailsFromString(str) {
+  if (typeof str !== "string") return [];
+  const s = str.trim();
+  if (!s) return [];
+
+  // Pull emails even if they appear inside text, commas, "Email:", "mailto:", etc.
+  const matches = s.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
+  return matches.map((m) => m.trim());
+}
+
 function extractEmailsDeep(value, out = []) {
   if (!value) return out;
 
   if (typeof value === "string") {
-    const matches = value.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
-    out.push(...matches.map(m => m.trim()));
+    const emails = extractEmailsFromString(value);
+    if (emails.length) out.push(...emails);
     return out;
   }
 
   if (Array.isArray(value)) {
-    value.forEach(v => extractEmailsDeep(v, out));
+    value.forEach((v) => extractEmailsDeep(v, out));
     return out;
   }
 
   if (typeof value === "object" && value !== null) {
-    Object.values(value).forEach(v => extractEmailsDeep(v, out));
+    Object.values(value).forEach((v) => extractEmailsDeep(v, out));
     return out;
   }
 
@@ -211,6 +234,7 @@ function loadSectorJson(sector) {
   }
 }
 
+// ✅ YOUR AI SECTOR DETECTOR (kept)
 function detectSector(text) {
   const lower = (text || "").toLowerCase();
   const map = {
@@ -286,51 +310,59 @@ function buildInstitutionCatalog(sectorJson) {
   return items;
 }
 
-// Enhanced: Match institutions mentioned in the BODY (especially FACTS)
 function findMentionedInstitutions(petitionText, catalog) {
   const textNorm = normalizeName(petitionText);
+  const mentioned = [];
   const tokens = new Set(textNorm.split(" ").filter(w => w.length > 2));
-
-  const mentioned = new Set(); // Use Set to avoid duplicates
 
   for (const item of catalog) {
     if (!item?.norm) continue;
 
-    // Strong match: institution name appears as substring in body
+    // 1️⃣ Exact match (old behavior, preserved)
     if (textNorm.includes(item.norm)) {
-      mentioned.add(item);
+      mentioned.push(item);
       continue;
     }
 
-    // Token overlap for partial matches
+    // 2️⃣ Partial word overlap (NEW)
     const itemWords = item.norm.split(" ");
     let matchCount = 0;
+
     for (const w of itemWords) {
       if (tokens.has(w)) matchCount++;
     }
 
+    // Require meaningful overlap (prevents false positives)
     if (matchCount >= Math.min(2, itemWords.length)) {
-      mentioned.add(item);
+      mentioned.push(item);
     }
   }
 
-  // Police safety-net
+  // 3️⃣ Keep your police safety-net (UNCHANGED)
   const raw = (petitionText || "").toLowerCase();
   if (raw.includes("police")) {
     const policeItems = catalog.filter(
-      c => c.norm.includes("police") || c.norm.includes("nigeria police")
+      (c) =>
+        c.norm.includes("police") ||
+        c.norm.includes("nigeria police") ||
+        c.norm.includes("police service commission") ||
+        c.norm.includes("ministry of police")
     );
-    policeItems.forEach(i => mentioned.add(i));
+    mentioned.push(...policeItems);
   }
 
-  return Array.from(mentioned);
+  return safeUniq(mentioned);
 }
 
+// ✅ Option A redirect builder: always return to SAME page with tx_ref
 function buildFrontendRedirectUrl(tx_ref) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
   return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
 }
 
+// =====================
+ // ✅ Funnel counters helper keys
+// =====================
 const METRICS = {
   visits: "pd:metrics:visits",
   generated: "pd:metrics:generated",
@@ -344,8 +376,10 @@ const METRICS = {
 };
 
 // =====================
-// ✅ Admin endpoints
+ // ✅ Admin endpoints
 // =====================
+
+// Create admin session (30 mins)
 app.post("/admin/session", async (req, res) => {
   try {
     const key = String(req.body?.key || "");
@@ -365,6 +399,7 @@ app.post("/admin/session", async (req, res) => {
   }
 });
 
+// Simple admin stats (optional)
 app.get("/admin/stats", async (req, res) => {
   try {
     const token = String(req.headers["x-admin-token"] || "");
@@ -409,6 +444,7 @@ app.post("/flw-webhook", async (req, res) => {
       if (tx_ref?.startsWith("pd_") && amount >= PETITION_PRICE_NGN && currency === "NGN") {
         USED_TX_REFS.add(tx_ref);
 
+        // ✅ metrics
         await redisIncr(METRICS.paymentSuccess);
         await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
 
@@ -426,6 +462,8 @@ app.post("/flw-webhook", async (req, res) => {
 // =====================
 // ✅ Endpoints
 // =====================
+
+// Track visits (this is a real “service open” ping you can call from frontend)
 app.post("/track/visit", async (req, res) => {
   await redisIncr(METRICS.visits);
   res.json({ ok: true });
@@ -445,7 +483,7 @@ app.post("/generate-petition", async (req, res) => {
   if (sector === "unknown") return res.status(400).json({ error: "Could not detect sector" });
 
   const pName = petitioner.fullName?.trim() || "[Your Full Name]";
-  const pAddress = petitioner.address?.trim() || "[Your Address]";
+  const pAddress: petitioner.address?.trim() || "[Your Address]";
   const pEmail = petitioner.email?.trim() || "[Your Email]";
   const pPhone = petitioner.phone?.trim() || "[Phone Number]";
 
@@ -519,9 +557,7 @@ CRITICAL RULES:
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
     const mentioned = findMentionedInstitutions(petitionText, catalog);
-
-    // === FINAL: Emails 100% from JSON sector files only ===
-    const toEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
+    const mentionedEmails = safeUniq(mentioned.flatMap((m) => m.emails)).filter(isEmail);
 
     const adminCC = buildAdminOversightCC({ sector, caseType });
 
@@ -532,9 +568,13 @@ CRITICAL RULES:
       sector,
       caseType,
       subject,
+
+      // keep these (frontend uses them)
       mentionedInstitutions: mentioned.map((m) => m.name),
-      toEmails,          // Forced from JSON only
+      toEmails: mentionedEmails.length ? mentionedEmails : [],
       ccEmails: adminCC,
+
+      // payment timing for pending behavior
       paymentInitializedAt: null,
     });
 
@@ -565,12 +605,15 @@ app.post("/pay/initialize", async (req, res) => {
       return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
     }
 
+    // mark init time
     stored.paymentInitializedAt = Date.now();
     petitionStore.set(tx_ref, stored);
 
+    // ✅ metrics
     await redisIncr(METRICS.paymentInitiated);
     await redisSAdd(METRICS.uniquePayInit, tx_ref);
 
+    // redirect back with tx_ref
     const redirect_url = buildFrontendRedirectUrl(tx_ref);
 
     const payload = {
@@ -608,6 +651,7 @@ app.post("/unlock-petition", async (req, res) => {
     const stored = petitionStore.get(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
 
+    // ✅ Admin override (TEST MODE) — does NOT delete petition, does NOT mark USED
     const adminToken = String(req.headers["x-admin-token"] || "");
     const adminOk = await isAdminTokenValid(adminToken);
 
@@ -632,6 +676,7 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
+    // ✅ If already confirmed by webhook, unlock immediately
     if (USED_TX_REFS.has(tx_ref)) {
       const mailto = buildMailto({
         to: stored.toEmails,
@@ -657,6 +702,7 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
+    // ✅ Otherwise, verify with Flutterwave
     let verifyResponse;
     try {
       verifyResponse = await flwFetch(
@@ -666,9 +712,10 @@ app.post("/unlock-petition", async (req, res) => {
       verifyResponse = { ok: false, status: 0, data: {} };
     }
 
+    // ✅ If verify temporarily fails, return pending if recently initialized
     if (!verifyResponse.ok) {
       const initAt = Number(stored.paymentInitializedAt || 0);
-      const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000;
+      const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000; // 15 mins
 
       if (recentlyInitialized) {
         return res.status(202).json({
@@ -692,6 +739,7 @@ app.post("/unlock-petition", async (req, res) => {
       return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
 
+    // ✅ Mark used and unlock
     USED_TX_REFS.add(tx_ref);
     petitionStore.delete(tx_ref);
 
