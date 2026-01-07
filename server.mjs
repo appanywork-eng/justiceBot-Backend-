@@ -13,8 +13,14 @@ dotenv.config();
 
 const app = express();
 
-// Allow all origins — no more CORS issues
-app.use(cors({ origin: "*" }));
+// CORS
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-admin-token"],
+  })
+);
 
 // Keep rawBody for webhook signature verification
 app.use(
@@ -43,7 +49,6 @@ if (REDIS_URL) {
     });
     redis.on("error", (e) => console.error("Redis error:", e?.message || e));
     redis.on("connect", () => console.log("✅ Redis connected"));
-    // connect lazily
     redis.connect().catch(() => {});
   } catch (e) {
     console.error("Redis init error:", e?.message || e);
@@ -59,14 +64,12 @@ async function redisIncr(key) {
     await redis.incr(key);
   } catch {}
 }
-
 async function redisSAdd(key, value) {
   if (!redis) return;
   try {
     await redis.sadd(key, value);
   } catch {}
 }
-
 async function redisGetInt(key) {
   if (!redis) return 0;
   try {
@@ -76,7 +79,6 @@ async function redisGetInt(key) {
     return 0;
   }
 }
-
 async function redisSCard(key) {
   if (!redis) return 0;
   try {
@@ -110,7 +112,7 @@ async function createAdminSession() {
 
 async function isAdminTokenValid(token) {
   if (!token) return false;
-  if (!redis) return false; // admin sessions rely on Redis so they expire correctly
+  if (!redis) return false;
   try {
     const ok = await redis.get(`pd:admin:${token}`);
     return ok === "1";
@@ -119,7 +121,9 @@ async function isAdminTokenValid(token) {
   }
 }
 
-// Config
+// =====================
+// ✅ Config
+// =====================
 const OVERSIGHT_EMAILS = {
   PCC: process.env.PCC_EMAIL || "",
   NHRC: process.env.NHRC_EMAIL || "",
@@ -129,7 +133,6 @@ const OVERSIGHT_EMAILS = {
 };
 
 const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
-const FLW_WEBHOOK_HASH = process.env.FLW_WEBHOOK_HASH || ""; // ✅ set this in Render for webhook verif-hash
 const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 
@@ -140,7 +143,6 @@ const USED_TX_REFS = new Set();
 // Flutterwave helper
 async function flwFetch(url, options = {}) {
   if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY missing");
-  if (typeof fetch !== "function") throw new Error("Global fetch not found. Use Node 18+ runtime.");
 
   const res = await fetch(url, {
     ...options,
@@ -159,20 +161,15 @@ async function flwFetch(url, options = {}) {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Utilities
+// =====================
+// ✅ Utilities
+// =====================
 function safeUniq(arr) {
   return [...new Set((arr || []).filter(Boolean))];
 }
 
 function isEmail(s) {
   return typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
-}
-
-function isLikelyOfficialEmail(email) {
-  if (!isEmail(email)) return false;
-  const lower = email.toLowerCase();
-  if (lower.startsWith("noreply@") || lower.startsWith("no-reply@")) return false;
-  return true;
 }
 
 function extractEmailsFromString(str) {
@@ -221,29 +218,20 @@ function normalizeName(s = "") {
     .trim();
 }
 
-// ✅ Organization-friendly normalize: remove common suffixes that break matching
-function normalizeOrg(s = "") {
+function stripCorporateSuffixes(s = "") {
   return normalizeName(s)
-    .replace(/\b(plc|ltd|limited|inc|corporation|company|co)\b/g, "")
+    .replace(/\b(plc|ltd|limited|inc|llc|company|co)\b/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function makeAcronym(name = "") {
-  const stop = new Set(["of", "and", "the", "for", "to", "in", "on", "at", "by", "with"]);
-  const parts = String(name || "")
-    .replace(/[()]/g, " ")
-    .replace(/[.,]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
-
-  const letters = parts
-    .filter((w) => !stop.has(w.toLowerCase()))
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-
-  return letters.length >= 3 ? letters : "";
+function extractParenAbbr(name = "") {
+  // e.g. "Central Bank of Nigeria (CBN)" -> ["CBN"]
+  const out = [];
+  const re = /\(([A-Z0-9]{2,12})\)/g;
+  let m;
+  while ((m = re.exec(name)) !== null) out.push(m[1]);
+  return out;
 }
 
 function loadSectorJson(sector) {
@@ -256,12 +244,14 @@ function loadSectorJson(sector) {
   }
 }
 
-// ✅ YOUR AI SECTOR DETECTOR (kept)
+// =====================
+// ✅ Sector detection (kept)
+// =====================
 function detectSector(text) {
   const lower = (text || "").toLowerCase();
   const map = {
-    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "tcn", "nberc", "nerc"],
-    aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation"],
+    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "tcn", "nerc"],
+    aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation", "air peace", "airpeace"],
     banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit"],
     telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "airtel", "glo", "9mobile"],
     education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund"],
@@ -301,155 +291,21 @@ function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
   const toList = safeUniq(to).filter(isEmail).slice(0, 10).join(",");
   const ccList = safeUniq(cc).filter(isEmail).slice(0, 10).join(",");
   if (!toList) return null;
+
   const s = encodeURIComponent(subject || "Petition");
   const b = encodeURIComponent(body || "");
   const ccParam = ccList ? `&cc=${encodeURIComponent(ccList)}` : "";
   return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
 }
 
-// =====================
-// ✅ New: Parse TO/CC lines from petition (fixes "only CC picked")
-// =====================
-function parseToCcLines(petitionText = "") {
-  const lines = String(petitionText || "")
-    .split(/\r?\n/)
-    .map((l) => l.trim());
-
-  let toLine = "";
-  let ccLine = "";
-
-  for (const l of lines) {
-    if (!toLine && /^to\s*:/i.test(l)) toLine = l.replace(/^to\s*:/i, "").trim();
-    if (!ccLine && /^cc\s*:/i.test(l)) ccLine = l.replace(/^cc\s*:/i, "").trim();
-  }
-
-  const ccItems = ccLine ? ccLine.split(/[;,]/).map((s) => s.trim()).filter(Boolean) : [];
-  return { toLine, ccItems };
-}
-
-// =====================
-// ✅ New: Catalog with aliases/abbr + robust email extraction
-// =====================
-function buildInstitutionCatalog(sectorJson) {
-  const items = [];
-
-  function pushAlias(arr, v) {
-    if (!v) return;
-    if (typeof v === "string") arr.push(v);
-    else if (Array.isArray(v)) v.forEach((x) => typeof x === "string" && arr.push(x));
-  }
-
-  function collectEmails(obj) {
-    // allow common shapes: emails, contact.emails, contact.email, etc.
-    const emails = safeUniq(extractEmailsDeep(obj))
-      .filter(isEmail)
-      .filter(isLikelyOfficialEmail);
-    return emails;
-  }
-
-  function addItem(name, obj) {
-    if (!name) return;
-    const aliases = [];
-    pushAlias(aliases, name);
-    pushAlias(aliases, obj?.name);
-    pushAlias(aliases, obj?.short_name);
-    pushAlias(aliases, obj?.abbreviations);
-    pushAlias(aliases, obj?.abbreviation);
-    pushAlias(aliases, obj?.aliases);
-    pushAlias(aliases, obj?.alias);
-
-    // auto acronym from the main name
-    const ac = makeAcronym(obj?.name || name);
-    if (ac) aliases.push(ac);
-
-    const emails = collectEmails(obj);
-
-    items.push({
-      name: String(obj?.name || name),
-      emails,
-      aliases: safeUniq(aliases).filter(Boolean),
-      norm: normalizeOrg(obj?.name || name),
-      aliasNorms: safeUniq(aliases).map(normalizeOrg).filter(Boolean),
-    });
-  }
-
-  if (!sectorJson || typeof sectorJson !== "object") return items;
-
-  if (sectorJson.oversight && typeof sectorJson.oversight === "object") {
-    for (const key of Object.keys(sectorJson.oversight)) {
-      const node = sectorJson.oversight[key];
-      addItem(node?.name || key, node);
-    }
-  }
-
-  ["core_institutions", "regulators", "watchdogs", "players"].forEach((key) => {
-    if (Array.isArray(sectorJson[key])) {
-      sectorJson[key].forEach((inst) => addItem(inst?.name || inst, inst));
-    }
-  });
-
-  return items;
-}
-
-// ✅ New: match a single phrase (TO or CC entry) to catalog
-function matchByPhrase(phrase, catalog) {
-  const p = normalizeOrg(phrase || "");
-  if (!p) return [];
-  const out = [];
-
-  for (const item of catalog) {
-    if (!item) continue;
-
-    // strongest: phrase equals alias or name
-    if (item.aliasNorms?.some((a) => a && (a === p || a.includes(p) || p.includes(a)))) {
-      out.push(item);
-      continue;
-    }
-
-    // fallback: phrase contains key words from name
-    if (item.norm && (item.norm.includes(p) || p.includes(item.norm))) {
-      out.push(item);
-    }
-  }
-
-  // de-dupe by name
-  const seen = new Set();
-  return out.filter((x) => (seen.has(x.name) ? false : (seen.add(x.name), true)));
-}
-
-// ✅ New: resolve recipients strictly from TO/CC lines (prevents FCCPC becoming TO wrongly)
-function resolveRecipientsFromPetition(petitionText, catalog, adminCCEmails) {
-  const { toLine, ccItems } = parseToCcLines(petitionText);
-
-  const toMatches = matchByPhrase(toLine, catalog);
-  const ccMatches = ccItems.flatMap((c) => matchByPhrase(c, catalog));
-
-  const toEmails = safeUniq(toMatches.flatMap((m) => m.emails))
-    .filter(isEmail)
-    .filter(isLikelyOfficialEmail);
-
-  const ccEmailsFromJson = safeUniq(ccMatches.flatMap((m) => m.emails))
-    .filter(isEmail)
-    .filter(isLikelyOfficialEmail);
-
-  const ccEmails = safeUniq([...(ccEmailsFromJson || []), ...(adminCCEmails || [])]).filter(isEmail);
-
-  const mentionedInstitutions = safeUniq([
-    ...toMatches.map((m) => m.name),
-    ...ccMatches.map((m) => m.name),
-  ]);
-
-  return { toEmails, ccEmails, mentionedInstitutions, toLine, ccItems };
-}
-
-// ✅ Option A redirect builder: always return to SAME page with tx_ref
+// ✅ Option A redirect builder
 function buildFrontendRedirectUrl(tx_ref) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
   return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
 }
 
 // =====================
-// ✅ Funnel counters helper keys
+// ✅ Funnel counters
 // =====================
 const METRICS = {
   visits: "pd:metrics:visits",
@@ -464,6 +320,159 @@ const METRICS = {
 };
 
 // =====================
+// ✅ Catalog + Matching (FIXES “TO NOT CAPTURED”)
+// =====================
+function buildInstitutionCatalog(sectorJson) {
+  const items = [];
+
+  function addItem(name, obj) {
+    if (!name) return;
+
+    const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
+    const aliases = safeUniq([
+      ...(Array.isArray(obj?.aliases) ? obj.aliases : []),
+      ...extractParenAbbr(String(name)),
+    ]);
+
+    const norm = normalizeName(name);
+    const aliasNorms = safeUniq(aliases.map((a) => normalizeName(a))).filter(Boolean);
+
+    // also add “shortened” variants (helps Airpeace vs Air Peace, PLC/Ltd noise)
+    const shortNorm = stripCorporateSuffixes(name);
+    const shortAliasNorms = safeUniq([
+      shortNorm,
+      ...aliasNorms.map(stripCorporateSuffixes),
+    ]).filter(Boolean);
+
+    items.push({
+      name: String(name),
+      norm,
+      shortNorm,
+      aliases,
+      aliasNorms,
+      shortAliasNorms,
+      emails,
+    });
+  }
+
+  if (!sectorJson || typeof sectorJson !== "object") return items;
+
+  // oversight object
+  if (sectorJson.oversight && typeof sectorJson.oversight === "object") {
+    for (const key of Object.keys(sectorJson.oversight)) {
+      const node = sectorJson.oversight[key];
+      addItem(node?.name || key, node);
+    }
+  }
+
+  // arrays (these keys are what your server expects)
+  ["core_institutions", "regulators", "watchdogs", "players"].forEach((key) => {
+    if (Array.isArray(sectorJson[key])) {
+      sectorJson[key].forEach((inst) => addItem(inst?.name || inst, inst));
+    }
+  });
+
+  return items;
+}
+
+function matchInstitutionNameToCatalog(name, catalog) {
+  const q = normalizeName(name);
+  const qShort = stripCorporateSuffixes(name);
+  if (!q) return null;
+
+  let best = null;
+  let bestScore = 0;
+
+  const qTokens = new Set(q.split(" ").filter((w) => w.length > 2));
+  const qShortTokens = new Set(qShort.split(" ").filter((w) => w.length > 2));
+
+  for (const item of catalog) {
+    if (!item?.norm) continue;
+
+    let score = 0;
+
+    // strongest: exact normalized match
+    if (q === item.norm || qShort === item.shortNorm) score += 100;
+
+    // alias match
+    if (item.aliasNorms.includes(q) || item.shortAliasNorms.includes(qShort)) score += 90;
+
+    // substring
+    if (q.includes(item.norm) || item.norm.includes(q)) score += 40;
+    if (qShort && (qShort.includes(item.shortNorm) || item.shortNorm.includes(qShort))) score += 35;
+
+    // token overlap
+    let overlap = 0;
+    for (const t of item.shortNorm.split(" ")) {
+      if (qTokens.has(t) || qShortTokens.has(t)) overlap++;
+    }
+    if (overlap >= 2) score += overlap * 10;
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  }
+
+  // threshold to avoid false positives
+  if (bestScore < 30) return null;
+  return best;
+}
+
+function extractSectionInstitutionNames(petitionText, sectionLabel /* "TO" | "CC" */) {
+  const lines = String(petitionText || "").split(/\r?\n/);
+
+  let mode = null;
+  const collected = [];
+
+  for (const rawLine of lines) {
+    const line = String(rawLine || "");
+
+    const toMatch = line.match(/^\s*to\s*:\s*(.*)\s*$/i);
+    const ccMatch = line.match(/^\s*cc\s*:\s*(.*)\s*$/i);
+    const subMatch = line.match(/^\s*subject\s*:\s*(.*)\s*$/i);
+
+    if (toMatch) {
+      mode = "TO";
+      if (toMatch[1]?.trim()) collected.push({ mode, text: toMatch[1].trim() });
+      continue;
+    }
+    if (ccMatch) {
+      mode = "CC";
+      if (ccMatch[1]?.trim()) collected.push({ mode, text: ccMatch[1].trim() });
+      continue;
+    }
+    if (subMatch) {
+      mode = null;
+      continue;
+    }
+
+    // stop on blank line
+    if (!line.trim()) {
+      mode = null;
+      continue;
+    }
+
+    if (mode === "TO" || mode === "CC") {
+      collected.push({ mode, text: line.trim() });
+    }
+  }
+
+  const raw = collected
+    .filter((x) => x.mode === sectionLabel)
+    .map((x) => x.text)
+    .join(" ");
+
+  if (!raw) return [];
+
+  // split multiple institutions
+  return raw
+    .split(/;|,|\s+\band\b\s+/i)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+// =====================
 // ✅ Admin endpoints
 // =====================
 app.post("/admin/session", async (req, res) => {
@@ -475,12 +484,8 @@ app.post("/admin/session", async (req, res) => {
     const token = await createAdminSession();
     await redisIncr(METRICS.adminSessions);
 
-    return res.json({
-      ok: true,
-      token,
-      expiresInSeconds: ADMIN_SESSION_TTL_SECONDS,
-    });
-  } catch (e) {
+    return res.json({ ok: true, token, expiresInSeconds: ADMIN_SESSION_TTL_SECONDS });
+  } catch {
     return res.status(500).json({ ok: false, error: "Admin session failed" });
   }
 });
@@ -513,12 +518,8 @@ app.get("/admin/stats", async (req, res) => {
 // =====================
 app.post("/flw-webhook", async (req, res) => {
   try {
-    const hash = String(req.headers["verif-hash"] || "");
-    const expected = FLW_WEBHOOK_HASH || FLW_SECRET_KEY;
-
-    if (!hash || hash !== expected) {
-      return res.status(401).end();
-    }
+    const hash = req.headers["verif-hash"];
+    if (!hash || hash !== FLW_SECRET_KEY) return res.status(401).end();
 
     const raw = req.rawBody ? req.rawBody.toString("utf8") : "";
     const payload = raw ? JSON.parse(raw) : req.body;
@@ -546,7 +547,7 @@ app.post("/flw-webhook", async (req, res) => {
 });
 
 // =====================
-// ✅ Endpoints
+// ✅ Basic endpoints
 // =====================
 app.post("/track/visit", async (req, res) => {
   await redisIncr(METRICS.visits);
@@ -557,6 +558,9 @@ app.get("/health", (req, res) => {
   res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
 });
 
+// =====================
+// ✅ Generate petition
+// =====================
 app.post("/generate-petition", async (req, res) => {
   const { complaint = "", petitioner = {} } = req.body || {};
   if (!String(complaint).trim()) return res.status(400).json({ error: "Complaint is required" });
@@ -566,17 +570,15 @@ app.post("/generate-petition", async (req, res) => {
   const sector = detectSector(complaint);
   if (sector === "unknown") return res.status(400).json({ error: "Could not detect sector" });
 
-  const pName = petitioner.fullName?.trim() || "[Your Full Name]";
-  const pAddress = petitioner.address?.trim() || "[Your Address]";
-  const pEmail = petitioner.email?.trim() || "[Your Email]";
-  const pPhone = petitioner.phone?.trim() || "[Phone Number]";
+  const pName = (petitioner.fullName || "").trim() || "[Your Full Name]";
+  const pAddress = (petitioner.address || "").trim() || "[Your Address]";
+  const pEmail = (petitioner.email || "").trim() || "[Your Email]";
+  const pPhone = (petitioner.phone || "").trim() || "[Phone Number]";
 
   const autoDate = new Date().toLocaleDateString("en-GB");
   const caseType = inferCaseType(sector);
 
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: "OPENAI_API_KEY not configured" });
-  }
+  if (!process.env.OPENAI_API_KEY) return res.status(500).json({ error: "OPENAI_API_KEY not configured" });
 
   try {
     const completion = await openai.chat.completions.create({
@@ -584,7 +586,7 @@ app.post("/generate-petition", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are an expert in drafting formal Nigerian petitions/complaints. Draft a professional, concise petition letter addressed to the PRIMARY institution responsible for the complaint.
+          content: `You are an expert in drafting formal Nigerian petitions/complaints.
 
 MANDATORY STRUCTURE (use exactly this format, no deviations):
 
@@ -598,23 +600,23 @@ Phone: ${pPhone}
 
 TO: [Full official name of primary institution ONLY — DO NOT add email or address]
 CC: [List any relevant oversight/regulatory bodies by name ONLY — DO NOT add emails]
+
 SUBJECT: [Clear, specific subject line]
 
 Dear Sir/Madam,
 
 FACTS:
-1. [Numbered facts from the complaint]
+1. ...
 2. ...
 
 LEGAL FRAMEWORK:
-- [Relevant laws, regulations, consumer rights, etc.]
+- ...
 
 RELIEFS SOUGHT:
-1. [Specific remedies requested]
+1. ...
 2. ...
 
 Yours faithfully,
-
 ${pName}
 ${pPhone}
 ${pEmail}
@@ -636,25 +638,35 @@ CRITICAL RULES:
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
 
-    const adminCC = buildAdminOversightCC({ sector, caseType });
+    // ✅ NEW: parse explicit TO and CC sections first (this fixes your exact bug)
+    const toNames = extractSectionInstitutionNames(petitionText, "TO");
+    const ccNames = extractSectionInstitutionNames(petitionText, "CC");
 
-    // ✅ FIX: resolve recipients from TO/CC lines (not from "mentions anywhere")
-    const { toEmails, ccEmails, mentionedInstitutions, toLine, ccItems } = resolveRecipientsFromPetition(
-      petitionText,
-      catalog,
-      adminCC
+    const toItems = safeUniq(
+      toNames.map((n) => matchInstitutionNameToCatalog(n, catalog)).filter(Boolean)
+    );
+    const ccItems = safeUniq(
+      ccNames.map((n) => matchInstitutionNameToCatalog(n, catalog)).filter(Boolean)
     );
 
-    const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const toEmails = safeUniq(toItems.flatMap((m) => m.emails)).filter(isEmail);
+    const ccEmailsFromJson = safeUniq(ccItems.flatMap((m) => m.emails)).filter(isEmail);
+
+    // Admin oversight CC (env vars)
+    const adminCC = buildAdminOversightCC({ sector, caseType });
+    const finalCC = safeUniq([...ccEmailsFromJson, ...adminCC]).filter(isEmail);
+
+    const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
     petitionStore.set(tx_ref, {
       petition: petitionText,
       sector,
       caseType,
       subject,
-      mentionedInstitutions,
+      toInstitutions: toItems.map((m) => m.name),
+      ccInstitutions: ccItems.map((m) => m.name),
       toEmails,
-      ccEmails,
+      ccEmails: finalCC,
       paymentInitializedAt: null,
     });
 
@@ -662,31 +674,29 @@ CRITICAL RULES:
 
     const preview = petitionText.length > 600 ? petitionText.substring(0, 600) + "..." : petitionText;
 
-    res.json({
+    return res.json({
       needsPayment: true,
       amount: PETITION_PRICE_NGN,
       currency: "NGN",
       tx_ref,
       preview,
-      recipients: { to: toEmails, cc: ccEmails },
-      // ✅ helpful debug so you can confirm it parses TO/CC correctly
-      debug: { toLine, ccItems, mentionedInstitutions },
     });
   } catch (err) {
     console.error("Generation error:", err);
-    res.status(500).json({ error: "Failed to generate petition" });
+    return res.status(500).json({ error: "Failed to generate petition" });
   }
 });
 
+// =====================
+// ✅ Pay initialize
+// =====================
 app.post("/pay/initialize", async (req, res) => {
   try {
     const { tx_ref, email, name, phone } = req.body || {};
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
     const stored = petitionStore.get(tx_ref);
-    if (!stored) {
-      return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
-    }
+    if (!stored) return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
 
     stored.paymentInitializedAt = Date.now();
     petitionStore.set(tx_ref, stored);
@@ -716,13 +726,16 @@ app.post("/pay/initialize", async (req, res) => {
 
     if (!ok || !data?.data?.link) return res.status(400).json({ ok: false, error: "Payment failed" });
 
-    res.json({ ok: true, tx_ref, link: data.data.link });
+    return res.json({ ok: true, tx_ref, link: data.data.link });
   } catch (err) {
-    console.error("pay/initialize error:", err);
-    res.status(500).json({ ok: false, error: "Payment error" });
+    console.error(err);
+    return res.status(500).json({ ok: false, error: "Payment error" });
   }
 });
 
+// =====================
+// ✅ Unlock petition
+// =====================
 app.post("/unlock-petition", async (req, res) => {
   try {
     const { tx_ref } = req.body || {};
@@ -731,6 +744,7 @@ app.post("/unlock-petition", async (req, res) => {
     const stored = petitionStore.get(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
 
+    // ✅ Admin override
     const adminToken = String(req.headers["x-admin-token"] || "");
     const adminOk = await isAdminTokenValid(adminToken);
 
@@ -748,13 +762,15 @@ app.post("/unlock-petition", async (req, res) => {
         admin: true,
         petition: stored.petition,
         sector: stored.sector,
-        mentionedInstitutions: stored.mentionedInstitutions,
+        toInstitutions: stored.toInstitutions,
+        ccInstitutions: stored.ccInstitutions,
         to: stored.toEmails,
         cc: stored.ccEmails,
         mailto,
       });
     }
 
+    // ✅ Webhook-confirmed
     if (USED_TX_REFS.has(tx_ref)) {
       const mailto = buildMailto({
         to: stored.toEmails,
@@ -763,9 +779,7 @@ app.post("/unlock-petition", async (req, res) => {
         body: stored.petition,
       });
 
-      USED_TX_REFS.add(tx_ref);
       petitionStore.delete(tx_ref);
-
       await redisIncr(METRICS.unlockedPaid);
 
       return res.json({
@@ -773,13 +787,15 @@ app.post("/unlock-petition", async (req, res) => {
         unlocked: true,
         petition: stored.petition,
         sector: stored.sector,
-        mentionedInstitutions: stored.mentionedInstitutions,
+        toInstitutions: stored.toInstitutions,
+        ccInstitutions: stored.ccInstitutions,
         to: stored.toEmails,
         cc: stored.ccEmails,
         mailto,
       });
     }
 
+    // ✅ Verify with Flutterwave
     let verifyResponse;
     try {
       verifyResponse = await flwFetch(
@@ -789,6 +805,7 @@ app.post("/unlock-petition", async (req, res) => {
       verifyResponse = { ok: false, status: 0, data: {} };
     }
 
+    // Pending window
     if (!verifyResponse.ok) {
       const initAt = Number(stored.paymentInitializedAt || 0);
       const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000;
@@ -829,17 +846,21 @@ app.post("/unlock-petition", async (req, res) => {
       unlocked: true,
       petition: stored.petition,
       sector: stored.sector,
-      mentionedInstitutions: stored.mentionedInstitutions,
+      toInstitutions: stored.toInstitutions,
+      ccInstitutions: stored.ccInstitutions,
       to: stored.toEmails,
       cc: stored.ccEmails,
       mailto,
     });
   } catch (err) {
-    console.error("unlock error:", err);
-    res.status(500).json({ ok: false, error: "Unlock failed" });
+    console.error(err);
+    return res.status(500).json({ ok: false, error: "Unlock failed" });
   }
 });
 
+// =====================
+// ✅ PDF
+// =====================
 app.get("/download-pdf", (req, res) => {
   try {
     const text = decodeURIComponent(req.query.text || "");
@@ -850,11 +871,13 @@ app.get("/download-pdf", (req, res) => {
 
     const pdf = new PDFDocument({ margin: 50 });
     pdf.pipe(res);
+
     pdf.fontSize(18).text("PETITION", { align: "center" });
     pdf.moveDown();
     pdf.fontSize(12).text(text, { align: "justify" });
     pdf.moveDown(2);
     pdf.fontSize(10).text("Generated by PetitionDesk", { align: "center" });
+
     pdf.end();
   } catch (err) {
     console.error(err);
@@ -862,10 +885,13 @@ app.get("/download-pdf", (req, res) => {
   }
 });
 
+// =====================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
   console.log(
-    `Webhook URL: ${process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`}/flw-webhook`
+    `Webhook URL: ${
+      process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`
+    }/flw-webhook`
   );
 });
