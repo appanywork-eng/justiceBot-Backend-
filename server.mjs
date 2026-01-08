@@ -162,6 +162,107 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // =====================
+// ✅ Sector JSON Auto Loader (NEW)
+//    - Loads ALL *.json in /data
+//    - Ignores .bak/.backup/.tmp etc
+//    - Normalizes sector keys: "anti-corruption" -> "anti_corruption"
+// =====================
+const DATA_DIR = path.join(__dirname, "data");
+
+function normalizeSectorKey(s) {
+  return String(s || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/-+/g, "_")
+    .replace(/[^\w]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function shouldIgnoreSectorFile(filename) {
+  const lower = String(filename || "").toLowerCase();
+
+  // Only real .json
+  if (!lower.endsWith(".json")) return true;
+
+  // Ignore hidden / temp / backups
+  if (
+    lower.startsWith(".") ||
+    lower.includes(".tmp") ||
+    lower.includes(".bak") ||
+    lower.includes(".backup") ||
+    lower.endsWith(".json.bak") ||
+    lower.endsWith(".json.backup")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function loadAllSectorJson() {
+  const map = new Map();
+
+  let files = [];
+  try {
+    files = fs.readdirSync(DATA_DIR);
+  } catch (e) {
+    console.error("❌ Cannot read DATA_DIR:", DATA_DIR, e?.message || e);
+    return map;
+  }
+
+  for (const f of files) {
+    if (shouldIgnoreSectorFile(f)) continue;
+
+    const fullPath = path.join(DATA_DIR, f);
+
+    try {
+      const raw = fs.readFileSync(fullPath, "utf8");
+      const json = JSON.parse(raw);
+
+      const sectorFromFile = f.replace(/\.json$/i, "");
+      const sectorKey = normalizeSectorKey(json?.sector || sectorFromFile);
+
+      if (!sectorKey) {
+        console.warn("⚠️ Skipping sector file (no sector key):", f);
+        continue;
+      }
+
+      map.set(sectorKey, {
+        ...json,
+        sector: sectorKey, // normalized key (important)
+        __file: f,
+        __path: fullPath,
+      });
+    } catch (e) {
+      console.error(`❌ Sector JSON parse failed: ${f} —`, e?.message || e);
+      continue; // do NOT crash
+    }
+  }
+
+  console.log("✅ Loaded sectors:", Array.from(map.keys()));
+  return map;
+}
+
+// Load once at startup
+let SECTOR_MAP = loadAllSectorJson();
+
+// Optional: reload periodically (set e.g. SECTOR_RELOAD_MS=60000)
+const SECTOR_RELOAD_MS = Number(process.env.SECTOR_RELOAD_MS || 0);
+if (SECTOR_RELOAD_MS > 0) {
+  setInterval(() => {
+    SECTOR_MAP = loadAllSectorJson();
+  }, SECTOR_RELOAD_MS);
+}
+
+// Keep old function name but now uses auto-loaded map
+function loadSectorJson(sector) {
+  const key = normalizeSectorKey(sector);
+  return SECTOR_MAP.get(key) || null;
+}
+
+// =====================
 // ✅ Utilities
 // =====================
 function safeUniq(arr) {
@@ -234,18 +335,8 @@ function extractParenAbbr(name = "") {
   return out;
 }
 
-function loadSectorJson(sector) {
-  const filePath = path.join(__dirname, "data", `${sector}.json`);
-  if (!fs.existsSync(filePath)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(filePath, "utf8"));
-  } catch {
-    return null;
-  }
-}
-
 // =====================
-// ✅ Sector detection (kept)
+// ✅ Sector detection (kept, UPDATED for new sectors)
 // =====================
 function detectSector(text) {
   const lower = (text || "").toLowerCase();
@@ -257,13 +348,20 @@ function detectSector(text) {
     education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund"],
     health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
     security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration"],
-    judiciary: ["court", "judge", "justice", "supreme", "petition", "magistrate"],
-    international_escalation: ["un", "ecowas", "au", "icc", "eu", "international"],
+    judiciary: ["court", "judge", "justice", "supreme", "magistrate", "bail", "case file", "registry"],
+    international_escalation: ["un", "ecowas", "au", "icc", "eu", "international", "ohchr", "senate"],
+    anti_corruption: ["corruption", "bribe", "kickback", "embezzle", "efcc", "icpc", "code of conduct", "whistleblower"],
+    diaspora_report: ["diaspora", "embassy", "consulate", "trafficking", "detained abroad", "deportation", "passport seized"],
   };
 
   for (const [sec, words] of Object.entries(map)) {
     if (words.some((w) => lower.includes(w))) return sec;
   }
+
+  // fallback: if user mentions a sector name directly
+  const direct = normalizeSectorKey(lower);
+  if (SECTOR_MAP.has(direct)) return direct;
+
   return "unknown";
 }
 
@@ -272,6 +370,8 @@ function inferCaseType(sector) {
   if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector))
     return "service_delivery";
   if (sector === "international_escalation") return "international";
+  if (sector === "anti_corruption") return "anti_corruption";
+  if (sector === "diaspora_report") return "diaspora";
   return "other";
 }
 
@@ -339,10 +439,7 @@ function buildInstitutionCatalog(sectorJson) {
 
     // also add “shortened” variants (helps Airpeace vs Air Peace, PLC/Ltd noise)
     const shortNorm = stripCorporateSuffixes(name);
-    const shortAliasNorms = safeUniq([
-      shortNorm,
-      ...aliasNorms.map(stripCorporateSuffixes),
-    ]).filter(Boolean);
+    const shortAliasNorms = safeUniq([shortNorm, ...aliasNorms.map(stripCorporateSuffixes)]).filter(Boolean);
 
     items.push({
       name: String(name),
@@ -558,6 +655,15 @@ app.get("/health", (req, res) => {
   res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
 });
 
+// ✅ NEW: list detected sectors (so your frontend can auto-populate)
+app.get("/sectors", (req, res) => {
+  res.json({
+    ok: true,
+    count: SECTOR_MAP.size,
+    sectors: Array.from(SECTOR_MAP.keys()),
+  });
+});
+
 // =====================
 // ✅ Generate petition
 // =====================
@@ -642,12 +748,8 @@ CRITICAL RULES:
     const toNames = extractSectionInstitutionNames(petitionText, "TO");
     const ccNames = extractSectionInstitutionNames(petitionText, "CC");
 
-    const toItems = safeUniq(
-      toNames.map((n) => matchInstitutionNameToCatalog(n, catalog)).filter(Boolean)
-    );
-    const ccItems = safeUniq(
-      ccNames.map((n) => matchInstitutionNameToCatalog(n, catalog)).filter(Boolean)
-    );
+    const toItems = safeUniq(toNames.map((n) => matchInstitutionNameToCatalog(n, catalog)).filter(Boolean));
+    const ccItems = safeUniq(ccNames.map((n) => matchInstitutionNameToCatalog(n, catalog)).filter(Boolean));
 
     const toEmails = safeUniq(toItems.flatMap((m) => m.emails)).filter(isEmail);
     const ccEmailsFromJson = safeUniq(ccItems.flatMap((m) => m.emails)).filter(isEmail);
@@ -890,8 +992,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
   console.log(
-    `Webhook URL: ${
-      process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`
-    }/flw-webhook`
+    `Webhook URL: ${process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`}/flw-webhook`
   );
 });
