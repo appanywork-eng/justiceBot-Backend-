@@ -1,0 +1,193 @@
+{
+  "sector": "anti_corruption",
+  "version": "1.0.0",
+  "country": "Nigeria",
+  "last_updated": "2026-01-08",
+
+  "purpose": [
+    "Report corruption, bribery, procurement fraud, diversion of public funds, money laundering, and abuse of office",
+    "Route petitions to the correct anti-corruption institution(s) and copy relevant watchdogs",
+    "Support evidence-based, non-defamatory reporting with clear timelines and documents"
+  ],
+
+  "oversight": {
+    "federal_ministry_of_justice": {
+      "name": "Federal Ministry of Justice",
+      "aliases": [
+        "FMOJ",
+        "Ministry of Justice",
+        "Federal Ministry of Justice (Nigeria)",
+        "Office of the Attorney-General of the Federation",
+        "Office of the AGF",
+        "Attorney-General of the Federation",
+        "AGF"
+      ],
+      "contact": {
+        "emails": ["info@justice.gov.ng"]
+      }
+    }
+  },
+
+  "core_anti_corruption_agencies": [
+    {
+      "name": "Economic and Financial Crimes Commission (EFCC)",
+      "aliases": [
+        "EFCC",
+        "Economic and Financial Crimes Commission",
+        "EFCC Nigeria"
+      ],
+      "focus": [
+        "Financial crimes, fraud, cyber-enabled fraud, money laundering",
+        "Recovery of proceeds of crime",
+        "Investigation and prosecution (as applicable)"
+      ],
+      "contact": {
+        "emails": ["info@efcc.gov.ng"]
+      }
+    },
+    {
+      "name": "Independent Corrupt Practices and Other Related Offences Commission (ICPC)",
+      "aliases": [
+        "ICPC",
+        "Independent Corrupt Practices Commission",
+        "Independent Corrupt Practices and Other Related Offences Commission"
+      ],
+      "focus": [
+        "Bribery, abuse of office, corruption in public sector/service delivery",
+        "Systems review and corruption prevention",
+        "Investigation and prosecution (as applicable)"
+      ],
+      "contact": {
+        "emails": ["info@icpc.gov.ng"]
+      }
+    },
+    {
+      "name": "Code of Conduct Bureau (CCB)",
+      "aliases": [
+        "CCB",
+        "Code of Conduct Bureau",
+        "Code of Conduct Bureau Nigeria"
+      ],
+      "focus": [
+        "Assets declaration compliance (public officers)",
+        "Code of Conduct enforcement referrals"
+      ],
+      "contact": {
+        "emails": ["info@ccb.gov.ng"]
+      }
+    }
+  ],
+
+  "procurement_audit_transparency": [
+    {
+      "name": "Bureau of Public Procurement (BPP)",
+      "aliases": [
+        "BPP",
+        "Bureau of Public Procurement",
+        "Due Process Office"
+      ],
+      "focus": [
+        "Procurement compliance and due process",
+        "Procurement fraud red flags, bid rigging indicators (report with evidence)"
+      ],
+      "contact": {
+        "emails": ["official@bpp.gov.ng", "ccspsupport@bpp.gov.ng", "info@bpp.gov.ng"]
+      }
+    }
+  ],
+
+  "watchdogs": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "aliases": [
+        "PCC",
+        "Public Complaints Commission",
+        "Ombudsman Nigeria"
+      ],
+      "role": [
+        "Maladministration and failure of MDAs to respond or act properly on complaints",
+        "Service failure, extortion in administrative processes, refusal to acknowledge complaints"
+      ],
+      "contact": {
+        "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"]
+      }
+    },
+    {
+      "name": "National Human Rights Commission (NHRC)",
+      "aliases": [
+        "NHRC",
+        "National Human Rights Commission"
+      ],
+      "role": [
+        "Where corruption allegations connect to rights violations (unlawful detention, torture to extort, etc.)"
+      ],
+      "contact": {
+        "emails": ["info@nhrc.gov.ng"]
+      }
+    }
+  ],
+
+  "routing_rules": {
+    "max_email_batch": 10,
+    "priority_logic": [
+      "If the allegation is financial fraud / laundering / scam: EFCC first, copy FMOJ and PCC where maladministration exists.",
+      "If the allegation is bribery/abuse of office/service delivery corruption in MDAs: ICPC first, copy PCC.",
+      "If it is assets declaration or conflict-of-interest of a public officer: CCB first (and copy ICPC where needed).",
+      "If it is procurement inflation / contract splitting / bid rigging: BPP first (copy ICPC/EFCC depending on evidence)."
+    ]
+  },
+
+  "complaint_and_escalation_flow": {
+    "step_1": "Write a factual petition: who/what/when/where/how; attach evidence; avoid insults/defamation.",
+    "step_2": "Send to the primary agency based on allegation type (EFCC/ICPC/CCB/BPP).",
+    "step_3": "Copy PCC where there is maladministration (refusal to respond, extortion, abuse of process, cover-up).",
+    "step_4": "If threats/retaliation occur, document it and add NHRC to protect rights and safety."
+  },
+
+  "routing_keywords": [
+    "bribe",
+    "bribery",
+    "kickback",
+    "gratification",
+    "extortion",
+    "contract inflation",
+    "over-invoicing",
+    "ghost workers",
+    "payroll fraud",
+    "pension fraud",
+    "procurement fraud",
+    "bid rigging",
+    "contract splitting",
+    "diversion of funds",
+    "embezzlement",
+    "money laundering",
+    "suspicious transfers",
+    "fake company",
+    "forged documents",
+    "abuse of office",
+    "conflict of interest",
+    "nepotism",
+    "favoritism",
+    "illegal deductions",
+    "project abandonment",
+    "inflated variation",
+    "double payment",
+    "audit query",
+    "whistleblower report",
+    "asset declaration",
+    "false declaration"
+  ],
+
+  "evidence_checklist": [
+    "Full names and roles of persons involved (or titles if names unknown)",
+    "MDA/department/unit involved",
+    "Project/contract title and award details (where applicable)",
+    "Dates and locations",
+    "Amounts, account details, payment references (if available)",
+    "Invoices/receipts/award letters/BOQs",
+    "Screenshots, emails, WhatsApp chats (exported), call logs (where lawful)",
+    "Witness statements (if any)",
+    "Any prior complaint and acknowledgment/reference",
+    "Risk note (any threats/retaliation details)"
+  ]
+}
