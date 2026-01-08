@@ -160,6 +160,7 @@ async function flwFetch(url, options = {}) {
 // Paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const DATA_DIR = path.join(__dirname, "data");
 
 // =====================
 // ✅ Utilities
@@ -203,7 +204,7 @@ function extractEmailsDeep(value, out = []) {
 }
 
 /**
- * ✅ NEW (for SAN-format addresses):
+ * ✅ SAN-format addresses:
  * Extract institution addresses ONLY from sector JSON.
  * We never guess. If your JSON doesn't have addresses, none will appear.
  */
@@ -214,8 +215,7 @@ function isLikelyAddress(s) {
   if (v.length < 8) return false;
   if (v.includes("@")) return false;
   if (/https?:\/\//i.test(v)) return false;
-  // simple signal: address-like tokens
-  return /(\bplot\b|\bstreet\b|\broad\b|\bavenue\b|\bclose\b|\bdrive\b|\blane\b|\bway\b|\bphase\b|\bkm\b|\bno\.\b|\bhouse\b|\boffice\b|\bcomplex\b|\babuja\b|\blagos\b|\bnigeria\b|\bstate\b|\bfct\b|\bzip\b|\bpostal\b|\bpo box\b|\bp\.o\.\b)/i.test(
+  return /(\bplot\b|\bstreet\b|\broad\b|\bavenue\b|\bclose\b|\bdrive\b|\blane\b|\bway\b|\bphase\b|\bkm\b|\bno\.\b|\bhouse\b|\boffice\b|\bcomplex\b|\babuja\b|\blagos\b|\bnigeria\b|\bstate\b|\bfct\b|\bpo box\b|\bp\.o\.\b)/i.test(
     v
   );
 }
@@ -225,7 +225,6 @@ function extractAddressesDeep(value, out = [], keyHint = "") {
 
   if (typeof value === "string") {
     const v = value.trim();
-    // Only accept if the key strongly suggests address OR the text looks like an address
     if (
       /address|hq|head[_\s-]?office|location|office[_\s-]?address/i.test(String(keyHint || "")) ||
       isLikelyAddress(v)
@@ -272,7 +271,6 @@ function stripCorporateSuffixes(s = "") {
 }
 
 function extractParenAbbr(name = "") {
-  // e.g. "Central Bank of Nigeria (CBN)" -> ["CBN"]
   const out = [];
   const re = /\(([A-Z0-9]{2,12})\)/g;
   let m;
@@ -280,22 +278,37 @@ function extractParenAbbr(name = "") {
   return out;
 }
 
+// ✅ This solves your file mismatch:
+// - detectSector returns "anti_corruption"
+// - your file is "anti-corruption.json"
+// So we try both underscore and hyphen automatically.
+function sectorKeyCandidates(sector) {
+  const s = String(sector || "").trim();
+  if (!s) return [];
+  return safeUniq([s, s.replace(/_/g, "-"), s.replace(/-/g, "_")]).filter(Boolean);
+}
+
 function loadSectorJson(sector) {
-  const filePath = path.join(__dirname, "data", `${sector}.json`);
-  if (!fs.existsSync(filePath)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(filePath, "utf8"));
-  } catch {
-    return null;
+  const candidates = sectorKeyCandidates(sector);
+  for (const key of candidates) {
+    const filePath = path.join(DATA_DIR, `${key}.json`);
+    if (!fs.existsSync(filePath)) continue;
+    try {
+      return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    } catch {
+      return null;
+    }
   }
+  return null;
 }
 
 // =====================
-// ✅ Sector detection (kept)
-// ✅ ONLY change here: add the 2 new sectors
+// ✅ Sector detection
+// ✅ FIXED: now detects anti_corruption + diaspora_report
 // =====================
 function detectSector(text) {
   const lower = (text || "").toLowerCase();
+
   const map = {
     power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "tcn", "nerc"],
     aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation", "air peace", "airpeace"],
@@ -307,38 +320,62 @@ function detectSector(text) {
     judiciary: ["court", "judge", "justice", "supreme", "petition", "magistrate"],
     international_escalation: ["un", "ecowas", "au", "icc", "eu", "international"],
 
-    // ✅ NEW SECTOR 1: anti_corruption
+    // ✅ NEW: anti_corruption (loads anti-corruption.json too)
     anti_corruption: [
+      "anti corruption",
+      "anti-corruption",
       "corruption",
-      "procurement",
-      "contract inflation",
-      "kickback",
       "bribe",
-      "embezzle",
-      "embezzlement",
-      "ghost worker",
-      "whistleblower",
+      "bribery",
+      "kickback",
+      "contract inflation",
+      "inflated contract",
+      "procurement fraud",
+      "procurement",
+      "tender",
+      "tenders",
+      "bid rigging",
       "over invoicing",
       "over-invoicing",
+      "misappropriation",
+      "diversion of funds",
+      "embezzle",
+      "embezzlement",
+      "fraud",
+      "money laundering",
+      "ghost worker",
+      "whistleblower",
+      "icpc",
+      "efcc",
       "bpp",
       "bureau of public procurement",
-      "efcc",
-      "icpc",
       "code of conduct",
-      "fraud",
+      "cct",
+      "ccb",
     ],
 
-    // ✅ NEW SECTOR 2: diaspora_report
+    // ✅ NEW: diaspora_report
     diaspora_report: [
       "diaspora",
+      "nidcom",
+      "nigerians in diaspora commission",
       "embassy",
+      "high commission",
       "consulate",
-      "deportation",
-      "detained abroad",
+      "visa",
       "passport seized",
-      "trafficking",
+      "passport withheld",
+      "detained abroad",
+      "arrested abroad",
+      "deportation",
       "stranded abroad",
+      "trafficking",
+      "human trafficking",
       "migrant",
+      "migration",
+      "immigration",
+      "nis",
+      "border",
     ],
   };
 
@@ -353,11 +390,8 @@ function inferCaseType(sector) {
   if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector))
     return "service_delivery";
   if (sector === "international_escalation") return "international";
-
-  // ✅ NEW: map the two new sectors
   if (sector === "anti_corruption") return "anti_corruption";
   if (sector === "diaspora_report") return "diaspora";
-
   return "other";
 }
 
@@ -384,7 +418,6 @@ function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
   return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
 }
 
-// ✅ Option A redirect builder
 function buildFrontendRedirectUrl(tx_ref) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
   return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
@@ -406,8 +439,8 @@ const METRICS = {
 };
 
 // =====================
-// ✅ Catalog + Matching (FIXES “TO NOT CAPTURED”)
-// ✅ Small addition: store institution addresses from JSON (no guessing)
+// ✅ Catalog + Matching
+// ✅ Includes address extraction (JSON-only)
 // =====================
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
@@ -417,7 +450,6 @@ function buildInstitutionCatalog(sectorJson) {
 
     const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
 
-    // ✅ NEW: try to extract addresses (only from JSON)
     const addresses = safeUniq(extractAddressesDeep(obj)).filter(isLikelyAddress);
     const primaryAddress = addresses[0] || "";
 
@@ -429,7 +461,6 @@ function buildInstitutionCatalog(sectorJson) {
     const norm = normalizeName(name);
     const aliasNorms = safeUniq(aliases.map((a) => normalizeName(a))).filter(Boolean);
 
-    // also add “shortened” variants (helps Airpeace vs Air Peace, PLC/Ltd noise)
     const shortNorm = stripCorporateSuffixes(name);
     const shortAliasNorms = safeUniq([shortNorm, ...aliasNorms.map(stripCorporateSuffixes)]).filter(Boolean);
 
@@ -441,8 +472,6 @@ function buildInstitutionCatalog(sectorJson) {
       aliasNorms,
       shortAliasNorms,
       emails,
-
-      // ✅ NEW fields
       addresses,
       primaryAddress,
     });
@@ -450,7 +479,6 @@ function buildInstitutionCatalog(sectorJson) {
 
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
-  // oversight object
   if (sectorJson.oversight && typeof sectorJson.oversight === "object") {
     for (const key of Object.keys(sectorJson.oversight)) {
       const node = sectorJson.oversight[key];
@@ -458,7 +486,6 @@ function buildInstitutionCatalog(sectorJson) {
     }
   }
 
-  // arrays (these keys are what your server expects)
   ["core_institutions", "regulators", "watchdogs", "players"].forEach((key) => {
     if (Array.isArray(sectorJson[key])) {
       sectorJson[key].forEach((inst) => addItem(inst?.name || inst, inst));
@@ -468,10 +495,11 @@ function buildInstitutionCatalog(sectorJson) {
   return items;
 }
 
-function matchInstitutionNameToCatalog(name, catalog) {
+// return both item + score so cross-sector matching can choose best
+function matchInstitutionNameToCatalogWithScore(name, catalog) {
   const q = normalizeName(name);
   const qShort = stripCorporateSuffixes(name);
-  if (!q) return null;
+  if (!q) return { item: null, score: 0 };
 
   let best = null;
   let bestScore = 0;
@@ -484,17 +512,12 @@ function matchInstitutionNameToCatalog(name, catalog) {
 
     let score = 0;
 
-    // strongest: exact normalized match
     if (q === item.norm || qShort === item.shortNorm) score += 100;
-
-    // alias match
     if (item.aliasNorms.includes(q) || item.shortAliasNorms.includes(qShort)) score += 90;
 
-    // substring
     if (q.includes(item.norm) || item.norm.includes(q)) score += 40;
     if (qShort && (qShort.includes(item.shortNorm) || item.shortNorm.includes(qShort))) score += 35;
 
-    // token overlap
     let overlap = 0;
     for (const t of item.shortNorm.split(" ")) {
       if (qTokens.has(t) || qShortTokens.has(t)) overlap++;
@@ -507,9 +530,12 @@ function matchInstitutionNameToCatalog(name, catalog) {
     }
   }
 
-  // threshold to avoid false positives
-  if (bestScore < 30) return null;
-  return best;
+  if (bestScore < 30) return { item: null, score: 0 };
+  return { item: best, score: bestScore };
+}
+
+function matchInstitutionNameToCatalog(name, catalog) {
+  return matchInstitutionNameToCatalogWithScore(name, catalog).item;
 }
 
 function extractSectionInstitutionNames(petitionText, sectionLabel /* "TO" | "CC" */) {
@@ -540,7 +566,6 @@ function extractSectionInstitutionNames(petitionText, sectionLabel /* "TO" | "CC
       continue;
     }
 
-    // stop on blank line
     if (!line.trim()) {
       mode = null;
       continue;
@@ -558,19 +583,82 @@ function extractSectionInstitutionNames(petitionText, sectionLabel /* "TO" | "CC
 
   if (!raw) return [];
 
-  // split multiple institutions
   return raw
     .split(/;|,|\s+\band\b\s+/i)
     .map((s) => s.trim())
     .filter(Boolean);
 }
 
-/**
- * ✅ NEW: inject institution addresses into petition text
- * - Uses matched TO/CC institutions
- * - Uses addresses ONLY from JSON catalog (primaryAddress)
- * - Does not affect mailto logic at all
- */
+// =====================
+// ✅ Cross-sector institution pickup (JSON-only)
+// =====================
+function listJsonSectorsFromDataDir() {
+  try {
+    return fs
+      .readdirSync(DATA_DIR)
+      .filter((f) => /\.json$/i.test(f)) // only real .json (excludes .json.bak etc)
+      .map((f) => f.replace(/\.json$/i, ""))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+const GLOBAL_CATALOG_BY_SECTOR = new Map();
+
+function getCatalogForSector(sector) {
+  // try direct, then underscore/hyphen variants
+  for (const key of sectorKeyCandidates(sector)) {
+    if (GLOBAL_CATALOG_BY_SECTOR.has(key)) return GLOBAL_CATALOG_BY_SECTOR.get(key);
+  }
+
+  // lazy load if not present
+  for (const key of sectorKeyCandidates(sector)) {
+    const sj = loadSectorJson(key);
+    if (!sj) continue;
+    const cat = buildInstitutionCatalog(sj);
+    GLOBAL_CATALOG_BY_SECTOR.set(key, cat);
+    return cat;
+  }
+
+  return [];
+}
+
+function primeGlobalCatalog() {
+  const sectors = listJsonSectorsFromDataDir();
+  for (const sec of sectors) {
+    const sj = loadSectorJson(sec);
+    if (!sj) continue;
+    GLOBAL_CATALOG_BY_SECTOR.set(sec, buildInstitutionCatalog(sj));
+  }
+}
+primeGlobalCatalog();
+
+function matchInstitutionAcrossAllSectors(name, preferredSector) {
+  // 1) preferred sector first
+  const preferredCatalog = getCatalogForSector(preferredSector);
+  const hit1 = matchInstitutionNameToCatalog(name, preferredCatalog);
+  if (hit1) return hit1;
+
+  // 2) fallback: scan all loaded catalogs
+  let best = null;
+  let bestScore = 0;
+
+  for (const [sec, catalog] of GLOBAL_CATALOG_BY_SECTOR.entries()) {
+    const { item, score } = matchInstitutionNameToCatalogWithScore(name, catalog);
+    if (!item) continue;
+    if (score > bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  }
+
+  return bestScore >= 30 ? best : null;
+}
+
+// =====================
+// ✅ Inject institution addresses into petition text (JSON-only)
+// =====================
 function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccItems = []) {
   const lines = String(petitionText || "").split(/\r?\n/);
   const out = [];
@@ -583,11 +671,10 @@ function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccIt
   const renderToLines = () => {
     const arr = [];
     if (!toItems.length) return arr;
-    // keep as SAN style block
     toItems.forEach((it, idx) => {
       arr.push(`TO: ${it.name}`);
       if (it.primaryAddress) arr.push(`Address: ${it.primaryAddress}`);
-      if (idx < toItems.length - 1) arr.push(""); // spacing
+      if (idx < toItems.length - 1) arr.push("");
     });
     return arr;
   };
@@ -631,16 +718,13 @@ function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccIt
     }
 
     if (isSubject) {
-      // stop skipping once subject begins
       skippingToBlock = false;
       skippingCcBlock = false;
       out.push(line);
       continue;
     }
 
-    // while skipping old TO/CC blocks, ignore their lines
     if (skippingToBlock || skippingCcBlock) {
-      // ignore blank or any lines in TO/CC block
       if (!line.trim()) continue;
       continue;
     }
@@ -818,7 +902,7 @@ ${pEmail}
 CRITICAL RULES:
 - Sector: ${sector} | Case Type: ${caseType}
 - NEVER include any email addresses, phone numbers, or invented contacts for institutions.
-- DO NOT invent institution addresses. The system will insert verified institution addresses automatically from a database.
+- DO NOT invent institution addresses. The system will insert verified institution addresses automatically from JSON if present.
 - Keep it professional, firm, evidence-led, and hard to ignore (SAN style).
 - Under 950 words.`,
         },
@@ -829,6 +913,7 @@ CRITICAL RULES:
     let petitionText = completion.choices?.[0]?.message?.content?.trim() || "Generation failed.";
     const subject = extractSubjectFromPetition(petitionText);
 
+    // ✅ Sector catalog (now loads anti-corruption.json too)
     const sectorJson = loadSectorJson(sector);
     const catalog = buildInstitutionCatalog(sectorJson);
 
@@ -836,10 +921,11 @@ CRITICAL RULES:
     const toNames = extractSectionInstitutionNames(petitionText, "TO");
     const ccNames = extractSectionInstitutionNames(petitionText, "CC");
 
-    const toItems = safeUniq(toNames.map((n) => matchInstitutionNameToCatalog(n, catalog)).filter(Boolean));
-    const ccItems = safeUniq(ccNames.map((n) => matchInstitutionNameToCatalog(n, catalog)).filter(Boolean));
+    // ✅ Preferred sector first, then cross-sector fallback
+    const toItems = safeUniq(toNames.map((n) => matchInstitutionAcrossAllSectors(n, sector)).filter(Boolean));
+    const ccItems = safeUniq(ccNames.map((n) => matchInstitutionAcrossAllSectors(n, sector)).filter(Boolean));
 
-    // ✅ NEW: Inject verified addresses (from JSON) into the petition text
+    // ✅ Insert verified addresses (JSON-only) into petition text
     petitionText = injectInstitutionAddressesIntoPetition(petitionText, toItems, ccItems);
 
     const toEmails = safeUniq(toItems.flatMap((m) => m.emails)).filter(isEmail);
