@@ -1,0 +1,265 @@
+{
+  "sector": "diaspora_report",
+  "version": "1.0.0",
+  "country": "Nigeria",
+  "last_updated": "2026-01-08",
+  "scope": "Nigerians in Diaspora — rights violations, illegal detention, trafficking, exploitation, consular protection",
+  "purpose": [
+    "Help Nigerians abroad report human-rights abuses, illegal detention, trafficking, labour exploitation, scams, and related crimes",
+    "Provide correct routing to Nigerian missions abroad, Nigerian authorities, and oversight institutions",
+    "Support evidence-based, safe, and legally sound reporting"
+  ],
+
+  "routing_rules": {
+    "no_invented_contacts": true,
+    "max_email_batch": 10,
+    "priority_order": [
+      "Emergency / immediate danger (local emergency services first)",
+      "Nigerian Mission in that country (Embassy/High Commission/Consulate)",
+      "NiDCOM (diaspora support)",
+      "NHRC (rights violations / unlawful detention / torture / abuse)",
+      "NAPTIP (trafficking / forced labour / sexual exploitation)",
+      "Federal Ministry of Justice / AGF (serious legal escalation, coordination)"
+    ],
+    "safety_note": "If the victim is in immediate danger, contact local emergency services first. Do not rely only on email."
+  },
+
+  "nigeria_core_support_and_enforcement": [
+    {
+      "name": "Federal Ministry of Foreign Affairs (Nigeria) — Headquarters",
+      "type": "Foreign Affairs / Consular Protection (HQ)",
+      "aliases": [
+        "Ministry of Foreign Affairs",
+        "MFA Nigeria",
+        "Nigerian Ministry of Foreign Affairs",
+        "Foreign Affairs Nigeria"
+      ],
+      "contact": {
+        "emails": ["info@foreignaffairs.gov.ng"],
+        "website": "https://foreignaffairs.gov.ng/"
+      },
+      "role_summary": [
+        "Consular protection oversight",
+        "Coordination with Nigerian missions abroad",
+        "Diplomatic engagement for detained/abused Nigerians abroad"
+      ]
+    },
+    {
+      "name": "Nigerians in Diaspora Commission (NiDCOM)",
+      "type": "Diaspora Support / Citizen Assistance",
+      "aliases": ["NiDCOM", "Nigerians in Diaspora Commission"],
+      "contact": {
+        "emails": ["admin@nidcom.gov.ng"],
+        "website": "https://nidcom.gov.ng/"
+      },
+      "role_summary": [
+        "Receives diaspora distress reports",
+        "Coordinates with missions and Nigerian MDAs",
+        "Supports diaspora welfare interventions"
+      ]
+    },
+    {
+      "name": "National Human Rights Commission (NHRC)",
+      "type": "Human Rights Oversight / Complaint Handling",
+      "aliases": ["NHRC", "National Human Rights Commission Nigeria"],
+      "contact": {
+        "emails": ["info@nhrc.gov.ng"],
+        "website": "https://nhrc.gov.ng/"
+      },
+      "role_summary": [
+        "Human-rights complaint intake and intervention",
+        "Documentation and escalation of rights violations",
+        "Engagement with relevant agencies where applicable"
+      ]
+    },
+    {
+      "name": "National Agency for the Prohibition of Trafficking in Persons (NAPTIP)",
+      "type": "Anti-Human Trafficking / Exploitation Response",
+      "aliases": ["NAPTIP", "Anti-Trafficking Agency Nigeria"],
+      "contact": {
+        "emails": ["info@naptip.gov.ng"]
+      },
+      "role_summary": [
+        "Trafficking and exploitation reporting",
+        "Victim support coordination (where applicable)",
+        "Investigation referrals and inter-agency collaboration"
+      ]
+    },
+    {
+      "name": "Federal Ministry of Justice (Nigeria) / Office of the Attorney-General of the Federation (AGF)",
+      "type": "Justice Sector Coordination / Legal Escalation",
+      "aliases": [
+        "Federal Ministry of Justice",
+        "Ministry of Justice Nigeria",
+        "Office of the AGF",
+        "Attorney-General of the Federation"
+      ],
+      "contact": {
+        "emails": ["info@justice.gov.ng"],
+        "website": "https://www.justice.gov.ng/"
+      },
+      "role_summary": [
+        "Justice-sector coordination",
+        "Serious legal escalations and policy-level handling",
+        "Interface with prosecutions and legal coordination (as applicable)"
+      ]
+    }
+  ],
+
+  "nigerian_missions_abroad_registry": {
+    "authoritative_directory": {
+      "name": "Nigeria MFA / Foreign Affairs — Diplomatic Missions Directory",
+      "url": "https://foreignaffairs.gov.ng/diplomatic-missions/",
+      "note": "This directory lists Nigerian missions and links to each mission site (where mission contact emails are published)."
+    },
+    "priority_missions_with_verified_emails": [
+      {
+        "country": "United Kingdom",
+        "name": "Nigeria High Commission / Mission in the UK (London)",
+        "type": "High Commission / Consular Services",
+        "aliases": ["Nigeria High Commission London", "Nigeria Mission UK", "Nigeria Embassy UK"],
+        "contact": {
+          "emails": ["consular@nigeriahc.org.uk"],
+          "website": "https://london.foreignaffairs.gov.ng/"
+        }
+      },
+      {
+        "country": "United States",
+        "name": "Embassy of Nigeria, Washington DC",
+        "type": "Embassy / Consular Services",
+        "aliases": ["Nigeria Embassy USA", "Nigeria Embassy Washington DC"],
+        "contact": {
+          "emails": ["info@nigeriaembassyusa.org"],
+          "website": "https://washingtondc.foreignaffairs.gov.ng/"
+        }
+      },
+      {
+        "country": "Niger",
+        "name": "Embassy of Nigeria, Niamey",
+        "type": "Embassy / Consular Services",
+        "aliases": ["Nigeria Embassy Niamey", "Nigeria Mission Niger"],
+        "contact": {
+          "emails": ["nigeria.mission@foreignaffairs.gov.ng"],
+          "website": "https://niamey.foreignaffairs.gov.ng/"
+        }
+      }
+    ]
+  },
+
+  "diaspora_report_workflows": [
+    {
+      "name": "Illegal detention / disappearance / torture / rights abuse",
+      "when_to_use": [
+        "Unlawful arrest or detention",
+        "Passport seized by employer/agent",
+        "Detention without access to lawyer/family",
+        "Torture/abuse/inhumane treatment",
+        "Forced disappearance"
+      ],
+      "recommended_routing": {
+        "to": ["Nigerian Mission in the country"],
+        "cc": ["Nigerians in Diaspora Commission (NiDCOM)", "National Human Rights Commission (NHRC)"],
+        "optional_cc": ["Federal Ministry of Foreign Affairs (HQ)", "Federal Ministry of Justice / AGF"]
+      },
+      "must_include": [
+        "Full name (as on passport)",
+        "Passport number (or a masked version if needed)",
+        "Country/city, last known location",
+        "Date/time of arrest or disappearance",
+        "Arresting authority if known",
+        "Detention location if known",
+        "Witness details",
+        "Family contact number"
+      ]
+    },
+    {
+      "name": "Human trafficking / forced labour / sexual exploitation",
+      "when_to_use": [
+        "Debt bondage",
+        "Confiscation of passport/ID by agent",
+        "Forced prostitution or sexual exploitation",
+        "Forced labour, withheld wages, threats",
+        "Smuggling network abuse"
+      ],
+      "recommended_routing": {
+        "to": ["Nigerian Mission in the country"],
+        "cc": ["NAPTIP", "NiDCOM", "NHRC"],
+        "optional_cc": ["Federal Ministry of Foreign Affairs (HQ)", "Federal Ministry of Justice / AGF"]
+      },
+      "must_include": [
+        "Recruitment/agent details",
+        "Travel route and dates",
+        "Where and how the victim is being held",
+        "Threats/abuse description",
+        "Any bank transfer/receipt evidence",
+        "Photos/messages/voice notes if safe"
+      ]
+    },
+    {
+      "name": "Immigration detention / deportation crisis",
+      "when_to_use": [
+        "Detained by immigration",
+        "Scheduled deportation",
+        "Denied consular access",
+        "Lost travel documents"
+      ],
+      "recommended_routing": {
+        "to": ["Nigerian Mission in the country"],
+        "cc": ["NiDCOM"],
+        "optional_cc": ["Federal Ministry of Foreign Affairs (HQ)"]
+      },
+      "must_include": [
+        "Immigration case reference (if any)",
+        "Detention center name/address",
+        "Court date (if any)",
+        "Lawyer details (if any)",
+        "Copy/photo of passport/residence permit"
+      ]
+    }
+  ],
+
+  "watchdogs_and_cross_cutting_cc": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "type": "Watchdog (Nigeria) — maladministration / poor complaint handling",
+      "aliases": ["PCC", "Public Complaints Commission"],
+      "note": "Useful if a Nigerian MDA mishandles a diaspora-related case, ignores petitions, or shows maladministration after escalation.",
+      "contact": {
+        "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"]
+      }
+    }
+  ],
+
+  "routing_keywords": [
+    "illegal detention",
+    "unlawful arrest",
+    "passport seized",
+    "human trafficking",
+    "sex trafficking",
+    "forced labour",
+    "wage theft",
+    "domestic servitude",
+    "kidnapping",
+    "torture",
+    "abuse",
+    "immigration detention",
+    "deportation",
+    "missing person abroad",
+    "diaspora scam",
+    "agent fraud",
+    "recruitment scam"
+  ],
+
+  "evidence_checklist": [
+    "Passport biodata page (photo, can be masked)",
+    "Entry visa / residence permit (if any)",
+    "Flight details / travel route timeline",
+    "Agent/recruiter name, number, social handles",
+    "Employer details and address (if applicable)",
+    "Photos/videos of injuries or location (if safe)",
+    "Chat logs / emails / voice notes / threats",
+    "Bank transfers / receipts / money trail",
+    "Witness names and contacts",
+    "Police/immigration reference numbers (if any)"
+  ]
+}
