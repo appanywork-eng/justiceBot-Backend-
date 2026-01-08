@@ -336,33 +336,168 @@ function extractParenAbbr(name = "") {
 }
 
 // =====================
-// ✅ Sector detection (kept, UPDATED for new sectors)
+// ✅ Sector detection (FIXED — no more "un" trap)
 // =====================
 function detectSector(text) {
-  const lower = (text || "").toLowerCase();
-  const map = {
-    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "tcn", "nerc"],
-    aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation", "air peace", "airpeace"],
-    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit"],
-    telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "airtel", "glo", "9mobile"],
-    education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund"],
-    health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
-    security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration"],
-    judiciary: ["court", "judge", "justice", "supreme", "magistrate", "bail", "case file", "registry"],
-    international_escalation: ["un", "ecowas", "au", "icc", "eu", "international", "ohchr", "senate"],
-    anti_corruption: ["corruption", "bribe", "kickback", "embezzle", "efcc", "icpc", "code of conduct", "whistleblower"],
-    diaspora_report: ["diaspora", "embassy", "consulate", "trafficking", "detained abroad", "deportation", "passport seized"],
+  const lower = String(text || "").toLowerCase();
+
+  // tokenize into real words (prevents "un" matching "unlawful")
+  const tokens = new Set(lower.split(/[^a-z0-9]+/g).filter(Boolean));
+
+  const hasWord = (w) => tokens.has(String(w).toLowerCase());
+  const hasPhrase = (p) => lower.includes(String(p).toLowerCase());
+  const hasAbbr = (abbr) => new RegExp(`\\b${abbr}\\b`, "i").test(lower); // word boundary
+
+  const score = {
+    power: 0,
+    aviation: 0,
+    banking: 0,
+    telecoms: 0,
+    education: 0,
+    health: 0,
+    security: 0,
+    judiciary: 0,
+    international_escalation: 0,
+    anti_corruption: 0,
+    diaspora_report: 0,
   };
 
-  for (const [sec, words] of Object.entries(map)) {
-    if (words.some((w) => lower.includes(w))) return sec;
+  // ----------- ANTI-CORRUPTION (strong signals)
+  [
+    "procurement",
+    "contract inflation",
+    "kickback",
+    "bribe",
+    "extortion",
+    "embezzlement",
+    "diversion",
+    "fraud",
+    "whistleblower",
+    "money laundering",
+    "ghost worker",
+    "salary padding",
+    "fake contract",
+    "over-invoicing",
+    "public procurement",
+  ].forEach((p) => {
+    if (hasPhrase(p)) score.anti_corruption += 3;
+  });
+
+  ["efcc", "icpc", "bpp", "ccb", "cct"].forEach((w) => {
+    if (hasWord(w)) score.anti_corruption += 4;
+  });
+
+  // ----------- INTERNATIONAL ESCALATION (ONLY real international signals)
+  [
+    "united nations",
+    "ohchr",
+    "human rights council",
+    "special rapporteur",
+    "international criminal court",
+    "ecowas court",
+    "african commission on human and peoples rights",
+    "european parliament",
+    "u.s. senate",
+    "foreign relations committee",
+    "tom lantos",
+    "amnesty international",
+    "human rights watch",
+    "international",
+  ].forEach((p) => {
+    if (hasPhrase(p)) score.international_escalation += 3;
+  });
+
+  // strict abbreviations (must be standalone)
+  if (hasAbbr("UN")) score.international_escalation += 2;
+  if (hasAbbr("EU")) score.international_escalation += 2;
+  if (hasAbbr("AU")) score.international_escalation += 2;
+  if (hasAbbr("ICC")) score.international_escalation += 3;
+
+  // ----------- JUDICIARY
+  [
+    "delay of justice",
+    "delayed justice",
+    "court registry",
+    "case file",
+    "bail denial",
+    "injunction",
+    "ex parte",
+    "contempt",
+    "court order",
+  ].forEach((p) => {
+    if (hasPhrase(p)) score.judiciary += 2;
+  });
+  ["court", "judge", "magistrate", "justice", "supreme", "appeal", "njc", "registry", "bail"].forEach((w) => {
+    if (hasWord(w)) score.judiciary += 1;
+  });
+
+  // ----------- SECURITY
+  ["police", "army", "navy", "airforce", "nscdc", "dss", "immigration", "kidnap", "detention", "arrest"].forEach(
+    (w) => {
+      if (hasWord(w) || hasPhrase(w)) score.security += 1;
+    }
+  );
+
+  // ----------- SERVICE SECTORS (light scoring)
+  ["electricity", "nepa", "disco", "tcn", "nerc", "transformer", "meter"].forEach((w) => {
+    if (hasWord(w) || hasPhrase(w)) score.power += 1;
+  });
+
+  ["flight", "airport", "airline", "ncaa", "faan", "aviation", "delay", "baggage"].forEach((w) => {
+    if (hasWord(w) || hasPhrase(w)) score.aviation += 1;
+  });
+
+  ["bank", "atm", "pos", "debit", "transfer", "chargeback", "reversal"].forEach((w) => {
+    if (hasWord(w) || hasPhrase(w)) score.banking += 1;
+  });
+
+  ["airtime", "data", "network", "sim", "ncc", "mtn", "airtel", "glo", "9mobile"].forEach((w) => {
+    if (hasWord(w) || hasPhrase(w)) score.telecoms += 1;
+  });
+
+  ["school", "university", "waec", "jamb", "nuc", "tetfund", "transcript"].forEach((w) => {
+    if (hasWord(w) || hasPhrase(w)) score.education += 1;
+  });
+
+  ["hospital", "clinic", "doctor", "medical", "nhia", "ncdc", "treatment"].forEach((w) => {
+    if (hasWord(w) || hasPhrase(w)) score.health += 1;
+  });
+
+  // ----------- DIASPORA
+  [
+    "embassy",
+    "consulate",
+    "detained abroad",
+    "trafficking",
+    "deportation",
+    "passport seized",
+    "diaspora",
+    "forced labour",
+    "forced labor",
+  ].forEach((p) => {
+    if (hasPhrase(p)) score.diaspora_report += 2;
+  });
+
+  // pick best
+  let best = "unknown";
+  let bestScore = 0;
+
+  for (const [k, v] of Object.entries(score)) {
+    if (v > bestScore) {
+      bestScore = v;
+      best = k;
+    }
   }
 
-  // fallback: if user mentions a sector name directly
-  const direct = normalizeSectorKey(lower);
-  if (SECTOR_MAP.has(direct)) return direct;
+  // require at least some confidence
+  if (bestScore < 2) {
+    // fallback: if user mentions a sector name directly (matches your loaded sectors)
+    const direct = normalizeSectorKey(lower);
+    if (SECTOR_MAP.has(direct)) return direct;
+    return "unknown";
+  }
 
-  return "unknown";
+  return best;
 }
 
 function inferCaseType(sector) {
