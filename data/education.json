@@ -1,102 +1,131 @@
 {
   "sector": "education",
-  "version": "1.0.0",
   "country": "Nigeria",
-  "last_updated": "2025-12-25",
+  "last_updated": "2026-01-08",
+
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Education",
-      "oversight_powers": [
-        "National education policy coordination",
-        "Supervision of key education parastatals (NUC, NBTE, NCCE, UBEC, TETFund, JAMB, etc.)"
-      ],
+      "aliases": ["FME", "Ministry of Education", "Federal Ministry of Education Nigeria"],
       "contact": {
-        "emails": ["info@education.gov.ng"],
-        "phones": ["+234 8163653484", "+234 9022189788"],
-        "address": "Federal Secretariat Phase III, FCT, Abuja, Nigeria (Zip: 900242)",
-        "website_hint": "education.gov.ng"
-      },
-      "how_to_address_head": {
-        "head_title": "Honourable Minister of Education",
-        "through_title": "Permanent Secretary, Federal Ministry of Education",
-        "salutation": "Dear Honourable Minister"
+        "emails": ["info@education.gov.ng"]
       }
     }
   },
-  "regulators_and_key_agencies": [
+
+  "regulators": [
     {
       "name": "National Universities Commission (NUC)",
-      "type": "University Regulator",
-      "how_to_address_head": { "head_title": "Executive Secretary, National Universities Commission", "salutation": "Dear Executive Secretary" },
-      "contact": {
-        "emails": ["info@nuc.edu.ng"],
-        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
-        "address": "National Universities Commission, 26 Aguiyi Ironsi Street, PMB 237, Maitama, Abuja, Nigeria",
-        "website_hint": "nuc.edu.ng"
-      }
+      "aliases": ["NUC", "National Universities Commission"],
+      "contact": { "emails": ["info@nuc.edu.ng"] }
     },
     {
       "name": "National Board for Technical Education (NBTE)",
-      "type": "Technical/Polytechnic Regulator",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Executive Secretary, NBTE", "salutation": "Dear Executive Secretary" }
+      "aliases": ["NBTE", "National Board for Technical Education"],
+      "contact": { "emails": ["enquiries@nbte.gov.ng"] }
     },
     {
       "name": "National Commission for Colleges of Education (NCCE)",
-      "type": "Colleges of Education Regulator",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Executive Secretary, NCCE", "salutation": "Dear Executive Secretary" }
+      "aliases": [
+        "NCCE",
+        "National Commission for Colleges of Education",
+        "NCCE Nigeria"
+      ],
+      "contact": { "emails": ["info@ncce.edu.ng", "info@ncceonline.edu.ng"] }
     },
     {
       "name": "Universal Basic Education Commission (UBEC)",
-      "type": "Basic Education Commission",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Executive Secretary, UBEC", "salutation": "Dear Executive Secretary" }
+      "aliases": ["UBEC", "Universal Basic Education Commission"],
+      "contact": { "emails": ["info@ubec.gov.ng"] }
     },
     {
       "name": "Tertiary Education Trust Fund (TETFund)",
-      "type": "Tertiary Funding Agency",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Executive Secretary, TETFund", "salutation": "Dear Executive Secretary" }
-    },
-    {
-      "name": "Joint Admissions and Matriculation Board (JAMB)",
-      "type": "Admissions/Testing Body",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE" },
-      "how_to_address_head": { "head_title": "Registrar, JAMB", "salutation": "Dear Registrar" }
-    },
-    {
-      "name": "WAEC / NECO",
-      "type": "Examinations Bodies (regional/national)",
-      "note": "Use official pages for current complaint emails/phones; do not guess.",
-      "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
+      "aliases": ["TETFund", "TETFUND", "Tertiary Education Trust Fund"],
+      "contact": { "emails": ["info@tetfund.gov.ng"] }
     }
   ],
-  "complaint_and_escalation_flow": {
-    "step_1": "Complain to the school/agency first (principal/registrar/bursar) and request written response.",
-    "step_2": "Escalate to the relevant regulator: NUC (university), NBTE (polytechnic), NCCE (college of education), UBEC/state SUBEB (basic education), JAMB (admissions).",
-    "step_3": "If corruption/fraud is alleged, copy anti-corruption/law enforcement agencies as appropriate."
-  },
+
+  "exam_bodies": [
+    {
+      "name": "Joint Admissions and Matriculation Board (JAMB)",
+      "aliases": ["JAMB", "Joint Admissions and Matriculation Board"],
+      "contact": {
+        "emails": ["info@jamb.gov.ng", "complaint@jamb.gov.ng", "support@jamb.gov.ng"],
+        "notes": [
+          "JAMB also routes many complaints via its official support portal; email availability can vary by issue type."
+        ]
+      }
+    },
+    {
+      "name": "National Examinations Council (NECO)",
+      "aliases": ["NECO", "National Examinations Council"],
+      "contact": { "emails": ["info@neco.gov.ng", "admin@neco.gov.ng", "support@neco.gov.ng"] }
+    },
+    {
+      "name": "West African Examinations Council (WAEC) Nigeria",
+      "aliases": ["WAEC", "WAEC Nigeria", "West African Examinations Council", "WAEC National Office"],
+      "contact": {
+        "emails": [
+          "hnowaeclagos@waecnigeria.org",
+          "hnowaecnigeria@waec.org.ng",
+          "cscyaba_manager@waec.org.ng"
+        ],
+        "notes": [
+          "WAEC publishes different emails by office/unit; these are publicly listed channels used for support/verification in Nigeria."
+        ]
+      }
+    }
+  ],
+
+  "watchdogs": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "aliases": ["PCC", "Public Complaints Commission"],
+      "contact": { "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"] }
+    },
+    {
+      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
+      "aliases": ["FCCPC", "Federal Competition and Consumer Protection Commission"],
+      "contact": { "emails": ["contact@fccpc.gov.ng", "info@fccpc.gov.ng"] }
+    },
+    {
+      "name": "SERVICOM (Service Compact with All Nigerians)",
+      "aliases": ["SERVICOM", "Service Compact with All Nigerians"],
+      "contact": {
+        "emails": ["servicom@servicecharters.gov.ng"],
+        "notes": ["SERVICOM contacts can also exist at MDA level; this is the central portal email."]
+      }
+    }
+  ],
+
   "routing_keywords": [
     "school fees dispute",
-    "transcript delay",
-    "result withheld",
+    "illegal levy",
     "admission fraud",
     "JAMB issue",
-    "WAEC/NECO result issue",
-    "accreditation problem",
-    "illegal levy",
-    "lecturer harassment",
-    "exam malpractice allegation",
+    "change of course",
+    "change of institution",
+    "result withheld",
+    "transcript delay",
     "certificate delay",
-    "NYSC mobilization issue"
+    "accreditation problem",
+    "exam malpractice allegation",
+    "WAEC result issue",
+    "NECO result issue",
+    "post-UTME dispute",
+    "NYSC mobilization issue",
+    "lecturer harassment",
+    "school extortion"
   ],
+
   "evidence_checklist": [
-    "Student name/ID",
-    "Institution name/campus",
+    "Full name and phone number",
+    "Student/registration number (JAMB/WAEC/NECO/School ID)",
+    "Institution name/campus (if applicable)",
     "Receipts/payment evidence",
-    "Letters/emails",
-    "Screenshots (portals)",
-    "Timeline of events"
+    "Screenshots (portals/SMS/email)",
+    "Letters/emails exchanged",
+    "Timeline of events",
+    "Any reference/ticket number issued"
   ]
 }
