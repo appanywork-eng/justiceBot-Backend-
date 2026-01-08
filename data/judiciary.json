@@ -1,57 +1,249 @@
 {
   "sector": "judiciary",
   "country": "Nigeria",
+  "version": "1.0.1",
   "last_updated": "2026-01-08",
 
-  "oversight": [
-    {
+  "notes": {
+    "constitutional_independence": "Judiciary has constitutional independence; complaints are routed mainly through judicial oversight bodies (NJC/FJSC), court administration, and rights watchdogs. Avoid contempt of court: focus on administrative misconduct, delay, corruption, registry failure, or rights violations.",
+    "to_vs_cc_rule_for_petitiondesk": [
+      "TO = the PRIMARY responsible institution in your case (usually the specific Court / Court Registry / NJC/FJSC depending on issue).",
+      "CC = oversight/watchdogs (PCC for maladministration, NHRC for rights issues, etc.)."
+    ]
+  },
+
+  "oversight": {
+    "federal_ministry_of_justice": {
       "name": "Federal Ministry of Justice",
       "aliases": [
         "Ministry of Justice",
         "FMOJ",
-        "Federal Ministry of Justice (Nigeria)",
-        "Office of the Attorney-General of the Federation",
-        "AGF Office"
+        "Federal Ministry of Justice (FMOJ)"
       ],
+      "role": "Justice-sector coordination, federal legal policy; Attorney-General of the Federation functions sit here (AGF).",
       "contact": {
-        "emails": ["info@justice.gov.ng"]
+        "emails": [
+          "fmoj.foi@justice.gov.ng"
+        ]
       }
     }
-  ],
+  },
 
-  "core_institutions": [
+  "core_judicial_oversight_and_service_bodies": [
     {
       "name": "National Judicial Council (NJC)",
-      "aliases": ["NJC", "National Judicial Council"],
+      "aliases": [
+        "NJC",
+        "National Judicial Council"
+      ],
+      "type": "Judicial oversight (discipline/complaints as applicable)",
       "contact": { "emails": ["info@njc.gov.ng"] }
     },
     {
-      "name": "Supreme Court of Nigeria",
-      "aliases": ["Supreme Court", "Supreme Court of Nigeria", "SCN"],
-      "contact": { "emails": ["info@supremecourt.gov.ng"] }
-    },
-    {
-      "name": "Court of Appeal of Nigeria",
-      "aliases": ["Court of Appeal", "COA", "Court of Appeal Nigeria"],
-      "contact": { "emails": ["hq@courtofappeal.gov.ng"] }
-    },
-    {
       "name": "Federal Judicial Service Commission (FJSC)",
-      "aliases": ["FJSC", "Federal Judicial Service Commission"],
+      "aliases": [
+        "FJSC",
+        "Federal Judicial Service Commission"
+      ],
+      "type": "Judicial service body (federal judicial appointments/admin matters as applicable)",
       "contact": { "emails": ["info@fjsc.gov.ng"] }
     },
     {
       "name": "Body of Benchers (BOB)",
-      "aliases": ["BOB", "Body of Benchers"],
+      "aliases": [
+        "BOB",
+        "Body of Benchers"
+      ],
+      "type": "Legal profession governance (where applicable)",
       "contact": { "emails": ["info@bob.gov.ng"] }
+    }
+  ],
+
+  "courts_and_registry_targets": [
+    {
+      "name": "Supreme Court of Nigeria",
+      "aliases": [
+        "Supreme Court",
+        "Supreme Court of the Federal Republic of Nigeria"
+      ],
+      "type": "Court (Apex)",
+      "contact": { "emails": ["info@supremecourt.gov.ng"] }
+    },
+    {
+      "name": "Court of Appeal of Nigeria",
+      "aliases": [
+        "Court of Appeal",
+        "COA",
+        "Nigeria Court of Appeal"
+      ],
+      "type": "Court",
+      "contact": { "emails": ["hq@courtofappeal.gov.ng"] }
+    },
+    {
+      "name": "Federal High Court of Nigeria",
+      "aliases": [
+        "Federal High Court",
+        "FHC"
+      ],
+      "type": "Court",
+      "contact": { "emails": ["info@fhc.gov.ng"] }
+    },
+    {
+      "name": "High Court (State) / Chief Judge (State)",
+      "aliases": [
+        "State High Court",
+        "High Court",
+        "Chief Judge",
+        "State Judiciary"
+      ],
+      "type": "Court (State)",
+      "contact": { "emails": [] },
+      "notes": "State judiciaries differ by state. Keep a separate state_judiciary.json later (Abuja/FCT, Lagos, Kano, etc.)."
     }
   ],
 
   "watchdogs": [
     {
+      "name": "Public Complaints Commission (PCC)",
+      "aliases": [
+        "PCC",
+        "Public Complaints Commission"
+      ],
+      "role": "Maladministration, refusal to act, delay in administrative duties, poor service delivery in public institutions (including court registry/administration complaints).",
+      "contact": { "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"] }
+    },
+    {
       "name": "National Human Rights Commission (NHRC)",
-      "aliases": ["NHRC", "National Human Rights Commission"],
+      "aliases": [
+        "NHRC",
+        "National Human Rights Commission"
+      ],
+      "role": "Human rights violations (unlawful detention, torture, denial of bail, fair-hearing concerns, abuse by justice-chain actors).",
       "contact": { "emails": ["info@nhrc.gov.ng"] }
     }
+  ],
+
+  "how_to_address_and_route": {
+    "default_salutation": "Dear Sir/Madam",
+    "judicial_titles_guidance": [
+      "Use office titles, not personal names (e.g., 'The Chairman, NJC', 'The Chief Registrar', 'The President, Court of Appeal').",
+      "Avoid insulting language; stick to facts, dates, and evidence.",
+      "If your matter is still pending in court, frame complaint as ADMINISTRATIVE/MALADMINISTRATION (e.g., registry delay, missing file, refusal to process) not as attacking the judge’s decision."
+    ],
+    "primary_to_rules": [
+      {
+        "when": "Registry delay / missing case file / refusal to compile record / CTC delay",
+        "to": "The Chief Registrar / Registrar of the Court (relevant court)",
+        "cc": ["NJC (if systemic or severe)", "PCC (maladministration)"]
+      },
+      {
+        "when": "Judicial misconduct / bribery / abuse of office / bias (disciplinary complaint)",
+        "to": "The Chairman, National Judicial Council (NJC)",
+        "cc": ["PCC (maladministration angle where applicable)", "NHRC (if rights impacted)"]
+      },
+      {
+        "when": "Unlawful detention / denial of bail / torture / police disobedience of court order",
+        "to": "NHRC (rights complaint) OR relevant justice-chain authority",
+        "cc": ["PCC", "NJC (if judicial admin issue is involved)"]
+      }
+    ]
+  },
+
+  "routing_keywords": {
+    "delay_and_backlog": [
+      "delayed justice",
+      "delay of justice",
+      "undue delay",
+      "endless adjournment",
+      "frequent adjournments",
+      "court backlog",
+      "slow trial",
+      "trial delay",
+      "judgment delayed",
+      "ruling delayed",
+      "judgment not delivered",
+      "reserved ruling",
+      "reserved judgment",
+      "no sitting",
+      "strike affected hearing",
+      "court not sitting"
+    ],
+    "registry_and_administration": [
+      "court registry delay",
+      "registry refusal",
+      "registry extortion",
+      "missing case file",
+      "lost case file",
+      "case file missing",
+      "file movement",
+      "case file not found",
+      "record of appeal delay",
+      "appeal record not compiled",
+      "compilation of records",
+      "CTC delay",
+      "certified true copy delay",
+      "court process not served",
+      "service of court process",
+      "hearing notice not issued",
+      "enforcement process delay",
+      "sheriff delay",
+      "bail bond processing delay"
+    ],
+    "misconduct_and_corruption": [
+      "judicial misconduct",
+      "corruption in court",
+      "bribery allegation",
+      "bias allegation",
+      "conflict of interest",
+      "judge compromised",
+      "registry bribery",
+      "lawyer misconduct",
+      "court staff misconduct",
+      "forged court document",
+      "fake court order",
+      "altered court record"
+    ],
+    "orders_and_enforcement": [
+      "disobedience of court order",
+      "police ignored court order",
+      "refusal to obey court order",
+      "order enforcement failure",
+      "garnishee proceedings",
+      "judgment enforcement",
+      "writ of execution",
+      "contempt of court",
+      "ex parte order abuse",
+      "injunction abuse",
+      "conflicting court orders",
+      "forum shopping"
+    ],
+    "rights_and_detention_chain": [
+      "unlawful detention",
+      "denial of bail",
+      "bail refused",
+      "remand without trial",
+      "torture allegation",
+      "inhuman treatment",
+      "forced confession",
+      "illegal arrest",
+      "fundamental rights enforcement",
+      "access to lawyer denied",
+      "fair hearing denied",
+      "case stalled in DPP",
+      "AGF intervention",
+      "prison remand abuse"
+    ]
+  },
+
+  "evidence_checklist": [
+    "Case title and suit number",
+    "Court division/location",
+    "Chronology (dates of filing, hearing, adjournments, rulings)",
+    "Receipts/proof of payment (filing fees, CTC, service fees)",
+    "Copies of motions/processes/orders (if any)",
+    "Registry acknowledgement/reference number (if any)",
+    "Names/titles of officials involved (Registrar/Clerk/Chief Registrar) — titles preferred",
+    "Any written responses, emails, SMS, WhatsApp messages",
+    "Proof of harm caused by delay (missed deadlines, detention days, financial loss)"
   ]
 }
