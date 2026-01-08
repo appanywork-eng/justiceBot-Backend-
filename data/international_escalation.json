@@ -1,13 +1,84 @@
 {
   "sector": "international_escalation",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "scope": "Maximum Global Scope",
-  "last_updated": "2025-12-29",
+  "last_updated": "2026-01-08",
   "purpose": [
     "International escalation after all domestic remedies have failed",
     "Peaceful mass petitioning for global diplomatic and legislative attention",
     "Human rights, security failures, financial abuse, and systemic injustice"
   ],
+
+  "Nigeria_Domestic_Escalation": {
+    "name": "Nigeria Domestic Final Escalation (Before International)",
+    "priority_note": "Use these Nigeria domestic escalation contacts BEFORE (or alongside) international escalation, especially for human-rights, rule-of-law, and justice-sector matters.",
+    "bodies": [
+      {
+        "name": "Federal Ministry of Justice (FMOJ)",
+        "aliases": [
+          "Federal Ministry of Justice",
+          "Ministry of Justice",
+          "FMOJ",
+          "Justice Ministry Nigeria"
+        ],
+        "emails": [
+          "info@justice.gov.ng",
+          "fmoj.foi@justice.gov.ng"
+        ],
+        "address": "Federal Ministry of Justice Headquarters, Maitama, Abuja, FCT, Nigeria",
+        "how_to_address_head": {
+          "title": "Honourable Attorney-General of the Federation and Minister of Justice",
+          "salutation": "Honourable Attorney-General"
+        },
+        "notes": [
+          "Use info@justice.gov.ng for general justice-ministry escalation and national justice-sector issues.",
+          "Use fmoj.foi@justice.gov.ng for FOI/public-information reporting or formal transparency/records escalation."
+        ]
+      },
+      {
+        "name": "Office of the Attorney-General of the Federation (AGF) and Minister of Justice",
+        "aliases": [
+          "Attorney-General of the Federation",
+          "Office of the AGF",
+          "AGF",
+          "Honourable Attorney-General",
+          "HAGF"
+        ],
+        "emails": [
+          "info@justice.gov.ng",
+          "fmoj.foi@justice.gov.ng"
+        ],
+        "address": "Federal Ministry of Justice Headquarters, Maitama, Abuja, FCT, Nigeria",
+        "how_to_address_head": {
+          "title": "Honourable Attorney-General of the Federation and Minister of Justice",
+          "salutation": "Honourable Attorney-General"
+        },
+        "notes": [
+          "In Nigeria, the Attorney-General role sits within the Federal Ministry of Justice; these mailboxes are used on official ministry correspondence."
+        ]
+      },
+      {
+        "name": "National Human Rights Commission (NHRC)",
+        "aliases": [
+          "NHRC",
+          "National Human Rights Commission",
+          "Human Rights Commission Nigeria"
+        ],
+        "emails": [
+          "info@nhrc.gov.ng"
+        ],
+        "address": "NHRC Headquarters, Abuja, FCT, Nigeria",
+        "how_to_address_head": {
+          "title": "Executive Secretary, National Human Rights Commission",
+          "salutation": "The Executive Secretary"
+        },
+        "notes": [
+          "Use for human-rights violations: unlawful detention, torture allegations, enforced disappearance, denial of due process, extrajudicial threats, etc."
+        ]
+      }
+    ]
+  },
+
   "United_States": {
     "name": "U.S. Foreign Policy & Human Rights Legislative Escalation",
     "emails": [
@@ -22,6 +93,7 @@
       "salutation": "Dear Chair"
     }
   },
+
   "United_Kingdom": {
     "name": "UK Parliamentary & Diplomatic Escalation",
     "emails": [
@@ -36,6 +108,7 @@
       "salutation": "Dear Chair"
     }
   },
+
   "European_Union": {
     "name": "EU Parliament & Diplomatic Escalation",
     "emails": [
@@ -50,6 +123,7 @@
       "salutation": "Dear Chair"
     }
   },
+
   "International_Criminal_Court": {
     "name": "International Criminal Court (ICC)",
     "emails": ["ICCVisits@icc-cpi.int"],
@@ -60,6 +134,7 @@
       "salutation": "Dear Prosecutor"
     }
   },
+
   "Canada": {
     "name": "Canada Parliamentary & Diplomatic Escalation",
     "emails": ["info@international.gc.ca", "FAAE@parl.gc.ca"],
@@ -70,6 +145,7 @@
       "salutation": "Dear Chair"
     }
   },
+
   "United_Nations": {
     "name": "UN Human Rights & Global Escalation",
     "emails": [
@@ -85,11 +161,13 @@
       "salutation": "Dear High Commissioner"
     }
   },
+
   "routing_rules": {
     "MASS_DEVICE_PROTEST_ENABLED": true,
     "max_email_batch": 10,
-    "note": "Use priority-first routing for maximum diplomatic impact"
+    "note": "Use priority-first routing for maximum diplomatic impact. If complaint is Nigeria-based, include Nigeria_Domestic_Escalation in CC or as a prerequisite step before international escalation."
   },
+
   "routing_keywords": [
     "unlawful conviction",
     "illegal arrest",
@@ -107,6 +185,7 @@
     "passport blockade",
     "attack on journalists"
   ],
+
   "minimum_petition_pack": [
     "Summary cover letter",
     "Chronological statement of facts",
