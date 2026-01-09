@@ -1,8 +1,108 @@
 {
   "sector": "telecoms",
-  "version": "1.0.2",
   "country": "Nigeria",
   "last_updated": "2026-01-09",
+  "version": "1.0.3",
+
+  "oversight": {
+    "federal_ministry": {
+      "name": "Federal Ministry of Communications, Innovation and Digital Economy",
+      "aliases": ["FMCIDE", "Ministry of Communications", "Digital Economy Ministry"],
+      "contact": {
+        "emails": ["info@commtech.gov.ng"],
+        "address": "Federal Secretariat Complex, Abuja, Nigeria"
+      }
+    }
+  },
+
+  "regulators": [
+    {
+      "name": "Nigerian Communications Commission (NCC)",
+      "aliases": ["NCC", "Nigerian Communications Commission"],
+      "contact": {
+        "emails": ["ncc@ncc.gov.ng", "consumer@ncc.gov.ng", "consumerportal@ncc.gov.ng"],
+        "address": "Plot 423, Aguiyi Ironsi Street, Maitama, Abuja"
+      }
+    },
+    {
+      "name": "National Information Technology Development Agency (NITDA)",
+      "aliases": ["NITDA", "Information Technology Agency Nigeria"],
+      "contact": {
+        "emails": ["info@nitda.gov.ng"],
+        "address": "No. 28 Port Harcourt Crescent, Garki, Abuja"
+      }
+    }
+  ],
+
+  "public_agencies": [
+    {
+      "name": "Nigerian Senate (Redress Unit)",
+      "aliases": ["Senate Nigeria", "NASS Senate"],
+      "contact": {
+        "emails": ["info@senate.gov.ng"],
+        "address": "National Assembly Complex, Abuja"
+      }
+    },
+    {
+      "name": "Nigerian House of Representatives (Petitions Committee)",
+      "aliases": ["House of Reps Nigeria", "NASS House"],
+      "contact": {
+        "emails": ["committee.petitions@house.gov.ng"],
+        "address": "National Assembly Complex, Abuja"
+      }
+    },
+    {
+      "name": "National Human Rights Commission (NHRC)",
+      "aliases": ["NHRC", "Human Rights Nigeria"],
+      "contact": {
+        "emails": ["info@nhrc.gov.ng"],
+        "address": "NHRC Headquarters, Abuja, Nigeria"
+      }
+    },
+    {
+      "name": "Nigeria Immigration Service (SERVICOM)",
+      "aliases": ["NIS SERVICOM", "Immigration Nigeria"],
+      "contact": {
+        "emails": ["servicom@immigration.gov.ng"],
+        "address": "NIS HQ, Abuja, Nigeria"
+      }
+    }
+  ],
+
+  "players": [
+    {
+      "name": "MTN Nigeria",
+      "aliases": ["MTN", "MTN Nigeria", "MTNNG"],
+      "contact": {
+        "emails": ["customercare@mtn.ng"],
+        "address": "Falomo Towers, Ikoyi, Lagos"
+      }
+    },
+    {
+      "name": "Globacom (Glo)",
+      "aliases": ["Glo", "Globacom", "Glo Nigeria"],
+      "contact": {
+        "emails": ["contact@gloworld.ng"],
+        "address": "Mike Adenuga Towers, Victoria Island, Lagos"
+      }
+    },
+    {
+      "name": "Airtel Nigeria",
+      "aliases": ["Airtel", "Airtel NG", "Airtel Nigeria"],
+      "contact": {
+        "emails": ["care@airtel.ng"],
+        "address": "Plot L2, Banana Island, Lagos"
+      }
+    },
+    {
+      "name": "9mobile",
+      "aliases": ["9mobile", "9 Mobile", "Etisalat Nigeria"],
+      "contact": {
+        "emails": ["support@9mobile.ng"],
+        "address": "Plot 19, Banana Island, Lagos"
+      }
+    }
+  ],
 
   "keywords": [
     "telecom",
@@ -20,210 +120,9 @@
     "tower fault",
     "spam sms",
     "harassment calls",
-    "vas subscription",
     "sim swap fraud",
     "porting delay",
     "msisdn blocked"
-  ],
-
-  "oversight": {
-    "name": "Federal Ministry of Communications, Innovation and Digital Economy",
-    "aliases": ["FMCIDE", "Ministry of Communications", "Digital Economy Ministry"],
-    "contact": {
-      "emails": ["info@commtech.gov.ng"],
-      "phones": ["+234-9-461-7000"],
-      "address": "Federal Secretariat Complex, Abuja, Nigeria"
-    },
-    "how_to_address_head": {
-      "head_title": "Honourable Minister, Federal Ministry of Communications, Innovation and Digital Economy",
-      "through_title": "Permanent Secretary, Federal Ministry of Communications, Innovation and Digital Economy",
-      "salutation": "Dear Honourable Minister"
-    }
-  },
-
-  "core_institutions": [
-    {
-      "name": "Public Complaints Commission (PCC)",
-      "aliases": ["pcc", "public complaints commission", "ombudsman nigeria"],
-      "type": "Watchdog",
-      "mandate": ["Ombudsman for telecom maladministration and consumer rights abuse"],
-      "contact": {
-        "emails": ["research.unit@pcc.gov.ng", "info@pcc.gov.ng"],
-        "phones": ["+2348055600208"],
-        "address": "PCC Headquarters, Aguiyi-Ironsi Street, Maitama, Abuja"
-      }
-    },
-    {
-      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
-      "aliases": ["fccpc", "consumer protection nigeria", "competition watchdog"],
-      "type": "Watchdog",
-      "mandate": ["Consumer rights enforcement in telecom service abuses"],
-      "contact": {
-        "emails": ["contact@fccpc.gov.ng"],
-        "phones": ["0805-600-0200"],
-        "address": "FCCPC Headquarters, Abuja, Nigeria"
-      }
-    },
-    {
-      "name": "National Human Rights Commission (NHRC)",
-      "aliases": ["nhrc", "human rights nigeria"],
-      "type": "Watchdog",
-      "mandate": ["Rights violations involving telecom abuses, unlawful detention, harassment"],
-      "contact": {
-        "emails": ["info@nhrc.gov.ng"],
-        "phones": ["0805-600-0400"],
-        "address": "NHRC Headquarters, Abuja, Nigeria"
-      }
-    },
-    {
-      "name": "Nigerian Police Force (NPF)",
-      "aliases": ["npf", "police nigeria", "cybercrime police"],
-      "type": "Security Agency",
-      "mandate": ["Telecom-related crimes (SIM swap fraud, extortion, cybercrime)"],
-      "contact": {
-        "emails": ["info@npf.gov.ng"],
-        "phones": ["0803-000-0001"],
-        "address": "Force Headquarters, Abuja, Nigeria"
-      }
-    },
-    {
-      "name": "Office of the Secretary to the Government of the Federation (OSGF)",
-      "aliases": ["osgf", "sgf office nigeria", "secretary to federal government"],
-      "type": "Government Office",
-      "mandate": ["Policy-level oversight for federal maladministration"],
-      "contact": {
-        "emails": ["info@osgf.gov.ng"],
-        "phones": ["0805-600-0800"],
-        "address": "OSGF Headquarters, Abuja, Nigeria"
-      }
-    },
-    {
-      "name": "Office of the Attorney-General of the Federation (AGF)",
-      "aliases": ["agf", "attorney general nigeria", "justice ministry nigeria"],
-      "type": "Government Office",
-      "mandate": ["Legal oversight for rights abuse, illegal detention, due process"],
-      "contact": {
-        "emails": ["info@justice.gov.ng"],
-        "phones": ["0805-600-0900"],
-        "address": "Federal Ministry of Justice, Abuja, Nigeria"
-      }
-    },
-    {
-      "name": "Office of the Chief of Staff to the President",
-      "aliases": ["chief of staff nigeria", "state house cos"],
-      "type": "Presidential Office",
-      "mandate": ["Executive oversight for federal administrative injustice"],
-      "contact": {
-        "emails": ["info@statehouse.gov.ng"],
-        "phones": ["0805-600-1000"],
-        "address": "State House, Abuja, Nigeria"
-      }
-    },
-    {
-      "name": "Nigerian Senate (Redress Unit)",
-      "aliases": ["senate nigeria", "nass senate", "green chamber"],
-      "type": "Legislature",
-      "mandate": ["Legislative petitions, policy pressure"],
-      "contact": {
-        "emails": ["info@senate.gov.ng"],
-        "phones": ["0805-600-1100"],
-        "address": "National Assembly Complex, Abuja"
-      }
-    },
-    {
-      "name": "Nigerian House of Representatives (Petitions Committee)",
-      "aliases": ["house of reps nigeria", "nass house"],
-      "type": "Legislature",
-      "mandate": ["Public petitions, oversight, hearings"],
-      "contact": {
-        "emails": ["committee.petitions@house.gov.ng"],
-        "phones": ["0805-600-1200"],
-        "address": "National Assembly Complex, Abuja"
-      }
-    },
-    {
-      "name": "Nigeria Immigration Service (SERVICOM)",
-      "aliases": ["immigration servicom", "nis servicom"],
-      "type": "Regulatory Overlap",
-      "mandate": ["Diaspora line issues involving immigration status"],
-      "contact": {
-        "emails": ["servicom@immigration.gov.ng"],
-        "phones": ["0805-600-1300"],
-        "address": "NIS HQ, Abuja, Nigeria"
-      }
-    }
-  ],
-
-  "regulators": [
-    {
-      "name": "Nigerian Communications Commission (NCC)",
-      "aliases": ["ncc", "nigerian communications commission"],
-      "type": "Regulator",
-      "mandate": ["Licensing, QoS enforcement, consumer redress"],
-      "contact": {
-        "emails": ["ncc@ncc.gov.ng", "consumer@ncc.gov.ng", "consumerportal@ncc.gov.ng"],
-        "phones": ["622"],
-        "address": "Plot 423, Aguiyi Ironsi Street, Maitama, Abuja"
-      }
-    },
-    {
-      "name": "National Information Technology Development Agency (NITDA)",
-      "aliases": ["nitda", "information technology agency nigeria"],
-      "type": "Regulatory Overlap",
-      "mandate": ["IT systems abuse overlapping telecom petitions"],
-      "contact": {
-        "emails": ["info@nitda.gov.ng"],
-        "phones": ["0805-600-1500"],
-        "address": "No. 28 Port Harcourt Crescent, Garki, Abuja"
-      }
-    }
-  ],
-
-  "operators": [
-    {
-      "name": "MTN Nigeria",
-      "aliases": ["mtn", "my mtn", "mtn nigeria", "mtnng"],
-      "type": "Mobile Network Operator",
-      "mandate": ["Telecom service delivery"],
-      "contact": {
-        "emails": ["customercare@mtn.ng"],
-        "phones": ["180"],
-        "address": "Falomo Towers, Ikoyi, Lagos"
-      }
-    },
-    {
-      "name": "Globacom (Glo)",
-      "aliases": ["glo", "globacom", "glo nigeria", "gloworld"],
-      "type": "Mobile Network Operator",
-      "mandate": ["Telecom service delivery"],
-      "contact": {
-        "emails": ["contact@gloworld.ng"],
-        "phones": ["121"],
-        "address": "Mike Adenuga Towers, Victoria Island, Lagos"
-      }
-    },
-    {
-      "name": "Airtel Nigeria",
-      "aliases": ["airtel", "airtel ng", "airtel nigeria"],
-      "type": "Mobile Network Operator",
-      "mandate": ["Telecom service delivery"],
-      "contact": {
-        "emails": ["care@airtel.ng"],
-        "phones": ["111"],
-        "address": "Plot L2, Banana Island, Lagos"
-      }
-    },
-    {
-      "name": "9mobile",
-      "aliases": ["9mobile", "etisalat nigeria", "9 mobile"],
-      "type": "Mobile Network Operator",
-      "mandate": ["Telecom service delivery"],
-      "contact": {
-        "emails": ["support@9mobile.ng"],
-        "phones": ["200"],
-        "address": "Plot 19, Banana Island, Lagos"
-      }
-    }
   ],
 
   "evidence_keywords": [
@@ -241,7 +140,7 @@
   "evidence_checklist": [
     "SIM number/MSISDN",
     "IMEI (if SIM swap issue)",
-    "Ticket/reference number from operator",
+    "Operator ticket/reference number",
     "Screenshots of deductions/subscriptions",
     "Call/SMS logs",
     "Bank statement (if charged via bank)",
