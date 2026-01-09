@@ -3,8 +3,9 @@
   "version": "1.0.1",
   "country": "Nigeria",
   "last_updated": "2026-01-04",
-  "oversight": {
-    "federal_ministry": {
+
+  "oversight_ministry": {
+    "communications_digital_economy": {
       "name": "Federal Ministry of Communications, Innovation and Digital Economy",
       "aliases": ["FMCIDE", "Ministry of Communications", "Digital Economy Ministry"],
       "oversight_powers": [
@@ -24,15 +25,16 @@
       }
     }
   },
-  "regulators_and_core_agencies": [
+
+  "regulators": [
     {
       "name": "Nigerian Communications Commission (NCC)",
       "aliases": ["NCC", "Nigerian Communications Commission"],
       "type": "Regulator",
       "mandate": [
-        "Licensing/oversight of telecoms operators",
+        "Licensing/oversight of telecom operators",
         "Consumer protection and quality of service enforcement",
-        "Spectrum/numbering regulation (as applicable)"
+        "Spectrum/numbering regulation"
       ],
       "how_to_address_head": {
         "head_title": "Executive Vice Chairman/Chief Executive Officer, Nigerian Communications Commission (NCC)",
@@ -41,20 +43,23 @@
       "contact": {
         "emails": ["ncc@ncc.gov.ng", "consumer@ncc.gov.ng", "consumerportal@ncc.gov.ng"],
         "phones": ["+234-209-461-7000", "622"],
-        "address": "Plot 423 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
-        "website_hint": "https://ncc.gov.ng",
-        "consumer_portal": "https://consumer.ncc.gov.ng/"
+        "address": "Plot 423, Aguiyi Ironsi Street, Maitama, Abuja, Nigeria"
       },
       "consumer_redress_channels": [
         "Complain to service provider first and obtain ticket/reference",
-        "If unresolved, call NCC toll-free 622 or use NCC consumer portal/email channels"
+        "If unresolved, call NCC toll-free 622 or email consumer channels"
       ],
-      "authoritative_license_registry_hint": "NCC ‘List of Licensees’ page (class and individual licensees)"
+      "authoritative_license_registry": "NCC List of Licensees page"
     },
     {
       "name": "National Information Technology Development Agency (NITDA)",
       "aliases": ["NITDA"],
-      "type": "ICT/Digital Policy & Programs (regulatory overlap on IT/digital matters)",
+      "type": "ICT/Digital Policy & Regulatory Overlap",
+      "mandate": [
+        "Digital economy frameworks",
+        "IT regulatory guidance",
+        "Data governance oversight (overlaps telecoms when IT systems are involved)"
+      ],
       "how_to_address_head": {
         "head_title": "Director-General, National Information Technology Development Agency (NITDA)",
         "salutation": "Dear Director-General"
@@ -62,42 +67,73 @@
       "contact": {
         "emails": ["info@nitda.gov.ng"],
         "phones": ["+234-816-840-1855"],
-        "address": "No. 28 Port Harcourt Crescent, Off Gimbiya Street, Area 11, Garki, Abuja"
+        "address": "No. 28, Port Harcourt Crescent, Off Gimbiya Street, Area 11, Garki, Abuja"
       }
     }
   ],
-  "major_operators": {
+
+  "watchdogs": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "aliases": ["PCC"],
+      "role": "Ombudsman for maladministration and consumer rights abuse in Nigeria",
+      "contact": {
+        "emails": ["research.unit@pcc.gov.ng", "info@pcc.gov.ng"],
+        "phones": ["+2348055600208"],
+        "address": "PCC Headquarters, Aguiyi-Ironsi Street, Maitama, Abuja"
+      }
+    }
+  ],
+
+  "players": {
     "mobile_network_operators": [
       {
         "name": "MTN Nigeria",
-        "aliases": ["MTN", "MTNNigeria", "MyMTN"],
+        "aliases": ["MTN", "MyMTN", "MTNNG"],
         "type": "MNO",
-        "contact": { "emails": ["customercare@mtn.com"], "phones": ["180"] }
+        "contact": {
+          "emails": ["customercare@mtn.com"],
+          "phones": ["180"],
+          "address": "MTN Headquarters, Falomo, Ikoyi, Lagos, Nigeria"
+        }
       },
       {
         "name": "Airtel Nigeria",
-        "aliases": ["Airtel", "AirtelNG"],
+        "aliases": ["Airtel", "AirtelNG", "AirtelNGCare"],
         "type": "MNO",
-        "contact": { "emails": ["care@ng.airtel.com"], "phones": ["111"] }
+        "contact": {
+          "emails": ["care@ng.airtel.com"],
+          "phones": ["111"],
+          "address": "Airtel Headquarters, Banana Island, Ikoyi, Lagos, Nigeria"
+        }
       },
       {
         "name": "Globacom (Glo)",
-        "aliases": ["Glo", "Globacom", "Glo Nigeria"],
+        "aliases": ["Glo", "Globacom", "GloNG"],
         "type": "MNO",
-        "contact": { "emails": ["customercare@gloworld.com"], "phones": ["121"] }
+        "contact": {
+          "emails": ["customercare@gloworld.com"],
+          "phones": ["121"],
+          "address": "Glo National Headquarters, Mike Adenuga Towers, Victoria Island, Lagos"
+        }
       },
       {
         "name": "9mobile",
-        "aliases": ["9mobile", "Etisalat Nigeria", "Emerald Nigeria"],
+        "aliases": ["9mobile", "Etisalat Nigeria", "9mobileNG"],
         "type": "MNO",
-        "contact": { "emails": ["care@9mobile.com.ng"], "phones": ["200"] }
+        "contact": {
+          "emails": ["care@9mobile.com.ng"],
+          "phones": ["200"],
+          "address": "9mobile Headquarters, Plot 19, Zone L, Banana Island, Lagos"
+        }
       }
     ],
     "other_licensees": {
-      "note": "Nigeria has many class/individual licensees (ISPs, infra companies, VAS, MVNOs, etc.). Pull the full current list from the NCC license registry.",
+      "note": "Nigeria has many class/individual licensees (ISPs, VAS, infra companies, MVNOs). Only HQ emails are listed for MNOs above. Others can be added manually from registry.",
       "authoritative_registry_hint": "NCC List of Licensees"
     }
   },
+
   "how_to_address_and_route": {
     "default_addressee_titles": [
       "Chief Executive Officer/Managing Director (Operator)",
@@ -107,13 +143,15 @@
       "Customer Care Manager, [Operator]",
       "Head, Customer Experience/Complaint Resolution (Operator)"
     ],
-    "default_salutation": "Dear Sir/Ma"
+    "default_salutation": "Dear Sir/Madam"
   },
+
   "complaint_and_escalation_flow": {
-    "step_1": "Complain to the telecom operator first; obtain a ticket/reference number.",
-    "step_2": "If unresolved within the operator’s timeline, escalate to NCC using toll-free 622, NCC consumer email/portal, and attach ticket/reference and evidence.",
-    "step_3": "If fraud/crime is involved (SIM swap fraud, extortion), report to NPF and copy NCC."
+    "step_1": "Complain to telecom operator first; obtain ticket/reference number.",
+    "step_2": "If unresolved within operator timeline, escalate to NCC (622 + email channels). Attach ticket + evidence.",
+    "step_3": "If fraud/crime involved (SIM swap fraud, extortion, trafficking), report to NPF and copy NCC + PCC + NHRC as applicable."
   },
+
   "routing_keywords": [
     "no service",
     "network outage",
@@ -127,20 +165,27 @@
     "blocked line",
     "NIN-SIM",
     "harassment calls",
-    "poor coverage",
     "fraudulent SMS",
     "spam calls",
-    "tower issue",
-    "right of way",
-    "fiber cut"
+    "tower fault",
+    "fiber cut",
+    "right of way abuse"
   ],
+
   "evidence_checklist": [
     "SIM number/MSISDN",
-    "IMEI (if SIM swap/device issue)",
-    "Ticket/reference number from operator",
+    "IMEI (if device/SIM swap issue)",
+    "Operator ticket/reference number",
     "Screenshots of deductions/subscriptions",
     "Call logs/SMS logs",
-    "Bank statement if charged via bank/card",
+    "Bank/card statement (if charged via bank)",
     "Timeline of events"
-  ]
+  ],
+
+  "security_rules": {
+    "prevent_double_unlock_uptime": true,
+    "ttl_storage_seconds": 7200,
+    "max_mailto_recipients": 10,
+    "note": "Server uses Redis durability where available. In-memory resets on restart. TTL ensures auto expiry."
+  }
 }
