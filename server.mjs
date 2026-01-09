@@ -13,7 +13,34 @@ dotenv.config();
 
 const app = express();
 
-// CORS
+// =====================
+// ✅ Core configuration
+// =====================
+const OPENAI_KEY = String(process.env.OPENAI_API_KEY || "").trim();
+const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "gpt-4o").trim();
+
+const REDIS_URL = String(process.env.REDIS_URL || "").trim();
+
+const FLW_SECRET_KEY = String(process.env.FLW_SECRET_KEY || "").trim();
+// Option C: dedicated webhook secret (recommended)
+const FLW_WEBHOOK_HASH = String(process.env.FLW_WEBHOOK_HASH || "").trim();
+
+const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || "https://petitiondesk.com").trim();
+const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
+
+const PETITION_TTL_SECONDS = Number(process.env.PETITION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
+const ADMIN_UNLOCK_KEY = String(process.env.ADMIN_UNLOCK_KEY || "").trim();
+const ADMIN_SESSION_TTL_SECONDS = Number(process.env.ADMIN_SESSION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
+
+const FLW_TIMEOUT_MS = Number(process.env.FLW_TIMEOUT_MS || 20000); // default 20s
+const VERIFY_PENDING_WINDOW_MS = Number(process.env.VERIFY_PENDING_WINDOW_MS || 15 * 60 * 1000); // 15 mins
+
+// Optional safety toggles
+const AI_SECTOR_CLASSIFY = String(process.env.AI_SECTOR_CLASSIFY || "").toLowerCase() === "true";
+
+// =====================
+// ✅ Middleware
+// =====================
 app.use(
   cors({
     origin: "*",
@@ -27,17 +54,27 @@ app.use(
   express.json({
     limit: "5mb",
     verify: (req, res, buf) => {
-      req.rawBody = buf;
+      // store raw bytes as string (works for JSON webhook)
+      req.rawBody = buf ? buf.toString("utf8") : "";
     },
   })
 );
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// =====================
+// ✅ OpenAI (guarded)
+// =====================
+const openai = OPENAI_KEY ? new OpenAI({ apiKey: OPENAI_KEY }) : null;
+
+// =====================
+// ✅ Paths
+// =====================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_DIR = path.join(__dirname, "data");
 
 // =====================
 // ✅ Redis (Render Redis)
 // =====================
-const REDIS_URL = process.env.REDIS_URL || "";
 let redis = null;
 
 if (REDIS_URL) {
@@ -47,17 +84,22 @@ if (REDIS_URL) {
       enableReadyCheck: true,
       lazyConnect: true,
     });
+
     redis.on("error", (e) => console.error("Redis error:", e?.message || e));
     redis.on("connect", () => console.log("✅ Redis connected"));
+
     redis.connect().catch(() => {});
   } catch (e) {
     console.error("Redis init error:", e?.message || e);
     redis = null;
   }
 } else {
-  console.log("⚠️ REDIS_URL not set — counters disabled");
+  console.log("⚠️ REDIS_URL not set — Redis durability/metrics disabled");
 }
 
+// =====================
+// ✅ Redis helpers
+// =====================
 async function redisIncr(key) {
   if (!redis) return;
   try {
@@ -90,11 +132,85 @@ async function redisSCard(key) {
 }
 
 // =====================
-// ✅ Admin Session (Option A)
+// ✅ Metrics keys
 // =====================
-const ADMIN_UNLOCK_KEY = process.env.ADMIN_UNLOCK_KEY || "";
-const ADMIN_SESSION_TTL_SECONDS = 30 * 60; // 30 mins
+const METRICS = {
+  visits: "pd:metrics:visits",
+  generated: "pd:metrics:generated",
+  previewed: "pd:metrics:previewed",
+  paymentInitiated: "pd:metrics:payment_initiated",
+  paymentSuccess: "pd:metrics:payment_success",
+  unlockedPaid: "pd:metrics:unlocked_paid",
+  adminSessions: "pd:metrics:admin_sessions",
+  uniquePayInit: "pd:set:payinit_txrefs",
+  uniquePaySuccess: "pd:set:paysuccess_txrefs",
+};
 
+// =====================
+// ✅ Oversight emails (env)
+// =====================
+const OVERSIGHT_EMAILS = {
+  PCC: String(process.env.PCC_EMAIL || "").trim(),
+  NHRC: String(process.env.NHRC_EMAIL || "").trim(),
+  FCCPC: String(process.env.FCCPC_EMAIL || "").trim(),
+  SERVICOM: String(process.env.SERVICOM_EMAIL || "").trim(),
+  AGF: String(process.env.AGF_EMAIL || "").trim(),
+};
+
+// =====================
+// ✅ In-memory fallback storage (still useful even with Redis)
+// =====================
+// Note: Render free tier restarts = memory resets. Redis is best.
+const petitionStore = new Map(); // tx_ref -> { ...stored }
+const USED_TX_REFS = new Set(); // webhook/verify confirmed tx_ref
+const USED_TX_SUCCESS = new Set(); // prevent double unlock in-memory
+
+function scheduleMemoryExpiry(tx_ref) {
+  setTimeout(() => {
+    petitionStore.delete(tx_ref);
+    // don't delete USED_TX_REFS; it helps anti-replay during uptime
+  }, PETITION_TTL_SECONDS * 1000).unref?.();
+}
+
+// =====================
+// ✅ Tiny input validation (no extra deps)
+// =====================
+function bad(msg) {
+  return { ok: false, error: msg };
+}
+function isNonEmptyString(v, min = 1, max = 100000) {
+  return typeof v === "string" && v.trim().length >= min && v.trim().length <= max;
+}
+function validateGenerateBody(body) {
+  const complaint = body?.complaint;
+  const petitioner = body?.petitioner || {};
+  if (!isNonEmptyString(complaint, 3, 10000)) return bad("Complaint is required (3-10000 chars).");
+
+  // petitioner optional (we use placeholders), but if provided, validate fields lightly
+  const providedAny =
+    isNonEmptyString(petitioner?.fullName, 1, 120) ||
+    isNonEmptyString(petitioner?.address, 1, 250) ||
+    isNonEmptyString(petitioner?.email, 1, 200) ||
+    isNonEmptyString(petitioner?.phone, 1, 40);
+
+  if (providedAny) {
+    if (!isNonEmptyString(petitioner?.fullName, 2, 120)) return bad("Petitioner fullName is required (2-120).");
+    if (!isNonEmptyString(petitioner?.address, 5, 250)) return bad("Petitioner address is required (5-250).");
+    if (!isEmail(String(petitioner?.email || ""))) return bad("Petitioner email is required and must be valid.");
+    if (!isNonEmptyString(petitioner?.phone, 5, 40)) return bad("Petitioner phone is required (5-40).");
+  }
+
+  return { ok: true };
+}
+function validateTxRef(body) {
+  const tx_ref = String(body?.tx_ref || "").trim();
+  if (!tx_ref || tx_ref.length < 6) return { ok: false, error: "Missing tx_ref" };
+  return { ok: true, tx_ref };
+}
+
+// =====================
+// ✅ Admin sessions (Option A)
+// =====================
 function randomToken(len = 48) {
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let out = "";
@@ -104,63 +220,75 @@ function randomToken(len = 48) {
 
 async function createAdminSession() {
   const token = `pdadm_${Date.now()}_${randomToken(24)}`;
+
+  // Prefer Redis (shared across instances). Fallback to memory.
   if (redis) {
     await redis.set(`pd:admin:${token}`, "1", "EX", ADMIN_SESSION_TTL_SECONDS);
+  } else {
+    // memory fallback
+    petitionStore.set(`__admin__:${token}`, { ok: true, expiresAt: Date.now() + ADMIN_SESSION_TTL_SECONDS * 1000 });
+    setTimeout(() => petitionStore.delete(`__admin__:${token}`), ADMIN_SESSION_TTL_SECONDS * 1000).unref?.();
   }
+
   return token;
 }
 
 async function isAdminTokenValid(token) {
-  if (!token) return false;
-  if (!redis) return false;
-  try {
-    const ok = await redis.get(`pd:admin:${token}`);
-    return ok === "1";
-  } catch {
+  const t = String(token || "").trim();
+  if (!t) return false;
+
+  if (redis) {
+    try {
+      const ok = await redis.get(`pd:admin:${t}`);
+      return ok === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  // memory fallback
+  const rec = petitionStore.get(`__admin__:${t}`);
+  if (!rec) return false;
+  if (rec.expiresAt && Date.now() > rec.expiresAt) {
+    petitionStore.delete(`__admin__:${t}`);
     return false;
   }
+  return true;
 }
 
 // =====================
-// ✅ Config
+// ✅ Fetch helper (Node 18 global fetch, fallback node-fetch)
 // =====================
-const OVERSIGHT_EMAILS = {
-  PCC: process.env.PCC_EMAIL || "",
-  NHRC: process.env.NHRC_EMAIL || "",
-  FCCPC: process.env.FCCPC_EMAIL || "",
-  SERVICOM: process.env.SERVICOM_EMAIL || "",
-  AGF: process.env.AGF_EMAIL || "",
-};
+async function getFetch() {
+  if (typeof fetch === "function") return fetch;
+  const mod = await import("node-fetch");
+  return mod.default;
+}
 
-const FLW_SECRET_KEY = process.env.FLW_SECRET_KEY || "";
-const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "https://petitiondesk.com";
-const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
-
-// In-memory storage
-const petitionStore = new Map();
-const USED_TX_REFS = new Set();
-
-// Flutterwave helper
 async function flwFetch(url, options = {}) {
   if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY missing");
+  const _fetch = await getFetch();
 
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${FLW_SECRET_KEY}`,
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FLW_TIMEOUT_MS);
 
-  const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data };
+  try {
+    const res = await _fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${FLW_SECRET_KEY}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    });
+
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  } finally {
+    clearTimeout(timer);
+  }
 }
-
-// Paths
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, "data");
 
 // =====================
 // ✅ Utilities
@@ -203,11 +331,7 @@ function extractEmailsDeep(value, out = []) {
   return out;
 }
 
-/**
- * ✅ SAN-format addresses:
- * Extract institution addresses ONLY from sector JSON.
- * We never guess. If your JSON doesn't have addresses, none will appear.
- */
+// Address extraction (JSON-only; never guess)
 function isLikelyAddress(s) {
   if (typeof s !== "string") return false;
   const v = s.trim();
@@ -254,6 +378,214 @@ function extractSubjectFromPetition(petitionText = "") {
   return (m?.[1] || "").trim() || "Petition Regarding Complaint";
 }
 
+function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
+  const toList = safeUniq(to).filter(isEmail).slice(0, 10).join(",");
+  const ccList = safeUniq(cc).filter(isEmail).slice(0, 10).join(",");
+  if (!toList) return null;
+
+  const s = encodeURIComponent(subject || "Petition");
+  const b = encodeURIComponent(body || "");
+  const ccParam = ccList ? `&cc=${encodeURIComponent(ccList)}` : "";
+  return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
+}
+
+function buildFrontendRedirectUrl(tx_ref) {
+  const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
+  return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
+}
+
+// =====================
+// ✅ Sector JSON loading (underscore/hyphen safe)
+// =====================
+function sectorKeyCandidates(sector) {
+  const s = String(sector || "").trim();
+  if (!s) return [];
+  return safeUniq([s, s.replace(/_/g, "-"), s.replace(/-/g, "_")]).filter(Boolean);
+}
+
+function loadSectorJson(sector) {
+  const candidates = sectorKeyCandidates(sector);
+  for (const key of candidates) {
+    const filePath = path.join(DATA_DIR, `${key}.json`);
+    if (!fs.existsSync(filePath)) continue;
+    try {
+      return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function listJsonSectorsFromDataDir() {
+  try {
+    return fs
+      .readdirSync(DATA_DIR)
+      .filter((f) => /\.json$/i.test(f))
+      .map((f) => f.replace(/\.json$/i, ""))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+// =====================
+// ✅ Sector detection
+// 1) sector JSON "keywords" (best)
+// 2) fallback built-in keywords (safe)
+// 3) optional AI fallback when unknown (AI_SECTOR_CLASSIFY=true)
+// =====================
+function buildSectorKeywordsIndex() {
+  const index = new Map(); // sector -> keywords[]
+  const sectors = listJsonSectorsFromDataDir();
+
+  for (const sec of sectors) {
+    const sj = loadSectorJson(sec);
+    const kw = Array.isArray(sj?.keywords) ? sj.keywords : Array.isArray(sj?.routing_keywords) ? sj.routing_keywords : [];
+    const cleaned = safeUniq(kw.map((x) => String(x || "").toLowerCase().trim())).filter(Boolean);
+    if (cleaned.length) index.set(sec, cleaned);
+  }
+  return index;
+}
+
+let SECTOR_KEYWORDS_INDEX = buildSectorKeywordsIndex();
+
+function builtInKeywordMap() {
+  // Keep all 12+ sector candidates here (fallback only)
+  return {
+    power: ["electricity", "nepa", "aedc", "power", "disco", "tcn", "nerc", "meter", "estimated billing", "transformer"],
+    aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation", "air peace", "airpeace"],
+    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit", "cbn", "failed transfer"],
+    telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "airtel", "glo", "9mobile"],
+    education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund", "transcript"],
+    health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
+    security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration", "dss", "kidnap", "detention"],
+    judiciary: ["court", "judge", "justice", "supreme", "magistrate", "bail", "delayed judgement", "njc"],
+    international_escalation: [
+      "un",
+      "ecowas",
+      "au",
+      "icc",
+      "eu",
+      "international",
+      "united nations",
+      "un human rights",
+      "congress",
+      "u.s. congress",
+      "house committee",
+      "senate",
+      "state department",
+    ],
+    anti_corruption: [
+      "anti corruption",
+      "anti-corruption",
+      "corruption",
+      "bribe",
+      "bribery",
+      "kickback",
+      "procurement",
+      "inflated contract",
+      "contract inflation",
+      "money laundering",
+      "embezzlement",
+      "ghost worker",
+      "efcc",
+      "icpc",
+      "bpp",
+      "bureau of public procurement",
+      "ccb",
+      "cct",
+      "fraud",
+    ],
+    diaspora_report: [
+      "diaspora",
+      "nidcom",
+      "embassy",
+      "high commission",
+      "consulate",
+      "passport seized",
+      "passport withheld",
+      "detained abroad",
+      "arrested abroad",
+      "deportation",
+      "stranded abroad",
+      "trafficking",
+      "human trafficking",
+      "migration",
+    ],
+  };
+}
+
+function detectSector(text) {
+  const lower = String(text || "").toLowerCase();
+
+  // 1) JSON keywords first (best)
+  for (const [sector, words] of SECTOR_KEYWORDS_INDEX.entries()) {
+    if (words.some((w) => w && lower.includes(w))) return sector;
+  }
+
+  // 2) built-in fallback
+  const map = builtInKeywordMap();
+  for (const [sec, words] of Object.entries(map)) {
+    if (words.some((w) => w && lower.includes(w))) return sec;
+  }
+
+  return "unknown";
+}
+
+async function detectSectorAI(text) {
+  if (!openai) return "unknown";
+
+  const allowed = listJsonSectorsFromDataDir();
+  if (!allowed.length) return "unknown";
+
+  try {
+    const resp = await openai.chat.completions.create({
+      model: OPENAI_MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            `You are a strict classifier. Choose exactly ONE sector from this list:\n` +
+            allowed.map((s) => `- ${s}`).join("\n") +
+            `\n\nReturn ONLY the sector key. If none fits, return "unknown".`,
+        },
+        { role: "user", content: String(text || "") },
+      ],
+      temperature: 0,
+    });
+
+    const out = String(resp.choices?.[0]?.message?.content || "").trim();
+    return allowed.includes(out) ? out : "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+function inferCaseType(sector) {
+  if (sector === "security" || sector === "judiciary") return "human_rights";
+  if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector)) return "service_delivery";
+  if (sector === "international_escalation") return "international";
+  if (sector === "anti_corruption") return "anti_corruption";
+  if (sector === "diaspora_report") return "diaspora";
+  return "other";
+}
+
+function buildAdminOversightCC({ sector, caseType }) {
+  const cc = [];
+  if (sector !== "international_escalation" && OVERSIGHT_EMAILS.PCC) cc.push(OVERSIGHT_EMAILS.PCC);
+  if (caseType === "human_rights" && OVERSIGHT_EMAILS.NHRC) cc.push(OVERSIGHT_EMAILS.NHRC);
+  if (caseType === "service_delivery") {
+    if (OVERSIGHT_EMAILS.SERVICOM) cc.push(OVERSIGHT_EMAILS.SERVICOM);
+    if (OVERSIGHT_EMAILS.FCCPC) cc.push(OVERSIGHT_EMAILS.FCCPC);
+  }
+  if (sector === "international_escalation" && OVERSIGHT_EMAILS.AGF) cc.push(OVERSIGHT_EMAILS.AGF);
+  return safeUniq(cc).filter(isEmail);
+}
+
+// =====================
+// ✅ Catalog + Matching (JSON-only)
+// =====================
 function normalizeName(s = "") {
   return String(s)
     .toLowerCase()
@@ -278,170 +610,6 @@ function extractParenAbbr(name = "") {
   return out;
 }
 
-// ✅ This solves your file mismatch:
-// - detectSector returns "anti_corruption"
-// - your file is "anti-corruption.json"
-// So we try both underscore and hyphen automatically.
-function sectorKeyCandidates(sector) {
-  const s = String(sector || "").trim();
-  if (!s) return [];
-  return safeUniq([s, s.replace(/_/g, "-"), s.replace(/-/g, "_")]).filter(Boolean);
-}
-
-function loadSectorJson(sector) {
-  const candidates = sectorKeyCandidates(sector);
-  for (const key of candidates) {
-    const filePath = path.join(DATA_DIR, `${key}.json`);
-    if (!fs.existsSync(filePath)) continue;
-    try {
-      return JSON.parse(fs.readFileSync(filePath, "utf8"));
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
-
-// =====================
-// ✅ Sector detection
-// ✅ FIXED: now detects anti_corruption + diaspora_report
-// =====================
-function detectSector(text) {
-  const lower = (text || "").toLowerCase();
-
-  const map = {
-    power: ["electricity", "nepa", "aedc", "transformer", "power", "disco", "tcn", "nerc"],
-    aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation", "air peace", "airpeace"],
-    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit"],
-    telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "airtel", "glo", "9mobile"],
-    education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund"],
-    health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
-    security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration"],
-    judiciary: ["court", "judge", "justice", "supreme", "petition", "magistrate"],
-    international_escalation: ["un", "ecowas", "au", "icc", "eu", "international"],
-
-    // ✅ NEW: anti_corruption (loads anti-corruption.json too)
-    anti_corruption: [
-      "anti corruption",
-      "anti-corruption",
-      "corruption",
-      "bribe",
-      "bribery",
-      "kickback",
-      "contract inflation",
-      "inflated contract",
-      "procurement fraud",
-      "procurement",
-      "tender",
-      "tenders",
-      "bid rigging",
-      "over invoicing",
-      "over-invoicing",
-      "misappropriation",
-      "diversion of funds",
-      "embezzle",
-      "embezzlement",
-      "fraud",
-      "money laundering",
-      "ghost worker",
-      "whistleblower",
-      "icpc",
-      "efcc",
-      "bpp",
-      "bureau of public procurement",
-      "code of conduct",
-      "cct",
-      "ccb",
-    ],
-
-    // ✅ NEW: diaspora_report
-    diaspora_report: [
-      "diaspora",
-      "nidcom",
-      "nigerians in diaspora commission",
-      "embassy",
-      "high commission",
-      "consulate",
-      "visa",
-      "passport seized",
-      "passport withheld",
-      "detained abroad",
-      "arrested abroad",
-      "deportation",
-      "stranded abroad",
-      "trafficking",
-      "human trafficking",
-      "migrant",
-      "migration",
-      "immigration",
-      "nis",
-      "border",
-    ],
-  };
-
-  for (const [sec, words] of Object.entries(map)) {
-    if (words.some((w) => lower.includes(w))) return sec;
-  }
-  return "unknown";
-}
-
-function inferCaseType(sector) {
-  if (sector === "security" || sector === "judiciary") return "human_rights";
-  if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector))
-    return "service_delivery";
-  if (sector === "international_escalation") return "international";
-  if (sector === "anti_corruption") return "anti_corruption";
-  if (sector === "diaspora_report") return "diaspora";
-  return "other";
-}
-
-function buildAdminOversightCC({ sector, caseType }) {
-  const cc = [];
-  if (sector !== "international_escalation" && OVERSIGHT_EMAILS.PCC) cc.push(OVERSIGHT_EMAILS.PCC);
-  if (caseType === "human_rights" && OVERSIGHT_EMAILS.NHRC) cc.push(OVERSIGHT_EMAILS.NHRC);
-  if (caseType === "service_delivery") {
-    if (OVERSIGHT_EMAILS.SERVICOM) cc.push(OVERSIGHT_EMAILS.SERVICOM);
-    if (OVERSIGHT_EMAILS.FCCPC) cc.push(OVERSIGHT_EMAILS.FCCPC);
-  }
-  if (sector === "international_escalation" && OVERSIGHT_EMAILS.AGF) cc.push(OVERSIGHT_EMAILS.AGF);
-  return safeUniq(cc).filter(isEmail);
-}
-
-function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
-  const toList = safeUniq(to).filter(isEmail).slice(0, 10).join(",");
-  const ccList = safeUniq(cc).filter(isEmail).slice(0, 10).join(",");
-  if (!toList) return null;
-
-  const s = encodeURIComponent(subject || "Petition");
-  const b = encodeURIComponent(body || "");
-  const ccParam = ccList ? `&cc=${encodeURIComponent(ccList)}` : "";
-  return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
-}
-
-function buildFrontendRedirectUrl(tx_ref) {
-  const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
-  return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
-}
-
-// =====================
-// ✅ Funnel counters
-// =====================
-const METRICS = {
-  visits: "pd:metrics:visits",
-  generated: "pd:metrics:generated",
-  previewed: "pd:metrics:previewed",
-  paymentInitiated: "pd:metrics:payment_initiated",
-  paymentSuccess: "pd:metrics:payment_success",
-  unlockedPaid: "pd:metrics:unlocked_paid",
-  adminSessions: "pd:metrics:admin_sessions",
-  uniquePayInit: "pd:set:payinit_txrefs",
-  uniquePaySuccess: "pd:set:paysuccess_txrefs",
-};
-
-// =====================
-// ✅ Catalog + Matching
-// ✅ Includes address extraction (JSON-only)
-// =====================
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
 
@@ -449,7 +617,6 @@ function buildInstitutionCatalog(sectorJson) {
     if (!name) return;
 
     const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
-
     const addresses = safeUniq(extractAddressesDeep(obj)).filter(isLikelyAddress);
     const primaryAddress = addresses[0] || "";
 
@@ -468,7 +635,6 @@ function buildInstitutionCatalog(sectorJson) {
       name: String(name),
       norm,
       shortNorm,
-      aliases,
       aliasNorms,
       shortAliasNorms,
       emails,
@@ -479,18 +645,23 @@ function buildInstitutionCatalog(sectorJson) {
 
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
-  if (sectorJson.oversight && typeof sectorJson.oversight === "object") {
-    for (const key of Object.keys(sectorJson.oversight)) {
-      const node = sectorJson.oversight[key];
+  // Support multiple shapes (oversight, oversight_ministry, etc.)
+  const oversightNode = sectorJson.oversight || sectorJson.oversight_ministry || sectorJson.oversightMinistry;
+  if (oversightNode && typeof oversightNode === "object") {
+    for (const key of Object.keys(oversightNode)) {
+      const node = oversightNode[key];
       addItem(node?.name || key, node);
     }
   }
 
-  ["core_institutions", "regulators", "watchdogs", "players"].forEach((key) => {
-    if (Array.isArray(sectorJson[key])) {
-      sectorJson[key].forEach((inst) => addItem(inst?.name || inst, inst));
+  // Arrays in multiple shapes
+  const arrayKeys = ["core_institutions", "regulators", "watchdogs", "players"];
+  for (const key of arrayKeys) {
+    const arr = sectorJson[key];
+    if (Array.isArray(arr)) {
+      arr.forEach((inst) => addItem(inst?.name || inst, inst));
     }
-  });
+  }
 
   return items;
 }
@@ -512,8 +683,8 @@ function matchInstitutionNameToCatalogWithScore(name, catalog) {
 
     let score = 0;
 
-    if (q === item.norm || qShort === item.shortNorm) score += 100;
-    if (item.aliasNorms.includes(q) || item.shortAliasNorms.includes(qShort)) score += 90;
+    if (q === item.norm || (qShort && qShort === item.shortNorm)) score += 100;
+    if (item.aliasNorms.includes(q) || (qShort && item.shortAliasNorms.includes(qShort))) score += 90;
 
     if (q.includes(item.norm) || item.norm.includes(q)) score += 40;
     if (qShort && (qShort.includes(item.shortNorm) || item.shortNorm.includes(qShort))) score += 35;
@@ -536,6 +707,50 @@ function matchInstitutionNameToCatalogWithScore(name, catalog) {
 
 function matchInstitutionNameToCatalog(name, catalog) {
   return matchInstitutionNameToCatalogWithScore(name, catalog).item;
+}
+
+const GLOBAL_CATALOG_BY_SECTOR = new Map();
+
+function getCatalogForSector(sector) {
+  for (const key of sectorKeyCandidates(sector)) {
+    if (GLOBAL_CATALOG_BY_SECTOR.has(key)) return GLOBAL_CATALOG_BY_SECTOR.get(key);
+  }
+  for (const key of sectorKeyCandidates(sector)) {
+    const sj = loadSectorJson(key);
+    if (!sj) continue;
+    const cat = buildInstitutionCatalog(sj);
+    GLOBAL_CATALOG_BY_SECTOR.set(key, cat);
+    return cat;
+  }
+  return [];
+}
+
+function primeGlobalCatalog() {
+  const sectors = listJsonSectorsFromDataDir();
+  for (const sec of sectors) {
+    const sj = loadSectorJson(sec);
+    if (!sj) continue;
+    GLOBAL_CATALOG_BY_SECTOR.set(sec, buildInstitutionCatalog(sj));
+  }
+}
+primeGlobalCatalog();
+
+function matchInstitutionAcrossAllSectors(name, preferredSector) {
+  const preferredCatalog = getCatalogForSector(preferredSector);
+  const hit1 = matchInstitutionNameToCatalog(name, preferredCatalog);
+  if (hit1) return hit1;
+
+  let best = null;
+  let bestScore = 0;
+  for (const catalog of GLOBAL_CATALOG_BY_SECTOR.values()) {
+    const { item, score } = matchInstitutionNameToCatalogWithScore(name, catalog);
+    if (!item) continue;
+    if (score > bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  }
+  return bestScore >= 30 ? best : null;
 }
 
 function extractSectionInstitutionNames(petitionText, sectionLabel /* "TO" | "CC" */) {
@@ -589,76 +804,7 @@ function extractSectionInstitutionNames(petitionText, sectionLabel /* "TO" | "CC
     .filter(Boolean);
 }
 
-// =====================
-// ✅ Cross-sector institution pickup (JSON-only)
-// =====================
-function listJsonSectorsFromDataDir() {
-  try {
-    return fs
-      .readdirSync(DATA_DIR)
-      .filter((f) => /\.json$/i.test(f)) // only real .json (excludes .json.bak etc)
-      .map((f) => f.replace(/\.json$/i, ""))
-      .filter(Boolean);
-  } catch {
-    return [];
-  }
-}
-
-const GLOBAL_CATALOG_BY_SECTOR = new Map();
-
-function getCatalogForSector(sector) {
-  // try direct, then underscore/hyphen variants
-  for (const key of sectorKeyCandidates(sector)) {
-    if (GLOBAL_CATALOG_BY_SECTOR.has(key)) return GLOBAL_CATALOG_BY_SECTOR.get(key);
-  }
-
-  // lazy load if not present
-  for (const key of sectorKeyCandidates(sector)) {
-    const sj = loadSectorJson(key);
-    if (!sj) continue;
-    const cat = buildInstitutionCatalog(sj);
-    GLOBAL_CATALOG_BY_SECTOR.set(key, cat);
-    return cat;
-  }
-
-  return [];
-}
-
-function primeGlobalCatalog() {
-  const sectors = listJsonSectorsFromDataDir();
-  for (const sec of sectors) {
-    const sj = loadSectorJson(sec);
-    if (!sj) continue;
-    GLOBAL_CATALOG_BY_SECTOR.set(sec, buildInstitutionCatalog(sj));
-  }
-}
-primeGlobalCatalog();
-
-function matchInstitutionAcrossAllSectors(name, preferredSector) {
-  // 1) preferred sector first
-  const preferredCatalog = getCatalogForSector(preferredSector);
-  const hit1 = matchInstitutionNameToCatalog(name, preferredCatalog);
-  if (hit1) return hit1;
-
-  // 2) fallback: scan all loaded catalogs
-  let best = null;
-  let bestScore = 0;
-
-  for (const [sec, catalog] of GLOBAL_CATALOG_BY_SECTOR.entries()) {
-    const { item, score } = matchInstitutionNameToCatalogWithScore(name, catalog);
-    if (!item) continue;
-    if (score > bestScore) {
-      bestScore = score;
-      best = item;
-    }
-  }
-
-  return bestScore >= 30 ? best : null;
-}
-
-// =====================
-// ✅ Inject institution addresses into petition text (JSON-only)
-// =====================
+// Inject JSON-only addresses back into petition (replaces TO/CC blocks)
 function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccItems = []) {
   const lines = String(petitionText || "").split(/\r?\n/);
   const out = [];
@@ -736,6 +882,61 @@ function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccIt
 }
 
 // =====================
+// ✅ Durable petition storage (Redis + memory)
+// =====================
+async function storePetition(tx_ref, payload) {
+  const record = { ...payload, storedAt: Date.now() };
+
+  petitionStore.set(tx_ref, record);
+  scheduleMemoryExpiry(tx_ref);
+
+  if (redis) {
+    try {
+      await redis.set(`pd:petition:${tx_ref}`, JSON.stringify(record), "EX", PETITION_TTL_SECONDS);
+    } catch {}
+  }
+}
+
+async function getPetition(tx_ref) {
+  if (redis) {
+    try {
+      const raw = await redis.get(`pd:petition:${tx_ref}`);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+  }
+  return petitionStore.get(tx_ref) || null;
+}
+
+async function deletePetition(tx_ref) {
+  petitionStore.delete(tx_ref);
+  if (redis) {
+    try {
+      await redis.del(`pd:petition:${tx_ref}`);
+    } catch {}
+  }
+}
+
+// Mark tx paid (durable best-effort)
+async function markTxPaid(tx_ref) {
+  USED_TX_REFS.add(tx_ref);
+  if (redis) {
+    try {
+      await redis.set(`pd:paid:${tx_ref}`, "1", "EX", PETITION_TTL_SECONDS);
+    } catch {}
+  }
+}
+async function isTxPaid(tx_ref) {
+  if (USED_TX_REFS.has(tx_ref)) return true;
+  if (!redis) return false;
+  try {
+    const v = await redis.get(`pd:paid:${tx_ref}`);
+    return v === "1";
+  } catch {
+    return false;
+  }
+}
+
+// =====================
 // ✅ Admin endpoints
 // =====================
 app.post("/admin/session", async (req, res) => {
@@ -777,23 +978,25 @@ app.get("/admin/stats", async (req, res) => {
 });
 
 // =====================
-// ✅ Flutterwave webhook
+// ✅ Flutterwave webhook (Option C: FLW_WEBHOOK_HASH)
 // =====================
 app.post("/flw-webhook", async (req, res) => {
   try {
-    const hash = req.headers["verif-hash"];
-    if (!hash || hash !== FLW_SECRET_KEY) return res.status(401).end();
+    const headerHash = String(req.headers["verif-hash"] || "").trim();
+    const expected = FLW_WEBHOOK_HASH || FLW_SECRET_KEY;
 
-    const raw = req.rawBody ? req.rawBody.toString("utf8") : "";
-    const payload = raw ? JSON.parse(raw) : req.body;
+    if (!expected) return res.status(500).end();
+    if (!headerHash || headerHash !== expected) return res.status(401).end();
 
-    if (payload.event === "charge.completed" && payload.data?.status === "successful") {
-      const tx_ref = payload.data.tx_ref;
-      const amount = Number(payload.data.amount || 0);
-      const currency = String(payload.data.currency || "").toUpperCase();
+    const payload = req.rawBody ? JSON.parse(req.rawBody) : req.body;
 
-      if (tx_ref?.startsWith("pd_") && amount >= PETITION_PRICE_NGN && currency === "NGN") {
-        USED_TX_REFS.add(tx_ref);
+    if (payload?.event === "charge.completed" && payload?.data?.status === "successful") {
+      const tx_ref = String(payload?.data?.tx_ref || "");
+      const amount = Number(payload?.data?.amount || 0);
+      const currency = String(payload?.data?.currency || "").toUpperCase();
+
+      if (tx_ref?.startsWith("pd_") && currency === "NGN" && amount >= PETITION_PRICE_NGN) {
+        await markTxPaid(tx_ref);
 
         await redisIncr(METRICS.paymentSuccess);
         await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
@@ -825,13 +1028,27 @@ app.get("/health", (req, res) => {
 // ✅ Generate petition
 // =====================
 app.post("/generate-petition", async (req, res) => {
-  const { complaint = "", petitioner = {} } = req.body || {};
-  if (!String(complaint).trim()) return res.status(400).json({ error: "Complaint is required" });
+  const v = validateGenerateBody(req.body || {});
+  if (!v.ok) return res.status(400).json(v);
 
+  const { complaint = "", petitioner = {} } = req.body || {};
   await redisIncr(METRICS.generated);
 
-  const sector = detectSector(complaint);
-  if (sector === "unknown") return res.status(400).json({ error: "Could not detect sector" });
+  let sector = detectSector(complaint);
+
+  if (sector === "unknown" && AI_SECTOR_CLASSIFY) {
+    sector = await detectSectorAI(complaint);
+  }
+
+  if (sector === "unknown") {
+    return res.status(400).json({
+      ok: false,
+      error: "Could not detect sector",
+      hint: "Add more keywords in the sector JSON (keywords: []) or enable AI_SECTOR_CLASSIFY=true",
+    });
+  }
+
+  const caseType = inferCaseType(sector);
 
   const pName = (petitioner.fullName || "").trim() || "[Your Full Name]";
   const pAddress = (petitioner.address || "").trim() || "[Your Address]";
@@ -839,13 +1056,12 @@ app.post("/generate-petition", async (req, res) => {
   const pPhone = (petitioner.phone || "").trim() || "[Phone Number]";
 
   const autoDate = new Date().toLocaleDateString("en-GB");
-  const caseType = inferCaseType(sector);
 
-  if (!process.env.OPENAI_API_KEY) return res.status(500).json({ error: "OPENAI_API_KEY not configured" });
+  if (!openai) return res.status(500).json({ ok: false, error: "OPENAI_API_KEY not configured" });
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: OPENAI_MODEL,
       messages: [
         {
           role: "system",
@@ -908,36 +1124,57 @@ CRITICAL RULES:
         },
         { role: "user", content: `Complaint: ${complaint}` },
       ],
+      temperature: 0,
     });
 
     let petitionText = completion.choices?.[0]?.message?.content?.trim() || "Generation failed.";
     const subject = extractSubjectFromPetition(petitionText);
 
-    // ✅ Sector catalog (now loads anti-corruption.json too)
+    // Load sector JSON and build catalog
     const sectorJson = loadSectorJson(sector);
-    const catalog = buildInstitutionCatalog(sectorJson);
+    const sectorCatalog = buildInstitutionCatalog(sectorJson); // built for matching, but cross-sector uses global
 
-    // parse explicit TO and CC sections
+    // Parse TO/CC institution names from petition text
     const toNames = extractSectionInstitutionNames(petitionText, "TO");
     const ccNames = extractSectionInstitutionNames(petitionText, "CC");
 
-    // ✅ Preferred sector first, then cross-sector fallback
-    const toItems = safeUniq(toNames.map((n) => matchInstitutionAcrossAllSectors(n, sector)).filter(Boolean));
-    const ccItems = safeUniq(ccNames.map((n) => matchInstitutionAcrossAllSectors(n, sector)).filter(Boolean));
+    // Match institutions (sector-first + cross-sector fallback)
+    const toItems = safeUniq(
+      toNames
+        .map((n) => matchInstitutionNameToCatalog(n, sectorCatalog) || matchInstitutionAcrossAllSectors(n, sector))
+        .filter(Boolean)
+    );
 
-    // ✅ Insert verified addresses (JSON-only) into petition text
+    const ccItems = safeUniq(
+      ccNames
+        .map((n) => matchInstitutionNameToCatalog(n, sectorCatalog) || matchInstitutionAcrossAllSectors(n, sector))
+        .filter(Boolean)
+    );
+
+    // Inject verified addresses (JSON-only)
     petitionText = injectInstitutionAddressesIntoPetition(petitionText, toItems, ccItems);
 
+    // Extract verified emails from JSON catalog hits
     const toEmails = safeUniq(toItems.flatMap((m) => m.emails)).filter(isEmail);
     const ccEmailsFromJson = safeUniq(ccItems.flatMap((m) => m.emails)).filter(isEmail);
 
-    // Admin oversight CC (env vars)
+    // Add admin oversight CC rules
     const adminCC = buildAdminOversightCC({ sector, caseType });
     const finalCC = safeUniq([...ccEmailsFromJson, ...adminCC]).filter(isEmail);
 
+    // Safety: don’t proceed if nobody to email
+    if (!toEmails.length) {
+      return res.status(400).json({
+        ok: false,
+        error: "No recipient email found for the detected TO institution in your sector JSON.",
+        hint: `Add verified emails for the main institution in data/${sector}.json (or its hyphen/underscore variant).`,
+        sector,
+      });
+    }
+
     const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
-    petitionStore.set(tx_ref, {
+    await storePetition(tx_ref, {
       petition: petitionText,
       sector,
       caseType,
@@ -954,36 +1191,47 @@ CRITICAL RULES:
     const preview = petitionText.length > 600 ? petitionText.substring(0, 600) + "..." : petitionText;
 
     return res.json({
+      ok: true,
       needsPayment: true,
       amount: PETITION_PRICE_NGN,
       currency: "NGN",
       tx_ref,
       preview,
+      sector,
+      caseType,
     });
   } catch (err) {
     console.error("Generation error:", err);
-    return res.status(500).json({ error: "Failed to generate petition" });
+    return res.status(500).json({ ok: false, error: "Failed to generate petition" });
   }
 });
 
 // =====================
-// ✅ Pay initialize
+// ✅ Pay initialize (Flutterwave)
 // =====================
 app.post("/pay/initialize", async (req, res) => {
   try {
-    const { tx_ref, email, name, phone } = req.body || {};
+    const tx_ref = String(req.body?.tx_ref || "").trim();
     if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
 
-    const stored = petitionStore.get(tx_ref);
+    if (!FLW_SECRET_KEY) return res.status(500).json({ ok: false, error: "FLW_SECRET_KEY not configured" });
+
+    const stored = await getPetition(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
 
+    // record initialization time
     stored.paymentInitializedAt = Date.now();
-    petitionStore.set(tx_ref, stored);
+    await storePetition(tx_ref, stored);
 
     await redisIncr(METRICS.paymentInitiated);
     await redisSAdd(METRICS.uniquePayInit, tx_ref);
 
     const redirect_url = buildFrontendRedirectUrl(tx_ref);
+
+    // Allow frontend to pass customer details; fall back to safe defaults
+    const email = String(req.body?.email || "").trim() || "user@petitiondesk.com";
+    const name = String(req.body?.name || "").trim() || "User";
+    const phone = String(req.body?.phone || "").trim() || "";
 
     const payload = {
       tx_ref,
@@ -991,9 +1239,9 @@ app.post("/pay/initialize", async (req, res) => {
       currency: "NGN",
       redirect_url,
       customer: {
-        email: email || "user@petitiondesk.com",
-        name: name || "User",
-        phonenumber: phone || "",
+        email,
+        name,
+        phonenumber: phone,
       },
       customizations: { title: "PetitionDesk", description: "Unlock full petition" },
     };
@@ -1003,38 +1251,47 @@ app.post("/pay/initialize", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    if (!ok || !data?.data?.link) return res.status(400).json({ ok: false, error: "Payment failed" });
+    if (!ok || !data?.data?.link) {
+      return res.status(400).json({ ok: false, error: "Payment failed" });
+    }
 
     return res.json({ ok: true, tx_ref, link: data.data.link });
   } catch (err) {
-    console.error(err);
+    console.error("pay/initialize error:", err);
     return res.status(500).json({ ok: false, error: "Payment error" });
   }
 });
 
 // =====================
-// ✅ Unlock petition
+// ✅ Unlock petition (Admin override OR webhook OR verify)
 // =====================
 app.post("/unlock-petition", async (req, res) => {
   try {
-    const { tx_ref } = req.body || {};
-    if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
+    const v = validateTxRef(req.body || {});
+    if (!v.ok) return res.status(400).json(v);
 
-    const stored = petitionStore.get(tx_ref);
+    const tx_ref = v.tx_ref;
+
+    if (USED_TX_SUCCESS.has(tx_ref)) {
+      return res.status(410).json({ ok: false, error: "Already unlocked. Generate petition again." });
+    }
+
+    const stored = await getPetition(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
 
+    const mailto = buildMailto({
+      to: stored.toEmails,
+      cc: stored.ccEmails,
+      subject: stored.subject,
+      body: stored.petition,
+    });
+
     // ✅ Admin override
-    const adminToken = String(req.headers["x-admin-token"] || "");
+    const adminToken = String(req.headers["x-admin-token"] || "").trim();
     const adminOk = await isAdminTokenValid(adminToken);
 
     if (adminOk) {
-      const mailto = buildMailto({
-        to: stored.toEmails,
-        cc: stored.ccEmails,
-        subject: stored.subject,
-        body: stored.petition,
-      });
-
+      USED_TX_SUCCESS.add(tx_ref);
       return res.json({
         ok: true,
         unlocked: true,
@@ -1049,16 +1306,10 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
-    // ✅ Webhook-confirmed
-    if (USED_TX_REFS.has(tx_ref)) {
-      const mailto = buildMailto({
-        to: stored.toEmails,
-        cc: stored.ccEmails,
-        subject: stored.subject,
-        body: stored.petition,
-      });
-
-      petitionStore.delete(tx_ref);
+    // ✅ Webhook-confirmed (or Redis-paid flag)
+    if (await isTxPaid(tx_ref)) {
+      USED_TX_SUCCESS.add(tx_ref);
+      await deletePetition(tx_ref);
       await redisIncr(METRICS.unlockedPaid);
 
       return res.json({
@@ -1074,7 +1325,9 @@ app.post("/unlock-petition", async (req, res) => {
       });
     }
 
-    // ✅ Verify with Flutterwave
+    // ✅ Verify with Flutterwave (fallback)
+    if (!FLW_SECRET_KEY) return res.status(402).json({ ok: false, error: "Payment not verified" });
+
     let verifyResponse;
     try {
       verifyResponse = await flwFetch(
@@ -1084,16 +1337,15 @@ app.post("/unlock-petition", async (req, res) => {
       verifyResponse = { ok: false, status: 0, data: {} };
     }
 
-    // Pending window
     if (!verifyResponse.ok) {
       const initAt = Number(stored.paymentInitializedAt || 0);
-      const recentlyInitialized = initAt && Date.now() - initAt < 15 * 60 * 1000;
+      const recentlyInitialized = initAt && Date.now() - initAt < VERIFY_PENDING_WINDOW_MS;
 
       if (recentlyInitialized) {
         return res.status(202).json({
           ok: false,
           pending: true,
-          error: "Payment processing. Please wait a moment...",
+          error: "Payment processing. Please wait a moment and try again.",
         });
       }
 
@@ -1108,17 +1360,11 @@ app.post("/unlock-petition", async (req, res) => {
     const verified = status === "successful" && currency === "NGN" && amount >= PETITION_PRICE_NGN;
     if (!verified) return res.status(402).json({ ok: false, error: "Payment not verified" });
 
-    USED_TX_REFS.add(tx_ref);
-    petitionStore.delete(tx_ref);
+    await markTxPaid(tx_ref);
 
+    USED_TX_SUCCESS.add(tx_ref);
+    await deletePetition(tx_ref);
     await redisIncr(METRICS.unlockedPaid);
-
-    const mailto = buildMailto({
-      to: stored.toEmails,
-      cc: stored.ccEmails,
-      subject: stored.subject,
-      body: stored.petition,
-    });
 
     return res.json({
       ok: true,
@@ -1132,17 +1378,17 @@ app.post("/unlock-petition", async (req, res) => {
       mailto,
     });
   } catch (err) {
-    console.error(err);
+    console.error("unlock error:", err);
     return res.status(500).json({ ok: false, error: "Unlock failed" });
   }
 });
 
 // =====================
-// ✅ PDF
+// ✅ PDF download
 // =====================
 app.get("/download-pdf", (req, res) => {
   try {
-    const text = decodeURIComponent(req.query.text || "");
+    const text = decodeURIComponent(String(req.query.text || ""));
     if (!text) return res.status(400).send("Missing text");
 
     res.setHeader("Content-Type", "application/pdf");
@@ -1159,16 +1405,26 @@ app.get("/download-pdf", (req, res) => {
 
     pdf.end();
   } catch (err) {
-    console.error(err);
+    console.error("PDF error:", err);
     res.status(500).send("PDF generation failed");
   }
 });
 
 // =====================
+// ✅ Boot
+// =====================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
+  console.log(`📁 Data dir: ${DATA_DIR}`);
   console.log(
     `Webhook URL: ${process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`}/flw-webhook`
   );
+
+  if (!FLW_WEBHOOK_HASH) {
+    console.log("⚠️ FLW_WEBHOOK_HASH not set — webhook will fallback to FLW_SECRET_KEY (not recommended).");
+  }
+  if (!OPENAI_KEY) {
+    console.log("⚠️ OPENAI_API_KEY not set — petition generation will fail.");
+  }
 });
