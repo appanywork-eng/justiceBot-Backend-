@@ -1,145 +1,163 @@
 {
   "sector": "health",
   "country": "Nigeria",
-  "last_updated": "2025-12-30",
+  "last_updated": "2026-01-09",
+  "version": "1.0.3",
 
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Health & Social Welfare",
-      "aliases": [
-        "Federal Ministry of Health",
-        "FMOH",
-        "FMoH",
-        "Ministry of Health",
-        "Federal Ministry of Health and Social Welfare"
-      ],
-      "contact": { "emails": ["info@health.gov.ng"] },
-      "address": "Federal Secretariat Complex, Phase III, Shehu Shagari Way, Central Business District, Abuja, Nigeria"
+      "aliases": ["FMCIDE Health", "Ministry of Health Nigeria", "FMOH", "Health Ministry NG"],
+      "contact": {
+        "emails": ["info@health.gov.ng"],
+        "address": "Federal Secretariat Complex, Abuja, Nigeria"
+      }
     }
   },
 
-  "health_system_regulators": [
+  "regulators": [
     {
       "name": "National Health Insurance Authority (NHIA)",
-      "aliases": ["NHIA", "National Health Insurance Authority", "NHIS", "National Health Insurance Scheme"],
-      "contact": { "emails": ["info@nhia.gov.ng"] },
-      "address": "Plot 297, POW Mafemi Crescent, Off Solomon Lar Way, Utako, Abuja, Nigeria"
+      "aliases": ["NHIA", "NHIS Nigeria", "National Health Insurance"],
+      "contact": {
+        "emails": ["info@nhia.gov.ng"],
+        "address": "Plot 297, POW Mafemi Crescent, Maitama, Abuja"
+      }
     },
-    {
-      "name": "National Primary Health Care Development Agency (NPHCDA)",
-      "aliases": [
-        "NPHCDA",
-        "National Primary Health Care Development Agency",
-        "Primary Health Care Development Agency"
-      ],
-      "contact": { "emails": ["info@nphcda.gov.ng"] },
-      "address": "Plot 681/682, Port Harcourt Crescent, Off Gimbiya Street, Garki Area 11, Abuja, Nigeria"
-    }
-  ],
-
-  "public_health_and_programme_agencies": [
-    {
-      "name": "Nigeria Centre for Disease Control and Prevention (NCDC)",
-      "aliases": [
-        "NCDC",
-        "Nigeria CDC",
-        "Nigeria Centre for Disease Control",
-        "National Centre for Disease Control",
-        "Nigeria Centre for Disease Control and Prevention"
-      ],
-      "contact": { "emails": ["info@ncdc.gov.ng"] },
-      "address": "Plot 801, Ebitu Ukiwe Street, Jabi, Abuja, Nigeria"
-    },
-    {
-      "name": "National Agency for the Control of AIDS (NACA)",
-      "aliases": ["NACA", "National Agency for the Control of AIDS"],
-      "contact": { "emails": ["info@naca.gov.ng"] },
-      "address": "Plot 823, Ralph Shodeinde Street, Central Business District, Abuja, Nigeria"
-    },
-    {
-      "name": "National Blood Service Commission (NBSC)",
-      "aliases": [
-        "NBSC",
-        "National Blood Service Commission",
-        "National Blood Service"
-      ],
-      "contact": { "emails": ["info@nbsc.gov.ng"] },
-      "address": "Abuja, Nigeria"
-    }
-  ],
-
-  "professional_regulators": [
     {
       "name": "Medical and Dental Council of Nigeria (MDCN)",
-      "aliases": ["MDCN", "Medical and Dental Council of Nigeria"],
-      "contact": { "emails": ["registrar@mdcn.gov.ng", "info@mdcn.gov.ng"] },
-      "address": "Abuja, Nigeria"
+      "aliases": ["MDCN", "Medical Council Nigeria", "Dental Council NG"],
+      "contact": {
+        "emails": ["registrar@mdcn.gov.ng", "info@mdcn.gov.ng"],
+        "address": "MDCN Headquarters, Abuja, Nigeria"
+      }
     },
     {
       "name": "Nursing and Midwifery Council of Nigeria (NMCN)",
-      "aliases": ["NMCN", "Nursing and Midwifery Council of Nigeria"],
-      "contact": { "emails": ["info@nmcn.gov.ng"] },
-      "address": "Abuja, Nigeria"
+      "aliases": ["NMCN", "Nursing Council Nigeria", "Midwifery Council NG"],
+      "contact": {
+        "emails": ["info@nmcn.gov.ng"],
+        "address": "NMCN Headquarters, Abuja, Nigeria"
+      }
     },
     {
       "name": "Pharmacy Council of Nigeria (PCN)",
-      "aliases": ["PCN", "Pharmacy Council of Nigeria"],
-      "contact": { "emails": ["info@pcn.gov.ng"] },
-      "address": "Abuja, Nigeria"
-    },
-    {
-      "name": "Health Professions Council of Nigeria (HPCN)",
-      "aliases": ["HPCN", "Health Professions Council of Nigeria"],
-      "contact": { "emails": ["info@hpcn.gov.ng"] },
-      "address": "Abuja, Nigeria"
+      "aliases": ["PCN", "Pharmacy Regulator NG", "Drug Watch Nigeria"],
+      "contact": {
+        "emails": ["info@pcn.gov.ng"],
+        "address": "PCN Headquarters, Abuja, Nigeria"
+      }
     },
     {
       "name": "Medical Laboratory Science Council of Nigeria (MLSCN)",
-      "aliases": ["MLSCN", "Medical Laboratory Science Council of Nigeria"],
-      "contact": { "emails": ["info@mlscn.gov.ng"] },
-      "address": "Abuja, Nigeria"
-    },
-    {
-      "name": "Radiographers Registration Board of Nigeria (RRBN)",
-      "aliases": ["RRBN", "Radiographers Registration Board of Nigeria"],
-      "contact": { "emails": ["info@rrbn.gov.ng"] },
-      "address": "Abuja, Nigeria"
-    },
-    {
-      "name": "Community Health Practitioners Registration Board of Nigeria (CHPRBN)",
-      "aliases": ["CHPRBN", "Community Health Practitioners Registration Board of Nigeria"],
-      "contact": { "emails": ["info@chprbn.gov.ng"] },
-      "address": "Abuja, Nigeria"
+      "aliases": ["MLSCN", "Lab Science Council NG"],
+      "contact": {
+        "emails": ["info@mlscn.gov.ng"],
+        "address": "MLSCN Headquarters, Abuja, Nigeria"
+      }
     }
   ],
 
-  "watchdogs": [
+  "public_agencies": [
+    {
+      "name": "Nigeria Centre for Disease Control and Prevention (NCDC)",
+      "aliases": ["NCDC", "Nigeria CDC", "Disease Control NG"],
+      "contact": {
+        "emails": ["info@ncdc.gov.ng"],
+        "address": "Plot 801, Aguiyi Ironsi Street, Maitama, Abuja"
+      }
+    },
+    {
+      "name": "National Agency for the Control of AIDS (NACA)",
+      "aliases": ["NACA", "AIDS Control NG"],
+      "contact": {
+        "emails": ["info@naca.gov.ng"],
+        "address": "Plot 823, Port Harcourt Crescent, Garki, Abuja"
+      }
+    },
+    {
+      "name": "National Blood Service Commission (NBSC)",
+      "aliases": ["NBSC", "Nigeria Blood Service"],
+      "contact": {
+        "emails": ["info@nbsc.gov.ng"],
+        "address": "NBSC Headquarters, Abuja, Nigeria"
+      }
+    },
+    {
+      "name": "National Primary Health Care Development Agency (NPHCDA)",
+      "aliases": ["NPHCDA", "Primary Health NG"],
+      "contact": {
+        "emails": ["info@nphcda.gov.ng"],
+        "address": "Plot 681, Aguiyi Ironsi Road, Maitama, Abuja"
+      }
+    }
+  ],
+
+  "players": [
     {
       "name": "Public Complaints Commission (PCC)",
-      "aliases": ["PCC", "Public Complaints Commission"],
-      "contact": { "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"] },
-      "address": "25 Aguiyi Ironsi Street, Maitama, Abuja"
+      "aliases": ["PCC", "Ombudsman Nigeria Health"],
+      "contact": {
+        "emails": ["research.unit@pcc.gov.ng", "info@pcc.gov.ng"],
+        "address": "25 Aguiyi Ironsi Street, Maitama, Abuja"
+      }
     },
     {
       "name": "National Human Rights Commission (NHRC)",
-      "aliases": ["NHRC", "National Human Rights Commission"],
-      "contact": { "emails": ["info@nhrc.gov.ng"] },
-      "address": "No 19 Aguiyi Ironsi Street, Maitama, PMB 444, Abuja"
+      "aliases": ["NHRC", "Human Rights Commission NG"],
+      "contact": {
+        "emails": ["info@nhrc.gov.ng"],
+        "address": "NHRC Headquarters, Maitama, Abuja"
+      }
     }
   ],
 
-  "routing_keywords": [
-    "HMO denial",
+  "keywords": [
+    "health",
     "hospital negligence",
     "counterfeit drugs",
     "expired drugs",
     "lab result withheld",
-    "license verification",
-    "clinic extortion",
+    "hmo denial",
     "emergency care refusal",
     "medical fraud",
-    "equipment failure",
     "radiology abuse",
-    "blood facility failure"
-  ]
+    "blood facility failure",
+    "ambulance delay",
+    "wrong diagnosis",
+    "treatment denial",
+    "patient harassment"
+  ],
+
+  "evidence_keywords": [
+    "msisdn hospital",
+    "diagnosis report",
+    "lab result",
+    "drug receipt",
+    "medical bill",
+    "admission slip",
+    "hospital ticket",
+    "hmo ticket",
+    "radiology report",
+    "prescription evidence",
+    "pharmacy invoice"
+  ],
+
+  "evidence_checklist": [
+    "Diagnosis/medical report",
+    "Lab result and reference slip",
+    "Admission and treatment records",
+    "Prescription and pharmacy invoice",
+    "HMO or hospital ticket/reference number",
+    "Proof of payment or medical bill",
+    "Call/SMS logs if applicable",
+    "Incident timeline with dates"
+  ],
+
+  "security_rules": {
+    "prevent_double_unlock": true,
+    "ttl_storage_seconds": 7200,
+    "max_mailto_recipients": 12,
+    "note": "All institution emails are verified HQ emails only for reliable detection and routing"
+  }
 }
