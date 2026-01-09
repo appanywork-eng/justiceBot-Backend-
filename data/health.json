@@ -2,7 +2,30 @@
   "sector": "health",
   "country": "Nigeria",
   "last_updated": "2026-01-09",
-  "version": "1.0.0",
+  "version": "1.0.1",
+
+  "keywords": [
+    "hospital negligence",
+    "treatment refusal",
+    "emergency care refusal",
+    "medical fraud",
+    "counterfeit drugs",
+    "expired drugs",
+    "lab result withheld",
+    "clinic extortion",
+    "equipment failure",
+    "radiology abuse",
+    "blood service failure",
+    "HMO denial",
+    "NHIA claim blocked",
+    "ambulance delay",
+    "unethical discharge",
+    "accident treatment denied",
+    "treatment delayed",
+    "diagnosis delayed",
+    "withheld medical report",
+    "illegal medical fees"
+  ],
 
   "oversight": {
     "federal_ministry": {
@@ -121,7 +144,7 @@
       "mandate": ["Consumer rights enforcement for health service abuses"],
       "contact": {
         "emails": ["contact@fccpc.gov.ng"],
-        "address": "Abuja, Nigeria"
+        "address": "FCCPC Headquarters, Abuja, Nigeria"
       }
     },
     {
@@ -131,7 +154,7 @@
       "mandate": ["Human rights violations involving health abuses"],
       "contact": {
         "emails": ["info@nhrc.gov.ng"],
-        "address": "Abuja, Nigeria"
+        "address": "NHRC Headquarters, Abuja, Nigeria"
       }
     }
   ],
@@ -179,34 +202,27 @@
     }
   ],
 
-  "fallback_routing": {
-    "note": "When a private hospital is mentioned but no email is found internally, route to NHIA and CC watchdogs instead.",
-    "route_to": ["NHIA"],
-    "cc_to": ["PCC", "FCCPC", "NHRC"]
+  "complaint_escalation_flow": {
+    "note": "All complaints must first go to the hospital/operator mentioned. If unresolved, escalate to NHIA and copy PCC, FCCPC, or FCCPC depending on case."
   },
 
-  "routing_keywords": [
-    "hospital negligence",
-    "treatment refusal",
-    "hmo denial",
-    "counterfeit drugs",
-    "expired drugs",
-    "lab result withheld",
-    "equipment failure",
-    "emergency care refusal",
-    "radiology abuse",
-    "clinic extortion",
-    "accident victims refusal"
-  ],
-
-  "evidence_checklist": [
-    "Hospital name and branch",
-    "Incident report / medical reference",
-    "Patient details",
-    "Timeline of events",
-    "Proof of payment if extortion involved",
-    "Witness reports if available",
-    "Supporting images/videos"
+  "evidence_keywords": [
+    "msisdn",
+    "sim number",
+    "imei",
+    "ussd fail",
+    "sim swap",
+    "tower",
+    "fiber",
+    "data debit",
+    "airtime debit",
+    "hospital report",
+    "medical bill",
+    "treatment denied",
+    "diagnosis delayed",
+    "fraudulent charges",
+    "illegal fees",
+    "lab misconduct"
   ],
 
   "security_rules": {
