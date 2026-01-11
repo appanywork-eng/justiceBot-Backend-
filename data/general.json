@@ -1,0 +1,60 @@
+{
+  "sector": "general",
+  "description": "Fallback sector for complaints that do not match any other sector keywords. Routes to PCC and core oversight/watchdog bodies.",
+  "keywords": [],
+  "oversight": {
+    "pcc": {
+      "name": "Public Complaints Commission (PCC)",
+      "aliases": ["Public Complaints Commission", "PCC", "Ombudsman", "Federal Ombudsman"],
+      "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"],
+      "addresses": ["25 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria"]
+    }
+  },
+  "watchdogs": [
+    {
+      "name": "National Human Rights Commission (NHRC)",
+      "aliases": ["NHRC", "Human Rights Commission"],
+      "emails": ["info@nhrc.gov.ng"],
+      "addresses": []
+    },
+    {
+      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
+      "aliases": ["FCCPC", "Consumer Protection"],
+      "emails": ["contact@fccpc.gov.ng"],
+      "addresses": ["23 Jimmy Carter Street, Asokoro, Abuja"]
+    },
+    {
+      "name": "SERVICOM",
+      "aliases": ["Servicom", "Service Compact with All Nigerians"],
+      "emails": ["info@servicom.gov.ng"],
+      "addresses": ["Phase 3, Federal Secretariat, Shehu Shagari Way, Abuja, FCT, Nigeria"]
+    }
+  ],
+  "core_institutions": [
+    {
+      "name": "Lagos State Citizens’ Mediation Bureau (CMB) / Citizens Mediation Centre (CMC)",
+      "aliases": [
+        "Citizens Mediation Centre",
+        "Citizens Mediation Bureau",
+        "Lagos CMC",
+        "Lagos CMB",
+        "CMC Ikeja"
+      ],
+      "emails": ["cmcikeja01@gmail.com", "info@lagosstatemoj.org"],
+      "addresses": ["CBD, Alausa, Ikeja, Lagos (Lagos State Ministry of Justice)"]
+    },
+    {
+      "name": "Lagos Multi-Door Courthouse (LMDC)",
+      "aliases": ["LMDC", "Lagos Multi Door Courthouse", "Lagos ADR Courthouse"],
+      "emails": ["info@lagosmultidoor.org.ng"],
+      "addresses": ["Onikan Lagos Island (see LMDC contact page)"]
+    }
+  ],
+  "regulators": [],
+  "players": [],
+  "routing_notes": [
+    "Use this sector only when no other sector matches.",
+    "Default TO should be PCC for general complaints.",
+    "For private disputes (e.g., landlord-tenant), ADR bodies or state justice channels may be more effective than PCC unless a public institution is involved."
+  ]
+}
