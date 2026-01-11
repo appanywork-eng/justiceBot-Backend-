@@ -13,34 +13,32 @@ dotenv.config();
 
 const app = express();
 
-// =====================
-// ✅ Core configuration
-// =====================
+/* ======================================================
+   CORE CONFIG
+====================================================== */
 const OPENAI_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "gpt-4o").trim();
 
 const REDIS_URL = String(process.env.REDIS_URL || "").trim();
 
 const FLW_SECRET_KEY = String(process.env.FLW_SECRET_KEY || "").trim();
-// ✅ dedicated webhook secret (recommended)
 const FLW_WEBHOOK_HASH = String(process.env.FLW_WEBHOOK_HASH || "").trim();
 
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || "https://petitiondesk.com").trim();
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 
-const PETITION_TTL_SECONDS = Number(process.env.PETITION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
+const PETITION_TTL_SECONDS = Number(process.env.PETITION_TTL_SECONDS || 2 * 60 * 60);
 const ADMIN_UNLOCK_KEY = String(process.env.ADMIN_UNLOCK_KEY || "").trim();
-const ADMIN_SESSION_TTL_SECONDS = Number(process.env.ADMIN_SESSION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
+const ADMIN_SESSION_TTL_SECONDS = Number(process.env.ADMIN_SESSION_TTL_SECONDS || 2 * 60 * 60);
 
-const FLW_TIMEOUT_MS = Number(process.env.FLW_TIMEOUT_MS || 20000); // default 20s
-const VERIFY_PENDING_WINDOW_MS = Number(process.env.VERIFY_PENDING_WINDOW_MS || 15 * 60 * 1000); // 15 mins
+const FLW_TIMEOUT_MS = Number(process.env.FLW_TIMEOUT_MS || 20000);
+const VERIFY_PENDING_WINDOW_MS = Number(process.env.VERIFY_PENDING_WINDOW_MS || 15 * 60 * 1000);
 
-// Optional safety toggles
 const AI_SECTOR_CLASSIFY = String(process.env.AI_SECTOR_CLASSIFY || "").toLowerCase() === "true";
 
-// =====================
-// ✅ Middleware
-// =====================
+/* ======================================================
+   MIDDLEWARE
+====================================================== */
 app.use(
   cors({
     origin: "*",
@@ -59,21 +57,21 @@ app.use(
   })
 );
 
-// =====================
-// ✅ OpenAI (guarded)
-// =====================
+/* ======================================================
+   OPENAI (GUARDED)
+====================================================== */
 const openai = OPENAI_KEY ? new OpenAI({ apiKey: OPENAI_KEY }) : null;
 
-// =====================
-// ✅ Paths
-// =====================
+/* ======================================================
+   PATHS
+====================================================== */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, "data");
 
-// =====================
-// ✅ Redis (Render Redis)
-// =====================
+/* ======================================================
+   REDIS
+====================================================== */
 let redis = null;
 
 if (REDIS_URL) {
@@ -96,9 +94,9 @@ if (REDIS_URL) {
   console.log("⚠️ REDIS_URL not set — Redis durability/metrics disabled");
 }
 
-// =====================
-// ✅ Redis helpers
-// =====================
+/* ======================================================
+   REDIS HELPERS
+====================================================== */
 async function redisIncr(key) {
   if (!redis) return;
   try {
@@ -130,9 +128,9 @@ async function redisSCard(key) {
   }
 }
 
-// =====================
-// ✅ Metrics keys
-// =====================
+/* ======================================================
+   METRICS
+====================================================== */
 const METRICS = {
   visits: "pd:metrics:visits",
   generated: "pd:metrics:generated",
@@ -145,9 +143,9 @@ const METRICS = {
   uniquePaySuccess: "pd:set:paysuccess_txrefs",
 };
 
-// =====================
-// ✅ Oversight emails (env)
-// =====================
+/* ======================================================
+   OVERSIGHT EMAILS (ENV)
+====================================================== */
 const OVERSIGHT_EMAILS = {
   PCC: String(process.env.PCC_EMAIL || "").trim(),
   NHRC: String(process.env.NHRC_EMAIL || "").trim(),
@@ -156,13 +154,16 @@ const OVERSIGHT_EMAILS = {
   AGF: String(process.env.AGF_EMAIL || "").trim(),
 };
 
-// =====================
-// ✅ In-memory fallback storage (still useful even with Redis)
-// =====================
-// Note: Render free tier restarts = memory resets. Redis is best.
-const petitionStore = new Map(); // tx_ref -> { ...stored }
-const USED_TX_REFS = new Set(); // webhook/verify confirmed tx_ref
-const USED_TX_SUCCESS = new Set(); // prevent double unlock in-memory
+// Hard fallback ONLY to prevent “no recipient email found” for general.
+// Best practice is still: set PCC_EMAIL in Render.
+const PCC_FALLBACK_EMAILS = ["complaint@pcc.gov.ng", "info@pcc.gov.ng"];
+
+/* ======================================================
+   IN-MEMORY STORAGE (FALLBACK)
+====================================================== */
+const petitionStore = new Map(); // tx_ref -> stored record
+const USED_TX_REFS = new Set(); // paid flags (memory)
+const USED_TX_SUCCESS = new Set(); // unlocked flags (memory)
 
 function scheduleMemoryExpiry(tx_ref) {
   setTimeout(() => {
@@ -170,14 +171,17 @@ function scheduleMemoryExpiry(tx_ref) {
   }, PETITION_TTL_SECONDS * 1000).unref?.();
 }
 
-// =====================
-// ✅ Tiny input validation (no extra deps)
-// =====================
+/* ======================================================
+   INPUT VALIDATION
+====================================================== */
 function bad(msg) {
   return { ok: false, error: msg };
 }
 function isNonEmptyString(v, min = 1, max = 100000) {
   return typeof v === "string" && v.trim().length >= min && v.trim().length <= max;
+}
+function isEmail(s) {
+  return typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
 }
 function validateGenerateBody(body) {
   const complaint = body?.complaint;
@@ -206,9 +210,9 @@ function validateTxRef(body) {
   return { ok: true, tx_ref, transaction_id };
 }
 
-// =====================
-// ✅ Admin sessions (Option A)
-// =====================
+/* ======================================================
+   ADMIN SESSION
+====================================================== */
 function randomToken(len = 48) {
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let out = "";
@@ -218,15 +222,12 @@ function randomToken(len = 48) {
 
 async function createAdminSession() {
   const token = `pdadm_${Date.now()}_${randomToken(24)}`;
-
-  // Prefer Redis (shared across instances). Fallback to memory.
   if (redis) {
     await redis.set(`pd:admin:${token}`, "1", "EX", ADMIN_SESSION_TTL_SECONDS);
   } else {
     petitionStore.set(`__admin__:${token}`, { ok: true, expiresAt: Date.now() + ADMIN_SESSION_TTL_SECONDS * 1000 });
     setTimeout(() => petitionStore.delete(`__admin__:${token}`), ADMIN_SESSION_TTL_SECONDS * 1000).unref?.();
   }
-
   return token;
 }
 
@@ -252,9 +253,9 @@ async function isAdminTokenValid(token) {
   return true;
 }
 
-// =====================
-// ✅ Fetch helper (Node 18 global fetch, fallback node-fetch)
-// =====================
+/* ======================================================
+   FETCH HELPERS
+====================================================== */
 async function getFetch() {
   if (typeof fetch === "function") return fetch;
   const mod = await import("node-fetch");
@@ -286,94 +287,18 @@ async function flwFetch(url, options = {}) {
   }
 }
 
-// =====================
-// ✅ Utilities
-// =====================
+/* ======================================================
+   UTILS
+====================================================== */
 function safeUniq(arr) {
   return [...new Set((arr || []).filter(Boolean))];
 }
-
-function isEmail(s) {
-  return typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
-}
-
-function extractEmailsFromString(str) {
-  if (typeof str !== "string") return [];
-  const s = str.trim();
-  if (!s) return [];
-  const matches = s.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
-  return matches.map((m) => m.trim());
-}
-
-function extractEmailsDeep(value, out = []) {
-  if (!value) return out;
-
-  if (typeof value === "string") {
-    const emails = extractEmailsFromString(value);
-    if (emails.length) out.push(...emails);
-    return out;
-  }
-
-  if (Array.isArray(value)) {
-    value.forEach((v) => extractEmailsDeep(v, out));
-    return out;
-  }
-
-  if (typeof value === "object" && value !== null) {
-    Object.values(value).forEach((v) => extractEmailsDeep(v, out));
-    return out;
-  }
-
-  return out;
-}
-
-// Address extraction (JSON-only; never guess)
-function isLikelyAddress(s) {
-  if (typeof s !== "string") return false;
-  const v = s.trim();
-  if (!v) return false;
-  if (v.length < 8) return false;
-  if (v.includes("@")) return false;
-  if (/https?:\/\//i.test(v)) return false;
-  return /(\bplot\b|\bstreet\b|\broad\b|\bavenue\b|\bclose\b|\bdrive\b|\blane\b|\bway\b|\bphase\b|\bkm\b|\bno\.\b|\bhouse\b|\boffice\b|\bcomplex\b|\babuja\b|\blagos\b|\bnigeria\b|\bstate\b|\bfct\b|\bpo box\b|\bp\.o\.\b)/i.test(
-    v
-  );
-}
-
-function extractAddressesDeep(value, out = [], keyHint = "") {
-  if (!value) return out;
-
-  if (typeof value === "string") {
-    const v = value.trim();
-    if (
-      /address|hq|head[_\s-]?office|location|office[_\s-]?address/i.test(String(keyHint || "")) ||
-      isLikelyAddress(v)
-    ) {
-      out.push(v);
-    }
-    return out;
-  }
-
-  if (Array.isArray(value)) {
-    value.forEach((v) => extractAddressesDeep(v, out, keyHint));
-    return out;
-  }
-
-  if (typeof value === "object" && value !== null) {
-    Object.entries(value).forEach(([k, v]) => extractAddressesDeep(v, out, k));
-    return out;
-  }
-
-  return out;
-}
-
 function extractSubjectFromPetition(petitionText = "") {
   const m =
     petitionText.match(/^\s*subject\s*:\s*(.+)\s*$/im) ||
     petitionText.match(/^\s*re\s*:\s*(.+)\s*$/im);
   return (m?.[1] || "").trim() || "Petition Regarding Complaint";
 }
-
 function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
   const toList = safeUniq(to).filter(isEmail).slice(0, 10).join(",");
   const ccList = safeUniq(cc).filter(isEmail).slice(0, 10).join(",");
@@ -384,13 +309,10 @@ function buildMailto({ to = [], cc = [], subject = "", body = "" }) {
   const ccParam = ccList ? `&cc=${encodeURIComponent(ccList)}` : "";
   return `mailto:${toList}?subject=${s}&body=${b}${ccParam}`;
 }
-
 function buildFrontendRedirectUrl(tx_ref) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
   return `${base}/?tx_ref=${encodeURIComponent(tx_ref)}`;
 }
-
-// ✅ optional: return user to a specific frontend path
 function buildFrontendRedirectUrlWithReturn(tx_ref, return_to) {
   const base = String(FRONTEND_BASE_URL || "").trim().replace(/\/+$/, "");
   const clean = String(return_to || "").trim();
@@ -399,21 +321,19 @@ function buildFrontendRedirectUrlWithReturn(tx_ref, return_to) {
   const sep = join.includes("?") ? "&" : "?";
   return `${join}${sep}tx_ref=${encodeURIComponent(tx_ref)}`;
 }
-
 function isPendingStatus(s) {
   const v = String(s || "").toLowerCase();
   return v === "pending" || v === "processing" || v === "queued";
 }
 
-// =====================
-// ✅ Sector JSON loading (underscore/hyphen safe)
-// =====================
+/* ======================================================
+   SECTOR JSON LOADING
+====================================================== */
 function sectorKeyCandidates(sector) {
   const s = String(sector || "").trim();
   if (!s) return [];
   return safeUniq([s, s.replace(/_/g, "-"), s.replace(/-/g, "_")]).filter(Boolean);
 }
-
 function loadSectorJson(sector) {
   const candidates = sectorKeyCandidates(sector);
   for (const key of candidates) {
@@ -427,7 +347,6 @@ function loadSectorJson(sector) {
   }
   return null;
 }
-
 function listJsonSectorsFromDataDir() {
   try {
     return fs
@@ -440,11 +359,11 @@ function listJsonSectorsFromDataDir() {
   }
 }
 
-// =====================
-// ✅ Sector detection
-// =====================
+/* ======================================================
+   SECTOR DETECTION
+====================================================== */
 function buildSectorKeywordsIndex() {
-  const index = new Map(); // sector -> keywords[]
+  const index = new Map();
   const sectors = listJsonSectorsFromDataDir();
 
   for (const sec of sectors) {
@@ -455,7 +374,6 @@ function buildSectorKeywordsIndex() {
   }
   return index;
 }
-
 let SECTOR_KEYWORDS_INDEX = buildSectorKeywordsIndex();
 
 function builtInKeywordMap() {
@@ -468,65 +386,16 @@ function builtInKeywordMap() {
     health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
     security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration", "dss", "kidnap", "detention"],
     judiciary: ["court", "judge", "justice", "supreme", "magistrate", "bail", "delayed judgement", "njc"],
-    international_escalation: [
-      "un",
-      "ecowas",
-      "au",
-      "icc",
-      "eu",
-      "international",
-      "united nations",
-      "un human rights",
-      "congress",
-      "u.s. congress",
-      "house committee",
-      "senate",
-      "state department",
-    ],
-    anti_corruption: [
-      "anti corruption",
-      "anti-corruption",
-      "corruption",
-      "bribe",
-      "bribery",
-      "kickback",
-      "procurement",
-      "inflated contract",
-      "contract inflation",
-      "money laundering",
-      "embezzlement",
-      "ghost worker",
-      "efcc",
-      "icpc",
-      "bpp",
-      "bureau of public procurement",
-      "ccb",
-      "cct",
-      "fraud",
-    ],
-    diaspora_report: [
-      "diaspora",
-      "nidcom",
-      "embassy",
-      "high commission",
-      "consulate",
-      "passport seized",
-      "passport withheld",
-      "detained abroad",
-      "arrested abroad",
-      "deportation",
-      "stranded abroad",
-      "trafficking",
-      "human trafficking",
-      "migration",
-    ],
+    international_escalation: ["un", "ecowas", "au", "icc", "eu", "international", "united nations", "congress", "senate", "state department"],
+    anti_corruption: ["corruption", "bribe", "kickback", "procurement", "money laundering", "embezzlement", "ghost worker", "efcc", "icpc", "bpp", "fraud"],
+    diaspora_report: ["diaspora", "nidcom", "embassy", "consulate", "passport seized", "deportation", "stranded abroad", "human trafficking", "migration"],
   };
 }
 
 function detectSector(text) {
   const lower = String(text || "").toLowerCase();
 
-  // 1) JSON keywords first (best)
+  // 1) JSON keywords
   for (const [sector, words] of SECTOR_KEYWORDS_INDEX.entries()) {
     if (words.some((w) => w && lower.includes(w))) return sector;
   }
@@ -537,7 +406,7 @@ function detectSector(text) {
     if (words.some((w) => w && lower.includes(w))) return sec;
   }
 
-  // ✅ fallback sector
+  // 3) fallback sector
   return "general";
 }
 
@@ -581,330 +450,22 @@ function inferCaseType(sector) {
 
 function buildAdminOversightCC({ sector, caseType }) {
   const cc = [];
-  // ✅ Don't CC PCC if sector is general (PCC becomes TO)
+  // Don't CC PCC if PCC is the default TO in general sector
   if (sector !== "international_escalation" && sector !== "general" && OVERSIGHT_EMAILS.PCC) cc.push(OVERSIGHT_EMAILS.PCC);
+
   if (caseType === "human_rights" && OVERSIGHT_EMAILS.NHRC) cc.push(OVERSIGHT_EMAILS.NHRC);
   if (caseType === "service_delivery") {
     if (OVERSIGHT_EMAILS.SERVICOM) cc.push(OVERSIGHT_EMAILS.SERVICOM);
     if (OVERSIGHT_EMAILS.FCCPC) cc.push(OVERSIGHT_EMAILS.FCCPC);
   }
   if (sector === "international_escalation" && OVERSIGHT_EMAILS.AGF) cc.push(OVERSIGHT_EMAILS.AGF);
+
   return safeUniq(cc).filter(isEmail);
 }
 
-// =====================
-// ✅ Catalog + Matching (JSON-only)
-// =====================
-function normalizeName(s = "") {
-  return String(s)
-    .toLowerCase()
-    .replace(/[\u2019’]/g, "'")
-    .replace(/[^a-z0-9\s().,&/-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function stripCorporateSuffixes(s = "") {
-  return normalizeName(s)
-    .replace(/\b(plc|ltd|limited|inc|llc|company|co)\b/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function extractParenAbbr(name = "") {
-  const out = [];
-  const re = /\(([A-Z0-9]{2,12})\)/g;
-  let m;
-  while ((m = re.exec(name)) !== null) out.push(m[1]);
-  return out;
-}
-
-function buildInstitutionCatalog(sectorJson) {
-  const items = [];
-
-  function addItem(name, obj) {
-    if (!name) return;
-
-    const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
-    const addresses = safeUniq(extractAddressesDeep(obj)).filter(isLikelyAddress);
-    const primaryAddress = addresses[0] || "";
-
-    const aliases = safeUniq([
-      ...(Array.isArray(obj?.aliases) ? obj.aliases : []),
-      ...extractParenAbbr(String(name)),
-    ]);
-
-    const norm = normalizeName(name);
-    const aliasNorms = safeUniq(aliases.map((a) => normalizeName(a))).filter(Boolean);
-
-    const shortNorm = stripCorporateSuffixes(name);
-    const shortAliasNorms = safeUniq([shortNorm, ...aliasNorms.map(stripCorporateSuffixes)]).filter(Boolean);
-
-    items.push({
-      name: String(name),
-      norm,
-      shortNorm,
-      aliasNorms,
-      shortAliasNorms,
-      emails,
-      addresses,
-      primaryAddress,
-    });
-  }
-
-  if (!sectorJson || typeof sectorJson !== "object") return items;
-
-  const oversightNode = sectorJson.oversight || sectorJson.oversight_ministry || sectorJson.oversightMinistry;
-  if (oversightNode && typeof oversightNode === "object") {
-    for (const key of Object.keys(oversightNode)) {
-      const node = oversightNode[key];
-      addItem(node?.name || key, node);
-    }
-  }
-
-  const arrayKeys = ["core_institutions", "regulators", "watchdogs", "players"];
-  for (const key of arrayKeys) {
-    const arr = sectorJson[key];
-    if (Array.isArray(arr)) {
-      arr.forEach((inst) => addItem(inst?.name || inst, inst));
-    }
-  }
-
-  return items;
-}
-
-function matchInstitutionNameToCatalogWithScore(name, catalog) {
-  const q = normalizeName(name);
-  const qShort = stripCorporateSuffixes(name);
-  if (!q) return { item: null, score: 0 };
-
-  let best = null;
-  let bestScore = 0;
-
-  const qTokens = new Set(q.split(" ").filter((w) => w.length > 2));
-  const qShortTokens = new Set(qShort.split(" ").filter((w) => w.length > 2));
-
-  for (const item of catalog) {
-    if (!item?.norm) continue;
-
-    let score = 0;
-
-    if (q === item.norm || (qShort && qShort === item.shortNorm)) score += 100;
-    if (item.aliasNorms.includes(q) || (qShort && item.shortAliasNorms.includes(qShort))) score += 90;
-
-    if (q.includes(item.norm) || item.norm.includes(q)) score += 40;
-    if (qShort && (qShort.includes(item.shortNorm) || item.shortNorm.includes(qShort))) score += 35;
-
-    let overlap = 0;
-    for (const t of item.shortNorm.split(" ")) {
-      if (qTokens.has(t) || qShortTokens.has(t)) overlap++;
-    }
-    if (overlap >= 2) score += overlap * 10;
-
-    if (score > bestScore) {
-      bestScore = score;
-      best = item;
-    }
-  }
-
-  if (bestScore < 30) return { item: null, score: 0 };
-  return { item: best, score: bestScore };
-}
-
-function matchInstitutionNameToCatalog(name, catalog) {
-  return matchInstitutionNameToCatalogWithScore(name, catalog).item;
-}
-
-const GLOBAL_CATALOG_BY_SECTOR = new Map();
-
-function getCatalogForSector(sector) {
-  for (const key of sectorKeyCandidates(sector)) {
-    if (GLOBAL_CATALOG_BY_SECTOR.has(key)) return GLOBAL_CATALOG_BY_SECTOR.get(key);
-  }
-  for (const key of sectorKeyCandidates(sector)) {
-    const sj = loadSectorJson(key);
-    if (!sj) continue;
-    const cat = buildInstitutionCatalog(sj);
-    GLOBAL_CATALOG_BY_SECTOR.set(key, cat);
-    return cat;
-  }
-  return [];
-}
-
-function primeGlobalCatalog() {
-  const sectors = listJsonSectorsFromDataDir();
-  for (const sec of sectors) {
-    const sj = loadSectorJson(sec);
-    if (!sj) continue;
-    GLOBAL_CATALOG_BY_SECTOR.set(sec, buildInstitutionCatalog(sj));
-  }
-}
-primeGlobalCatalog();
-
-function matchInstitutionAcrossAllSectors(name, preferredSector) {
-  const preferredCatalog = getCatalogForSector(preferredSector);
-  const hit1 = matchInstitutionNameToCatalog(name, preferredCatalog);
-  if (hit1) return hit1;
-
-  let best = null;
-  let bestScore = 0;
-  for (const catalog of GLOBAL_CATALOG_BY_SECTOR.values()) {
-    const { item, score } = matchInstitutionNameToCatalogWithScore(name, catalog);
-    if (!item) continue;
-    if (score > bestScore) {
-      bestScore = score;
-      best = item;
-    }
-  }
-  return bestScore >= 30 ? best : null;
-}
-
-function extractSectionInstitutionNames(petitionText, sectionLabel) {
-  const lines = String(petitionText || "").split(/\r?\n/);
-
-  let mode = null;
-  const collected = [];
-
-  for (const rawLine of lines) {
-    const line = String(rawLine || "");
-
-    const toMatch = line.match(/^\s*to\s*:\s*(.*)\s*$/i);
-    const ccMatch = line.match(/^\s*cc\s*:\s*(.*)\s*$/i);
-    const subMatch = line.match(/^\s*subject\s*:\s*(.*)\s*$/i);
-
-    if (toMatch) {
-      mode = "TO";
-      if (toMatch[1]?.trim()) collected.push({ mode, text: toMatch[1].trim() });
-      continue;
-    }
-    if (ccMatch) {
-      mode = "CC";
-      if (ccMatch[1]?.trim()) collected.push({ mode, text: ccMatch[1].trim() });
-      continue;
-    }
-    if (subMatch) {
-      mode = null;
-      continue;
-    }
-
-    if (!line.trim()) {
-      mode = null;
-      continue;
-    }
-
-    if (mode === "TO" || mode === "CC") {
-      collected.push({ mode, text: line.trim() });
-    }
-  }
-
-  const raw = collected
-    .filter((x) => x.mode === sectionLabel)
-    .map((x) => x.text)
-    .join(" ");
-
-  if (!raw) return [];
-
-  return raw
-    .split(/;|,|\s+\band\b\s+/i)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-// ✅ FIX: Only replace TO/CC blocks if we actually have items to inject
-function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccItems = []) {
-  const lines = String(petitionText || "").split(/\r?\n/);
-  const out = [];
-
-  let skippingToBlock = false;
-  let skippingCcBlock = false;
-  let toInjected = false;
-  let ccInjected = false;
-
-  const renderToLines = () => {
-    const arr = [];
-    if (!toItems.length) return arr;
-    toItems.forEach((it, idx) => {
-      arr.push(`TO: ${it.name}`);
-      if (it.primaryAddress) arr.push(`Address: ${it.primaryAddress}`);
-      if (idx < toItems.length - 1) arr.push("");
-    });
-    return arr;
-  };
-
-  const renderCcLines = () => {
-    const arr = [];
-    if (!ccItems.length) return arr;
-    ccItems.forEach((it, idx) => {
-      arr.push(`CC: ${it.name}`);
-      if (it.primaryAddress) arr.push(`Address: ${it.primaryAddress}`);
-      if (idx < ccItems.length - 1) arr.push("");
-    });
-    return arr;
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    const isTo = /^\s*TO\s*:/i.test(line);
-    const isCc = /^\s*CC\s*:/i.test(line);
-    const isSubject = /^\s*SUBJECT\s*:/i.test(line);
-
-    if (isTo) {
-      if (toItems.length) {
-        if (!toInjected) {
-          out.push(...renderToLines());
-          toInjected = true;
-        }
-        skippingToBlock = true;
-        skippingCcBlock = false;
-        continue;
-      } else {
-        // keep original TO line if we can't inject
-        skippingToBlock = false;
-        skippingCcBlock = false;
-        out.push(line);
-        continue;
-      }
-    }
-
-    if (isCc) {
-      if (ccItems.length) {
-        if (!ccInjected) {
-          out.push(...renderCcLines());
-          ccInjected = true;
-        }
-        skippingCcBlock = true;
-        skippingToBlock = false;
-        continue;
-      } else {
-        skippingToBlock = false;
-        skippingCcBlock = false;
-        out.push(line);
-        continue;
-      }
-    }
-
-    if (isSubject) {
-      skippingToBlock = false;
-      skippingCcBlock = false;
-      out.push(line);
-      continue;
-    }
-
-    if (skippingToBlock || skippingCcBlock) {
-      if (!line.trim()) continue;
-      continue;
-    }
-
-    out.push(line);
-  }
-
-  return out.join("\n").trim();
-}
-
-// =====================
-// ✅ Durable petition storage (Redis + memory)
-// =====================
+/* ======================================================
+   PETITION STORAGE (REDIS + MEMORY)
+====================================================== */
 async function storePetition(tx_ref, payload) {
   const record = { ...payload, storedAt: Date.now() };
 
@@ -937,7 +498,7 @@ async function deletePetition(tx_ref) {
   }
 }
 
-// Mark tx paid (durable best-effort)
+// Paid flag
 async function markTxPaid(tx_ref) {
   USED_TX_REFS.add(tx_ref);
   if (redis) {
@@ -957,12 +518,33 @@ async function isTxPaid(tx_ref) {
   }
 }
 
-// ✅ store Flutterwave transaction id (helps verify by ID)
+// Persist unlocked response so refresh doesn’t look “failed”
+async function storeUnlocked(tx_ref, payload) {
+  USED_TX_SUCCESS.add(tx_ref);
+  petitionStore.set(`__unlocked__:${tx_ref}`, payload);
+  setTimeout(() => petitionStore.delete(`__unlocked__:${tx_ref}`), PETITION_TTL_SECONDS * 1000).unref?.();
+
+  if (redis) {
+    try {
+      await redis.set(`pd:unlocked:${tx_ref}`, JSON.stringify(payload), "EX", PETITION_TTL_SECONDS);
+    } catch {}
+  }
+}
+async function getUnlocked(tx_ref) {
+  if (redis) {
+    try {
+      const raw = await redis.get(`pd:unlocked:${tx_ref}`);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+  }
+  return petitionStore.get(`__unlocked__:${tx_ref}`) || null;
+}
+
+// Store Flutterwave transaction id
 async function storeTxId(tx_ref, tx_id) {
   const id = String(tx_id || "").trim();
   if (!id) return;
 
-  // store in record too
   const rec = await getPetition(tx_ref);
   if (rec && !rec.flw_tx_id) {
     rec.flw_tx_id = id;
@@ -986,9 +568,9 @@ async function getTxId(tx_ref) {
   return String(rec?.flw_tx_id || "").trim();
 }
 
-// =====================
-// ✅ Admin endpoints
-// =====================
+/* ======================================================
+   ADMIN ENDPOINTS
+====================================================== */
 app.post("/admin/session", async (req, res) => {
   try {
     const key = String(req.body?.key || "");
@@ -1027,20 +609,19 @@ app.get("/admin/stats", async (req, res) => {
   }
 });
 
-// =====================
-// ✅ Flutterwave webhook
-// =====================
+/* ======================================================
+   FLUTTERWAVE WEBHOOK
+====================================================== */
 app.post("/flw-webhook", async (req, res) => {
   try {
     const headerHash = String(req.headers["verif-hash"] || "").trim();
 
-    // ✅ If you set FLW_WEBHOOK_HASH, enforce it
+    // Enforce if you set FLW_WEBHOOK_HASH
     if (FLW_WEBHOOK_HASH) {
       if (!headerHash || headerHash !== FLW_WEBHOOK_HASH) return res.status(401).end();
     } else {
-      // Accept to avoid breaking unlock, but warn strongly
       if (!headerHash) {
-        console.warn("⚠️ Webhook received without verif-hash. Set FLW_WEBHOOK_HASH in Flutterwave dashboard + Render env.");
+        console.warn("⚠️ Webhook received without verif-hash. Set FLW_WEBHOOK_HASH in Flutterwave + Render env.");
       }
     }
 
@@ -1060,10 +641,8 @@ app.post("/flw-webhook", async (req, res) => {
 
         if (tx_ref?.startsWith("pd_") && currency === "NGN" && amount >= PETITION_PRICE_NGN) {
           await markTxPaid(tx_ref);
-
           await redisIncr(METRICS.paymentSuccess);
           await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
-
           console.log(`✅ Payment confirmed via webhook: ${tx_ref}`);
         }
       }
@@ -1076,9 +655,9 @@ app.post("/flw-webhook", async (req, res) => {
   }
 });
 
-// =====================
-// ✅ Basic endpoints
-// =====================
+/* ======================================================
+   BASIC ENDPOINTS
+====================================================== */
 app.post("/track/visit", async (req, res) => {
   await redisIncr(METRICS.visits);
   res.json({ ok: true });
@@ -1088,9 +667,9 @@ app.get("/health", (req, res) => {
   res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
 });
 
-// =====================
-// ✅ Generate petition
-// =====================
+/* ======================================================
+   GENERATE PETITION
+====================================================== */
 app.post("/generate-petition", async (req, res) => {
   const v = validateGenerateBody(req.body || {});
   if (!v.ok) return res.status(400).json(v);
@@ -1098,14 +677,12 @@ app.post("/generate-petition", async (req, res) => {
   const { complaint = "", petitioner = {} } = req.body || {};
   await redisIncr(METRICS.generated);
 
-  let sector = detectSector(complaint); // ✅ now defaults to "general"
+  let sector = detectSector(complaint);
 
-  // ✅ If general and AI classifier enabled, attempt AI override
   if ((sector === "general" || sector === "unknown") && AI_SECTOR_CLASSIFY) {
     const aiSector = await detectSectorAI(complaint);
     if (aiSector && aiSector !== "unknown") sector = aiSector;
   }
-
   if (sector === "unknown") sector = "general";
 
   const caseType = inferCaseType(sector);
@@ -1114,10 +691,13 @@ app.post("/generate-petition", async (req, res) => {
   const pAddress = (petitioner.address || "").trim() || "[Your Address]";
   const pEmail = (petitioner.email || "").trim() || "[Your Email]";
   const pPhone = (petitioner.phone || "").trim() || "[Phone Number]";
-
   const autoDate = new Date().toLocaleDateString("en-GB");
 
   if (!openai) return res.status(500).json({ ok: false, error: "OPENAI_API_KEY not configured" });
+
+  // For general sector, FORCE TO = PCC so we never depend on JSON match
+  const generalToLine = `TO: Public Complaints Commission (PCC)`;
+  const generalCcLine = `CC: National Human Rights Commission (NHRC), SERVICOM, Federal Competition and Consumer Protection Commission (FCCPC)`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -1137,8 +717,8 @@ Address: ${pAddress}
 Email: ${pEmail}
 Phone: ${pPhone}
 
-TO: [Full official name of primary institution ONLY — DO NOT add emails or phone numbers]
-CC: [List relevant oversight/regulatory bodies by name ONLY — DO NOT add emails or phone numbers]
+${sector === "general" ? generalToLine : "TO: [Full official name of primary institution ONLY — DO NOT add emails or phone numbers]"}
+${sector === "general" ? generalCcLine : "CC: [List relevant oversight/regulatory bodies by name ONLY — DO NOT add emails or phone numbers]"}
 
 SUBJECT: [Clear, specific subject line]
 
@@ -1178,7 +758,7 @@ ${pEmail}
 CRITICAL RULES:
 - Sector: ${sector} | Case Type: ${caseType}
 - NEVER include any email addresses, phone numbers, or invented contacts for institutions.
-- DO NOT invent institution addresses. The system will insert verified institution addresses automatically from JSON if present.
+- DO NOT invent institution addresses.
 - Keep it professional, firm, evidence-led, and hard to ignore (SAN style).
 - Under 950 words.`,
         },
@@ -1187,58 +767,23 @@ CRITICAL RULES:
       temperature: 0,
     });
 
-    let petitionText = completion.choices?.[0]?.message?.content?.trim() || "Generation failed.";
+    const petitionText = completion.choices?.[0]?.message?.content?.trim() || "Generation failed.";
     const subject = extractSubjectFromPetition(petitionText);
 
-    // Load sector JSON and build catalog
-    const sectorJson = loadSectorJson(sector);
-    const sectorCatalog = buildInstitutionCatalog(sectorJson);
-
-    // Parse TO/CC institution names from petition text
-    const toNames = extractSectionInstitutionNames(petitionText, "TO");
-    const ccNames = extractSectionInstitutionNames(petitionText, "CC");
-
-    // Match institutions (sector-first + cross-sector fallback)
-    const toItems = safeUniq(
-      toNames
-        .map((n) => matchInstitutionNameToCatalog(n, sectorCatalog) || matchInstitutionAcrossAllSectors(n, sector))
-        .filter(Boolean)
-    );
-
-    const ccItems = safeUniq(
-      ccNames
-        .map((n) => matchInstitutionNameToCatalog(n, sectorCatalog) || matchInstitutionAcrossAllSectors(n, sector))
-        .filter(Boolean)
-    );
-
-    // Inject verified addresses (JSON-only)
-    petitionText = injectInstitutionAddressesIntoPetition(petitionText, toItems, ccItems);
-
-    // Extract verified emails from JSON catalog hits
-    const toEmails = safeUniq(toItems.flatMap((m) => m.emails)).filter(isEmail);
-    const ccEmailsFromJson = safeUniq(ccItems.flatMap((m) => m.emails)).filter(isEmail);
-
-    // Add admin oversight CC rules
-    const adminCC = buildAdminOversightCC({ sector, caseType });
-    const finalCC = safeUniq([...ccEmailsFromJson, ...adminCC]).filter(isEmail);
-
-    // ✅ GENERAL fallback: if no TO email, route to PCC
-    let finalToEmails = toEmails;
-    let finalToInstitutions = toItems.map((m) => m.name);
-
-    if ((!finalToEmails || finalToEmails.length === 0) && sector === "general") {
-      if (OVERSIGHT_EMAILS.PCC && isEmail(OVERSIGHT_EMAILS.PCC)) {
-        finalToEmails = [OVERSIGHT_EMAILS.PCC];
-        finalToInstitutions = ["Public Complaints Commission (PCC)"];
-      }
+    // Emails: For general, ALWAYS route TO PCC
+    let finalToEmails = [];
+    if (sector === "general") {
+      const pcc = (OVERSIGHT_EMAILS.PCC && isEmail(OVERSIGHT_EMAILS.PCC)) ? [OVERSIGHT_EMAILS.PCC] : PCC_FALLBACK_EMAILS;
+      finalToEmails = pcc.filter(isEmail);
     }
 
-    // Safety: don’t proceed if nobody to email
+    // CC rules (still useful)
+    const finalCC = buildAdminOversightCC({ sector, caseType });
+
     if (!finalToEmails.length) {
       return res.status(400).json({
         ok: false,
-        error: "No recipient email found for the detected TO institution in your sector JSON.",
-        hint: `Add verified emails for the main institution in data/${sector}.json (or set PCC_EMAIL for general fallback).`,
+        error: "No recipient email available. Set PCC_EMAIL in Render env.",
         sector,
       });
     }
@@ -1250,8 +795,8 @@ CRITICAL RULES:
       sector,
       caseType,
       subject,
-      toInstitutions: finalToInstitutions,
-      ccInstitutions: ccItems.map((m) => m.name),
+      toInstitutions: sector === "general" ? ["Public Complaints Commission (PCC)"] : [],
+      ccInstitutions: [],
       toEmails: finalToEmails,
       ccEmails: finalCC,
       paymentInitializedAt: null,
@@ -1279,9 +824,9 @@ CRITICAL RULES:
   }
 });
 
-// =====================
-// ✅ Pay initialize (Flutterwave)
-// =====================
+/* ======================================================
+   PAY INITIALIZE (FLUTTERWAVE)
+====================================================== */
 app.post("/pay/initialize", async (req, res) => {
   try {
     const tx_ref = String(req.body?.tx_ref || "").trim();
@@ -1289,13 +834,12 @@ app.post("/pay/initialize", async (req, res) => {
 
     if (!FLW_SECRET_KEY) return res.status(500).json({ ok: false, error: "FLW_SECRET_KEY not configured" });
 
-    const stored = await getPetition(tx_ref);
+    const stored = await getPet earlier if needed
+    ition(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
 
-    // record initialization time
     stored.paymentInitializedAt = Date.now();
 
-    // ✅ store return_to if provided by frontend (so user returns to exact page)
     const return_to = String(req.body?.return_to || "").trim();
     if (return_to && return_to.startsWith("/")) stored.return_to = return_to;
 
@@ -1309,7 +853,6 @@ app.post("/pay/initialize", async (req, res) => {
         ? buildFrontendRedirectUrlWithReturn(tx_ref, stored.return_to)
         : buildFrontendRedirectUrl(tx_ref);
 
-    // Allow frontend to pass customer details; fall back to safe defaults
     const email = String(req.body?.email || "").trim() || "user@petitiondesk.com";
     const name = String(req.body?.name || "").trim() || "User";
     const phone = String(req.body?.phone || "").trim() || "";
@@ -1319,11 +862,7 @@ app.post("/pay/initialize", async (req, res) => {
       amount: PETITION_PRICE_NGN,
       currency: "NGN",
       redirect_url,
-      customer: {
-        email,
-        name,
-        phonenumber: phone,
-      },
+      customer: { email, name, phonenumber: phone },
       customizations: { title: "PetitionDesk", description: "Unlock full petition" },
     };
 
@@ -1343,9 +882,9 @@ app.post("/pay/initialize", async (req, res) => {
   }
 });
 
-// =====================
-// ✅ Unlock petition (Admin override OR webhook OR verify)
-// =====================
+/* ======================================================
+   UNLOCK PETITION
+====================================================== */
 app.post("/unlock-petition", async (req, res) => {
   try {
     const v = validateTxRef(req.body || {});
@@ -1353,9 +892,9 @@ app.post("/unlock-petition", async (req, res) => {
 
     const tx_ref = v.tx_ref;
 
-    if (USED_TX_SUCCESS.has(tx_ref)) {
-      return res.status(410).json({ ok: false, error: "Already unlocked. Generate petition again." });
-    }
+    // If already unlocked, return the stored unlocked payload (prevents “looks fraudulent”)
+    const already = await getUnlocked(tx_ref);
+    if (already) return res.json(already);
 
     const stored = await getPetition(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
@@ -1367,13 +906,11 @@ app.post("/unlock-petition", async (req, res) => {
       body: stored.petition,
     });
 
-    // ✅ Admin override
+    // Admin override
     const adminToken = String(req.headers["x-admin-token"] || "").trim();
     const adminOk = await isAdminTokenValid(adminToken);
-
     if (adminOk) {
-      USED_TX_SUCCESS.add(tx_ref);
-      return res.json({
+      const payload = {
         ok: true,
         unlocked: true,
         admin: true,
@@ -1384,16 +921,14 @@ app.post("/unlock-petition", async (req, res) => {
         to: stored.toEmails,
         cc: stored.ccEmails,
         mailto,
-      });
+      };
+      await storeUnlocked(tx_ref, payload);
+      return res.json(payload);
     }
 
-    // ✅ Webhook-confirmed (or Redis-paid flag)
+    // Webhook-confirmed / paid flag
     if (await isTxPaid(tx_ref)) {
-      USED_TX_SUCCESS.add(tx_ref);
-      await deletePetition(tx_ref);
-      await redisIncr(METRICS.unlockedPaid);
-
-      return res.json({
+      const payload = {
         ok: true,
         unlocked: true,
         petition: stored.petition,
@@ -1403,16 +938,18 @@ app.post("/unlock-petition", async (req, res) => {
         to: stored.toEmails,
         cc: stored.ccEmails,
         mailto,
-      });
+      };
+      await storeUnlocked(tx_ref, payload);
+      await deletePetition(tx_ref);
+      await redisIncr(METRICS.unlockedPaid);
+      return res.json(payload);
     }
 
-    // ✅ Verify with Flutterwave (fallback)
     if (!FLW_SECRET_KEY) return res.status(402).json({ ok: false, error: "Payment not verified" });
 
     const initAt = Number(stored.paymentInitializedAt || 0);
     const recentlyInitialized = initAt && Date.now() - initAt < VERIFY_PENDING_WINDOW_MS;
 
-    // Prefer verify by transaction id if available
     const bodyTxId = String(v.transaction_id || "").trim();
     const storedTxId = await getTxId(tx_ref);
     const txIdToUse = bodyTxId || storedTxId;
@@ -1422,7 +959,7 @@ app.post("/unlock-petition", async (req, res) => {
       if (txIdToUse) {
         verifyResponse = await flwFetch(`https://api.flutterwave.com/v3/transactions/${encodeURIComponent(txIdToUse)}/verify`);
       } else {
-        // ✅ FIX: correct endpoint for tx_ref verification
+        // Correct endpoint for reference verification
         verifyResponse = await flwFetch(
           `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`
         );
@@ -1433,17 +970,17 @@ app.post("/unlock-petition", async (req, res) => {
 
     if (!verifyResponse.ok) {
       if (recentlyInitialized) {
-        return res.status(202).json({
-          ok: false,
-          pending: true,
-          error: "Payment processing. Please wait a moment and try again.",
-        });
+        return res.status(202).json({ ok: false, pending: true, error: "Payment processing. Please wait and try again." });
       }
       return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
 
     const data = verifyResponse.data || {};
-    const d = data?.data || {};
+    let d = data?.data || {};
+
+    // Sometimes APIs return arrays; handle safely
+    if (Array.isArray(d)) d = d[0] || {};
+
     const status = String(d?.status || "").toLowerCase();
     const amount = Number(d?.charged_amount || d?.amount || 0);
     const currency = String(d?.currency || "").toUpperCase();
@@ -1458,11 +995,7 @@ app.post("/unlock-petition", async (req, res) => {
 
     if (isPendingStatus(status)) {
       if (recentlyInitialized) {
-        return res.status(202).json({
-          ok: false,
-          pending: true,
-          error: "Payment is still processing. Please try again shortly.",
-        });
+        return res.status(202).json({ ok: false, pending: true, error: "Payment still processing. Try again shortly." });
       }
       return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
@@ -1472,11 +1005,7 @@ app.post("/unlock-petition", async (req, res) => {
 
     await markTxPaid(tx_ref);
 
-    USED_TX_SUCCESS.add(tx_ref);
-    await deletePetition(tx_ref);
-    await redisIncr(METRICS.unlockedPaid);
-
-    return res.json({
+    const payload = {
       ok: true,
       unlocked: true,
       petition: stored.petition,
@@ -1486,16 +1015,22 @@ app.post("/unlock-petition", async (req, res) => {
       to: stored.toEmails,
       cc: stored.ccEmails,
       mailto,
-    });
+    };
+
+    await storeUnlocked(tx_ref, payload);
+    await deletePetition(tx_ref);
+    await redisIncr(METRICS.unlockedPaid);
+
+    return res.json(payload);
   } catch (err) {
     console.error("unlock error:", err);
     return res.status(500).json({ ok: false, error: "Unlock failed" });
   }
 });
 
-// =====================
-// ✅ PDF download
-// =====================
+/* ======================================================
+   PDF DOWNLOAD
+====================================================== */
 app.get("/download-pdf", (req, res) => {
   try {
     const text = decodeURIComponent(String(req.query.text || ""));
@@ -1520,9 +1055,9 @@ app.get("/download-pdf", (req, res) => {
   }
 });
 
-// =====================
-// ✅ Boot
-// =====================
+/* ======================================================
+   BOOT
+====================================================== */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
