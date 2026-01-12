@@ -19,12 +19,11 @@
           "Federal Ministry of Justice",
           "Ministry of Justice",
           "FMOJ",
-          "Justice Ministry Nigeria"
+          "Justice Ministry Nigeria",
+          "Nigerian Ministry of Justice",
+          "Federal Ministry of Justice Nigeria"
         ],
-        "emails": [
-          "info@justice.gov.ng",
-          "fmoj.foi@justice.gov.ng"
-        ],
+        "emails": ["info@justice.gov.ng", "fmoj.foi@justice.gov.ng"],
         "address": "Federal Ministry of Justice Headquarters, Maitama, Abuja, FCT, Nigeria",
         "how_to_address_head": {
           "title": "Honourable Attorney-General of the Federation and Minister of Justice",
@@ -42,12 +41,12 @@
           "Office of the AGF",
           "AGF",
           "Honourable Attorney-General",
-          "HAGF"
+          "HAGF",
+          "Attorney General of Nigeria",
+          "Office of the Attorney General Nigeria",
+          "Federal Attorney General Nigeria"
         ],
-        "emails": [
-          "info@justice.gov.ng",
-          "fmoj.foi@justice.gov.ng"
-        ],
+        "emails": ["info@justice.gov.ng", "fmoj.foi@justice.gov.ng"],
         "address": "Federal Ministry of Justice Headquarters, Maitama, Abuja, FCT, Nigeria",
         "how_to_address_head": {
           "title": "Honourable Attorney-General of the Federation and Minister of Justice",
@@ -62,11 +61,11 @@
         "aliases": [
           "NHRC",
           "National Human Rights Commission",
-          "Human Rights Commission Nigeria"
+          "Human Rights Commission Nigeria",
+          "NHRC Nigeria",
+          "Nigeria Human Rights Commission"
         ],
-        "emails": [
-          "info@nhrc.gov.ng"
-        ],
+        "emails": ["info@nhrc.gov.ng"],
         "address": "NHRC Headquarters, Abuja, FCT, Nigeria",
         "how_to_address_head": {
           "title": "Executive Secretary, National Human Rights Commission",
@@ -81,10 +80,21 @@
 
   "United_States": {
     "name": "U.S. Foreign Policy & Human Rights Legislative Escalation",
-    "emails": [
-      "Web_Inquiry@foreign.senate.gov",
-      "TLHRC@mail.house.gov"
+    "aliases": [
+      "United States Congress",
+      "US Congress",
+      "U.S. Congress",
+      "United States Senate",
+      "U.S. Senate",
+      "United States House of Representatives",
+      "U.S. House of Representatives",
+      "House of Representatives",
+      "Senate Committee on Foreign Relations",
+      "U.S. Senate Foreign Relations Committee",
+      "Tom Lantos Human Rights Commission",
+      "TLHRC"
     ],
+    "emails": ["Web_Inquiry@foreign.senate.gov", "TLHRC@mail.house.gov"],
     "phones": ["+1 202 224 4651"],
     "committee": "Senate Committee on Foreign Relations + Tom Lantos Human Rights Commission",
     "address": "U.S. Senate, Washington DC, USA",
@@ -96,11 +106,21 @@
 
   "United_Kingdom": {
     "name": "UK Parliamentary & Diplomatic Escalation",
-    "emails": [
-      "fac@parliament.uk",
-      "facmedia@parliament.uk",
-      "fcdo.correspondence@fcdo.gov.uk"
+    "aliases": [
+      "UK Parliament",
+      "United Kingdom Parliament",
+      "British Parliament",
+      "House of Commons",
+      "House of Lords",
+      "UK House of Commons",
+      "UK Foreign Affairs Committee",
+      "Foreign Affairs Committee",
+      "FAC",
+      "FCDO",
+      "Foreign, Commonwealth & Development Office",
+      "UK Foreign Office"
     ],
+    "emails": ["fac@parliament.uk", "facmedia@parliament.uk", "fcdo.correspondence@fcdo.gov.uk"],
     "committee": "UK Parliament Foreign Affairs Committees",
     "address": "London, United Kingdom",
     "how_to_address_head": {
@@ -111,11 +131,20 @@
 
   "European_Union": {
     "name": "EU Parliament & Diplomatic Escalation",
-    "emails": [
-      "droi-secretariat@europarl.europa.eu",
-      "peti-secretariat@europarl.europa.eu",
-      "delegation-nigeria@eeas.europa.eu"
+    "aliases": [
+      "European Union",
+      "EU",
+      "EU Parliament",
+      "European Parliament",
+      "Subcommittee on Human Rights",
+      "DROI",
+      "Committee on Petitions",
+      "PETI",
+      "EEAS",
+      "EU Delegation to Nigeria",
+      "European External Action Service"
     ],
+    "emails": ["droi-secretariat@europarl.europa.eu", "peti-secretariat@europarl.europa.eu", "delegation-nigeria@eeas.europa.eu"],
     "bodies": "European Parliament (DROI, PETI) + EEAS Delegation to Nigeria",
     "address": "Brussels, European Union",
     "how_to_address_head": {
@@ -126,6 +155,14 @@
 
   "International_Criminal_Court": {
     "name": "International Criminal Court (ICC)",
+    "aliases": [
+      "International Criminal Court",
+      "ICC",
+      "ICC-OTP",
+      "Office of the Prosecutor",
+      "OTP",
+      "The Hague Court"
+    ],
     "emails": ["ICCVisits@icc-cpi.int"],
     "address": "The Hague, Netherlands",
     "mandate": "Rome Statute crimes, preliminary examinations and investigations",
@@ -137,6 +174,17 @@
 
   "Canada": {
     "name": "Canada Parliamentary & Diplomatic Escalation",
+    "aliases": [
+      "Parliament of Canada",
+      "Canada Parliament",
+      "Canadian Parliament",
+      "House of Commons Canada",
+      "Senate of Canada",
+      "FAAE",
+      "Foreign Affairs and International Development Committee",
+      "Global Affairs Canada",
+      "GAC"
+    ],
     "emails": ["info@international.gc.ca", "FAAE@parl.gc.ca"],
     "bodies": "FAAE (Foreign Affairs and International Development Committee) + House of Commons",
     "address": "Ottawa, Canada",
@@ -148,12 +196,18 @@
 
   "United_Nations": {
     "name": "UN Human Rights & Global Escalation",
-    "emails": [
-      "ohchr-InfoDesk@un.org",
-      "ohchr-petitions@un.org",
-      "spdinfo@ohchr.org",
-      "urgent-action@ohchr.org"
+    "aliases": [
+      "United Nations",
+      "UN",
+      "UN Human Rights",
+      "OHCHR",
+      "Office of the High Commissioner for Human Rights",
+      "UN Human Rights Council",
+      "Human Rights Council",
+      "Special Procedures",
+      "Special Procedures Branch"
     ],
+    "emails": ["ohchr-InfoDesk@un.org", "ohchr-petitions@un.org", "spdinfo@ohchr.org", "urgent-action@ohchr.org"],
     "bodies": "OHCHR + Human Rights Council + Special Procedures Branch",
     "address": "Geneva, Switzerland",
     "how_to_address_head": {
@@ -183,7 +237,14 @@
     "torture allegation",
     "arbitrary detention",
     "passport blockade",
-    "attack on journalists"
+    "attack on journalists",
+    "killing of protester",
+    "suppression of voters",
+    "ethnic silencing",
+    "suppression of protesters",
+    "intimidations of opposition parties",
+    "christian genocide",
+    "Muslim genecide"
   ],
 
   "minimum_petition_pack": [
