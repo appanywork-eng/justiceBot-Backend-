@@ -386,8 +386,8 @@ function buildSectorKeywordsIndex() {
     const kw = Array.isArray(sj?.keywords)
       ? sj.keywords
       : Array.isArray(sj?.routing_keywords)
-        ? sj.routing_keywords
-        : [];
+      ? sj.routing_keywords
+      : [];
     const cleaned = safeUniq(kw.map((x) => String(x || "").toLowerCase().trim())).filter(Boolean);
     if (cleaned.length) index.set(sec, cleaned);
   }
@@ -420,6 +420,11 @@ function builtInKeywordMap() {
       "house committee",
       "senate",
       "state department",
+      "foreign affairs committee",
+      "house of commons",
+      "uk parliament",
+      "european parliament",
+      "ohchr",
     ],
     anti_corruption: [
       "anti corruption",
@@ -461,22 +466,102 @@ function builtInKeywordMap() {
   };
 }
 
-function detectSector(text) {
+// ✅ Smart sector detection (heuristic + priority override + AI)
+function detectSectorHeuristic(text) {
   const lower = String(text || "").toLowerCase();
 
-  // 1) JSON keywords first (best)
+  // Priority override: international escalation signals should win
+  const intlSignals = [
+    "united states congress",
+    "u.s. congress",
+    "us congress",
+    "congress",
+    "senate",
+    "house committee",
+    "foreign affairs committee",
+    "house foreign affairs",
+    "senate foreign relations",
+    "tom lantos",
+    "uk parliament",
+    "united kingdom parliament",
+    "house of commons",
+    "foreign, commonwealth",
+    "fcdo",
+    "european union",
+    "eu parliament",
+    "european parliament",
+    "united nations",
+    "un human rights",
+    "ohchr",
+    "human rights council",
+    "special procedures",
+    "icc",
+    "international criminal court",
+    "the hague",
+    "ecowas",
+    "african union",
+    "au",
+    "international escalation",
+    "international",
+  ];
+  if (intlSignals.some((w) => lower.includes(w))) {
+    return { sector: "international_escalation", score: 999, reason: "intl_override" };
+  }
+
+  const candidates = [];
+
+  // Score JSON keywords
   for (const [sector, words] of SECTOR_KEYWORDS_INDEX.entries()) {
-    if (words.some((w) => w && lower.includes(w))) return sector;
+    let score = 0;
+    for (const w of words) {
+      const ww = String(w || "").toLowerCase().trim();
+      if (!ww) continue;
+      if (lower.includes(ww)) score += ww.length >= 10 ? 18 : 12;
+    }
+    if (score > 0) candidates.push({ sector, score, reason: "json_keywords" });
   }
 
-  // 2) built-in fallback
+  // Score built-in keywords
   const map = builtInKeywordMap();
-  for (const [sec, words] of Object.entries(map)) {
-    if (words.some((w) => w && lower.includes(w))) return sec;
+  for (const [sector, words] of Object.entries(map)) {
+    let score = 0;
+    for (const w of words) {
+      const ww = String(w || "").toLowerCase();
+      if (!ww) continue;
+      if (lower.includes(ww)) score += 8;
+    }
+    if (score > 0) candidates.push({ sector, score, reason: "builtin_keywords" });
   }
 
-  // fallback
-  return "general";
+  if (!candidates.length) return { sector: "general", score: 0, reason: "no_match" };
+
+  candidates.sort((a, b) => b.score - a.score);
+  const best = candidates[0];
+
+  if (best.score < 12) return { sector: "general", score: best.score, reason: "weak_match" };
+  return best;
+}
+
+async function detectSectorSmart(text) {
+  const heuristic = detectSectorHeuristic(text);
+
+  // If AI classifier not enabled or OpenAI missing, use heuristic
+  if (!AI_SECTOR_CLASSIFY || !openai) return heuristic.sector || "general";
+
+  // Ask AI if heuristic is general or ambiguous
+  const shouldAskAI = heuristic.sector === "general" || heuristic.score < 30;
+
+  if (!shouldAskAI) return heuristic.sector;
+
+  const aiSector = await detectSectorAI(text);
+  if (aiSector && aiSector !== "unknown") return aiSector;
+
+  return heuristic.sector || "general";
+}
+
+// Keep old function name for compatibility (not used in generate anymore)
+function detectSector(text) {
+  return detectSectorHeuristic(text).sector || "general";
 }
 
 async function detectSectorAI(text) {
@@ -631,8 +716,87 @@ function extractParenAbbr(name = "") {
   return out;
 }
 
+function autoAliasesForInternationalTopKey(k = "") {
+  const key = String(k || "").trim();
+  switch (key) {
+    case "United_States":
+      return [
+        "United States Congress",
+        "US Congress",
+        "U.S. Congress",
+        "United States Senate",
+        "US Senate",
+        "U.S. Senate",
+        "House of Representatives",
+        "U.S. House of Representatives",
+        "Senate Foreign Relations Committee",
+        "Foreign Relations Committee",
+        "SFRC",
+        "House Foreign Affairs Committee",
+        "Foreign Affairs Committee",
+        "Tom Lantos Human Rights Commission",
+        "TLHRC",
+      ];
+    case "United_Kingdom":
+      return [
+        "UK Parliament",
+        "United Kingdom Parliament",
+        "House of Commons",
+        "House of Lords",
+        "Foreign Affairs Committee",
+        "FAC",
+        "FCDO",
+        "Foreign, Commonwealth and Development Office",
+        "Foreign Commonwealth & Development Office",
+      ];
+    case "European_Union":
+      return [
+        "European Union",
+        "EU Parliament",
+        "European Parliament",
+        "EEAS",
+        "European External Action Service",
+        "EU Delegation to Nigeria",
+        "DROI",
+        "Subcommittee on Human Rights",
+        "PETI",
+        "Committee on Petitions",
+      ];
+    case "United_Nations":
+      return [
+        "United Nations",
+        "UN",
+        "UN Human Rights",
+        "OHCHR",
+        "Human Rights Council",
+        "Special Procedures",
+        "Special Procedures Branch",
+      ];
+    case "International_Criminal_Court":
+      return [
+        "International Criminal Court",
+        "ICC",
+        "Office of the Prosecutor",
+        "OTP",
+        "The Hague",
+        "ICC Prosecutor",
+      ];
+    case "Canada":
+      return [
+        "Parliament of Canada",
+        "House of Commons Canada",
+        "Global Affairs Canada",
+        "Standing Committee on Foreign Affairs and International Development",
+        "FAAE",
+      ];
+    default:
+      return [];
+  }
+}
+
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
+  const seen = new Set(); // norm de-dupe
 
   function addItem(name, obj, extraAliases = []) {
     if (!name) return;
@@ -645,9 +809,16 @@ function buildInstitutionCatalog(sectorJson) {
       ...(Array.isArray(obj?.aliases) ? obj.aliases : []),
       ...extraAliases,
       ...extractParenAbbr(String(name)),
-    ]);
+      ...(typeof obj?.committee === "string" ? [obj.committee] : []),
+      ...(typeof obj?.bodies === "string" ? [obj.bodies] : []),
+      ...(typeof obj?.mandate === "string" ? [obj.mandate] : []),
+    ]).filter(Boolean);
 
     const norm = normalizeName(name);
+    if (!norm) return;
+    if (seen.has(norm)) return;
+    seen.add(norm);
+
     const aliasNorms = safeUniq(aliases.map((a) => normalizeName(a))).filter(Boolean);
 
     const shortNorm = stripCorporateSuffixes(name);
@@ -672,26 +843,26 @@ function buildInstitutionCatalog(sectorJson) {
   if (oversightNode && typeof oversightNode === "object") {
     for (const key of Object.keys(oversightNode)) {
       const node = oversightNode[key];
-      addItem(node?.name || key, node);
+      addItem(node?.name || key, node, [key]);
     }
   }
 
-  // 2) Existing arrays + add "institutions" and "bodies" support
-  const arrayKeys = ["core_institutions", "regulators", "watchdogs", "players", "institutions", "bodies"];
+  // 2) Existing arrays + broader support
+  const arrayKeys = ["core_institutions", "regulators", "watchdogs", "players", "institutions", "bodies", "agencies", "committees", "entities", "contacts"];
   for (const key of arrayKeys) {
     const arr = sectorJson[key];
     if (Array.isArray(arr)) {
-      arr.forEach((inst) => addItem(inst?.name || inst, inst));
+      arr.forEach((inst) => addItem(inst?.name || inst, inst, [key]));
     }
   }
 
-  // 3) ✅ Your Nigeria_Domestic_Escalation.bodies
+  // 3) Nigeria_Domestic_Escalation.bodies
   const nde = sectorJson.Nigeria_Domestic_Escalation;
   if (nde && Array.isArray(nde.bodies)) {
-    nde.bodies.forEach((inst) => addItem(inst?.name || inst, inst));
+    nde.bodies.forEach((inst) => addItem(inst?.name || inst, inst, ["Nigeria Domestic Escalation"]));
   }
 
-  // 4) ✅ Your top-level country nodes (United_States, United_Kingdom, etc.)
+  // 4) Top-level country nodes (United_States, United_Kingdom, etc.)
   const ignoreTopKeys = new Set([
     "sector",
     "version",
@@ -708,13 +879,39 @@ function buildInstitutionCatalog(sectorJson) {
     if (ignoreTopKeys.has(k)) continue;
     if (!v || typeof v !== "object" || Array.isArray(v)) continue;
 
-    // only treat as institution if it actually contains emails somewhere
+    // only treat as institution if it actually contains emails somewhere OR has a clear address
     const hasEmails = extractEmailsDeep(v).some((e) => isEmail(e));
-    if (!hasEmails) continue;
+    const hasAddress = typeof v?.address === "string" && isLikelyAddress(String(v.address || ""));
+    if (!hasEmails && !hasAddress) continue;
 
     const keyAlias = String(k).replace(/_/g, " ").replace(/\s+/g, " ").trim();
-    addItem(v?.name || keyAlias, v, [keyAlias]);
+    const auto = autoAliasesForInternationalTopKey(k);
+    addItem(v?.name || keyAlias, v, [keyAlias, ...auto]);
   }
+
+  // 5) Deep discovery: include any object with a "name" and (emails OR address)
+  function walk(node, pathKey = "") {
+    if (!node) return;
+    if (Array.isArray(node)) {
+      node.forEach((x) => walk(x, pathKey));
+      return;
+    }
+    if (typeof node !== "object") return;
+
+    const nm = typeof node.name === "string" ? node.name.trim() : "";
+    if (nm) {
+      const hasEmails = extractEmailsDeep(node).some((e) => isEmail(e));
+      const hasAddress = typeof node?.address === "string" && isLikelyAddress(String(node.address || ""));
+      if (hasEmails || hasAddress) addItem(nm, node, pathKey ? [pathKey] : []);
+    }
+
+    for (const [k, v] of Object.entries(node)) {
+      if (ignoreTopKeys.has(k)) continue;
+      if (["routing_rules", "routing_keywords", "purpose", "minimum_petition_pack", "version", "scope", "last_updated", "sector"].includes(k)) continue;
+      walk(v, k);
+    }
+  }
+  walk(sectorJson, "");
 
   return items;
 }
@@ -746,6 +943,9 @@ function matchInstitutionNameToCatalogWithScore(name, catalog) {
       if (qTokens.has(t) || qShortTokens.has(t)) overlap++;
     }
     if (overlap >= 2) score += overlap * 10;
+
+    // small boost if at least 1 overlap and query is long (helps committee names)
+    if (overlap >= 1 && qTokens.size >= 6) score += 8;
 
     if (score > bestScore) {
       bestScore = score;
@@ -1096,6 +1296,28 @@ app.get("/admin/stats", async (req, res) => {
   }
 });
 
+// ✅ Reload sector keyword index + catalogs without restarting server
+app.post("/admin/reload-sectors", async (req, res) => {
+  try {
+    const token = String(req.headers["x-admin-token"] || "");
+    const valid = await isAdminTokenValid(token);
+    if (!valid) return res.status(401).json({ ok: false, error: "Unauthorized" });
+
+    SECTOR_KEYWORDS_INDEX = buildSectorKeywordsIndex();
+    GLOBAL_CATALOG_BY_SECTOR.clear();
+    primeGlobalCatalog();
+
+    return res.json({
+      ok: true,
+      sectors: listJsonSectorsFromDataDir(),
+      keywordIndexSize: SECTOR_KEYWORDS_INDEX.size,
+      catalogSize: GLOBAL_CATALOG_BY_SECTOR.size,
+    });
+  } catch {
+    return res.status(500).json({ ok: false, error: "Reload failed" });
+  }
+});
+
 /* ======================================================
    FLUTTERWAVE WEBHOOK
 ====================================================== */
@@ -1109,7 +1331,9 @@ app.post("/flw-webhook", async (req, res) => {
     } else {
       // Accept to avoid breaking unlock, but warn strongly
       if (!headerHash) {
-        console.warn("⚠️ Webhook received without verif-hash. Set FLW_WEBHOOK_HASH in Flutterwave dashboard + Render env.");
+        console.warn(
+          "⚠️ Webhook received without verif-hash. Set FLW_WEBHOOK_HASH in Flutterwave dashboard + Render env."
+        );
       }
     }
 
@@ -1165,14 +1389,9 @@ app.post("/generate-petition", async (req, res) => {
   const { complaint = "", petitioner = {} } = req.body || {};
   await redisIncr(METRICS.generated);
 
-  let sector = detectSector(complaint); // defaults to general
-
-  // If general/unknown and AI classifier enabled, attempt AI override
-  if ((sector === "general" || sector === "unknown") && AI_SECTOR_CLASSIFY) {
-    const aiSector = await detectSectorAI(complaint);
-    if (aiSector && aiSector !== "unknown") sector = aiSector;
-  }
-  if (sector === "unknown") sector = "general";
+  // ✅ FIX: smart sector detection (priority + scoring + AI)
+  let sector = await detectSectorSmart(complaint);
+  if (!sector || sector === "unknown") sector = "general";
 
   const caseType = inferCaseType(sector);
 
@@ -1303,14 +1522,11 @@ CRITICAL RULES:
       finalToInstitutions = ["Public Complaints Commission (PCC)"];
     }
 
+    // ✅ FIX: don't hard-fail — allow PDF-only mode if no recipient email exists
+    let emailRoutingAvailable = true;
     if (!finalToEmails.length) {
-      return res.status(400).json({
-        ok: false,
-        error: "No recipient email found for the detected TO institution in your sector JSON.",
-        hint:
-          "Fix: add emails to data/<sector>.json for the TO institution, OR for general set PCC_EMAIL in Render env.",
-        sector,
-      });
+      emailRoutingAvailable = false;
+      finalToEmails = [];
     }
 
     const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
@@ -1324,6 +1540,7 @@ CRITICAL RULES:
       ccInstitutions: ccItems.map((m) => m.name),
       toEmails: finalToEmails,
       ccEmails: finalCC,
+      emailRoutingAvailable,
       paymentInitializedAt: null,
       flw_tx_id: "",
       return_to: "",
@@ -1342,6 +1559,7 @@ CRITICAL RULES:
       preview,
       sector,
       caseType,
+      emailRoutingAvailable,
     });
   } catch (err) {
     console.error("Generation error:", err);
@@ -1451,6 +1669,7 @@ app.post("/unlock-petition", async (req, res) => {
         to: stored.toEmails,
         cc: stored.ccEmails,
         mailto,
+        emailRoutingAvailable: !!stored.emailRoutingAvailable,
       };
       await storeUnlocked(tx_ref, payload);
       return res.json(payload);
@@ -1468,6 +1687,7 @@ app.post("/unlock-petition", async (req, res) => {
         to: stored.toEmails,
         cc: stored.ccEmails,
         mailto,
+        emailRoutingAvailable: !!stored.emailRoutingAvailable,
       };
 
       await storeUnlocked(tx_ref, payload);
@@ -1555,6 +1775,7 @@ app.post("/unlock-petition", async (req, res) => {
       to: stored.toEmails,
       cc: stored.ccEmails,
       mailto,
+      emailRoutingAvailable: !!stored.emailRoutingAvailable,
     };
 
     await storeUnlocked(tx_ref, payload);
@@ -1577,7 +1798,7 @@ app.get("/download-pdf", (req, res) => {
     if (!text) return res.status(400).send("Missing text");
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", 'attachment; filename="petition.pdf"');
+    res.setHeader("Content-Disposition", 'ı'attachment; filename="petition.pdf"');
 
     const pdf = new PDFDocument({ margin: 50 });
     pdf.pipe(res);
@@ -1602,16 +1823,10 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
   console.log(`📁 Data dir: ${DATA_DIR}`);
-  console.log(
-    `Webhook URL: ${
-      process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`
-    }/flw-webhook`
-  );
+  console.log(`Webhook URL: ${process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`}/flw-webhook`);
 
   if (!FLW_WEBHOOK_HASH) {
-    console.log(
-      "⚠️ FLW_WEBHOOK_HASH not set — set Secret Hash in Flutterwave + set env var in Render (recommended)."
-    );
+    console.log("⚠️ FLW_WEBHOOK_HASH not set — set Secret Hash in Flutterwave + set env var in Render (recommended).");
   }
   if (!OPENAI_KEY) {
     console.log("⚠️ OPENAI_API_KEY not set — petition generation will fail.");
