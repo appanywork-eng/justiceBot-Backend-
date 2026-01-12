@@ -634,7 +634,7 @@ function extractParenAbbr(name = "") {
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
 
-  function addItem(name, obj) {
+  function addItem(name, obj, extraAliases = []) {
     if (!name) return;
 
     const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
@@ -643,6 +643,7 @@ function buildInstitutionCatalog(sectorJson) {
 
     const aliases = safeUniq([
       ...(Array.isArray(obj?.aliases) ? obj.aliases : []),
+      ...extraAliases,
       ...extractParenAbbr(String(name)),
     ]);
 
@@ -666,6 +667,7 @@ function buildInstitutionCatalog(sectorJson) {
 
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
+  // 1) Existing logic (keep)
   const oversightNode = sectorJson.oversight || sectorJson.oversight_ministry || sectorJson.oversightMinistry;
   if (oversightNode && typeof oversightNode === "object") {
     for (const key of Object.keys(oversightNode)) {
@@ -674,12 +676,44 @@ function buildInstitutionCatalog(sectorJson) {
     }
   }
 
-  const arrayKeys = ["core_institutions", "regulators", "watchdogs", "players"];
+  // 2) Existing arrays + add "institutions" and "bodies" support
+  const arrayKeys = ["core_institutions", "regulators", "watchdogs", "players", "institutions", "bodies"];
   for (const key of arrayKeys) {
     const arr = sectorJson[key];
     if (Array.isArray(arr)) {
       arr.forEach((inst) => addItem(inst?.name || inst, inst));
     }
+  }
+
+  // 3) ✅ Your Nigeria_Domestic_Escalation.bodies
+  const nde = sectorJson.Nigeria_Domestic_Escalation;
+  if (nde && Array.isArray(nde.bodies)) {
+    nde.bodies.forEach((inst) => addItem(inst?.name || inst, inst));
+  }
+
+  // 4) ✅ Your top-level country nodes (United_States, United_Kingdom, etc.)
+  const ignoreTopKeys = new Set([
+    "sector",
+    "version",
+    "scope",
+    "last_updated",
+    "purpose",
+    "routing_rules",
+    "routing_keywords",
+    "minimum_petition_pack",
+    "Nigeria_Domestic_Escalation",
+  ]);
+
+  for (const [k, v] of Object.entries(sectorJson)) {
+    if (ignoreTopKeys.has(k)) continue;
+    if (!v || typeof v !== "object" || Array.isArray(v)) continue;
+
+    // only treat as institution if it actually contains emails somewhere
+    const hasEmails = extractEmailsDeep(v).some((e) => isEmail(e));
+    if (!hasEmails) continue;
+
+    const keyAlias = String(k).replace(/_/g, " ").replace(/\s+/g, " ").trim();
+    addItem(v?.name || keyAlias, v, [keyAlias]);
   }
 
   return items;
