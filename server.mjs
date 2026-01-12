@@ -22,6 +22,7 @@ const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "gpt-4o").trim();
 const REDIS_URL = String(process.env.REDIS_URL || "").trim();
 
 const FLW_SECRET_KEY = String(process.env.FLW_SECRET_KEY || "").trim();
+// ✅ dedicated webhook secret (recommended)
 const FLW_WEBHOOK_HASH = String(process.env.FLW_WEBHOOK_HASH || "").trim();
 
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || "https://petitiondesk.com")
@@ -29,16 +30,17 @@ const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || "https://petit
   .replace(/\/+$/, "");
 
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
-const PETITION_TTL_SECONDS = Number(process.env.PETITION_TTL_SECONDS || 2 * 60 * 60);
+const PETITION_TTL_SECONDS = Number(process.env.PETITION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
 
 const ADMIN_UNLOCK_KEY = String(process.env.ADMIN_UNLOCK_KEY || "").trim();
-const ADMIN_SESSION_TTL_SECONDS = Number(process.env.ADMIN_SESSION_TTL_SECONDS || 2 * 60 * 60);
+const ADMIN_SESSION_TTL_SECONDS = Number(process.env.ADMIN_SESSION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
 
-const FLW_TIMEOUT_MS = Number(process.env.FLW_TIMEOUT_MS || 20000);
-const VERIFY_PENDING_WINDOW_MS = Number(process.env.VERIFY_PENDING_WINDOW_MS || 15 * 60 * 1000);
+const FLW_TIMEOUT_MS = Number(process.env.FLW_TIMEOUT_MS || 20000); // default 20s
+const VERIFY_PENDING_WINDOW_MS = Number(process.env.VERIFY_PENDING_WINDOW_MS || 15 * 60 * 1000); // 15 mins
 
-// Optional: enable AI sector classifier
+// Optional safety toggles
 const AI_SECTOR_CLASSIFY = String(process.env.AI_SECTOR_CLASSIFY || "").toLowerCase() === "true";
+const DEBUG_SECTOR = String(process.env.DEBUG_SECTOR || "").toLowerCase() === "true";
 
 /* ======================================================
    MIDDLEWARE
@@ -102,19 +104,19 @@ if (REDIS_URL) {
    REDIS HELPERS
 ====================================================== */
 async function redisIncr(key) {
-  if (!redis || !key) return;
+  if (!redis) return;
   try {
     await redis.incr(key);
   } catch {}
 }
 async function redisSAdd(key, value) {
-  if (!redis || !key || !value) return;
+  if (!redis) return;
   try {
     await redis.sadd(key, value);
   } catch {}
 }
 async function redisGetInt(key) {
-  if (!redis || !key) return 0;
+  if (!redis) return 0;
   try {
     const v = await redis.get(key);
     return Number(v || 0);
@@ -123,7 +125,7 @@ async function redisGetInt(key) {
   }
 }
 async function redisSCard(key) {
-  if (!redis || !key) return 0;
+  if (!redis) return 0;
   try {
     const v = await redis.scard(key);
     return Number(v || 0);
@@ -158,6 +160,8 @@ const OVERSIGHT_EMAILS = {
   AGF: String(process.env.AGF_EMAIL || "").trim(),
 };
 
+// Optional hard fallback list (UNVERIFIED by default).
+// Best practice: set PCC_EMAIL properly in Render so you don't depend on this.
 const PCC_FALLBACK_EMAILS = [
   // "complaints@pcc.gov.ng",
   // "info@pcc.gov.ng",
@@ -166,9 +170,10 @@ const PCC_FALLBACK_EMAILS = [
 /* ======================================================
    IN-MEMORY FALLBACK STORAGE
 ====================================================== */
+// Note: Render free tier restarts = memory resets. Redis is best.
 const petitionStore = new Map(); // tx_ref -> record
-const USED_TX_REFS = new Set(); // confirmed tx_ref
-const USED_TX_SUCCESS = new Set(); // prevent double unlock
+const USED_TX_REFS = new Set(); // webhook/verify confirmed tx_ref (memory)
+const USED_TX_SUCCESS = new Set(); // prevent double unlock in-memory
 
 function scheduleMemoryExpiry(tx_ref) {
   setTimeout(() => petitionStore.delete(tx_ref), PETITION_TTL_SECONDS * 1000).unref?.();
@@ -321,6 +326,7 @@ function buildFrontendRedirectUrl(tx_ref) {
   return `${FRONTEND_BASE_URL}/?tx_ref=${encodeURIComponent(tx_ref)}`;
 }
 
+// return user to a specific frontend path
 function buildFrontendRedirectUrlWithReturn(tx_ref, return_to) {
   const clean = String(return_to || "").trim();
   if (!clean || !clean.startsWith("/")) return buildFrontendRedirectUrl(tx_ref);
@@ -370,7 +376,8 @@ function listJsonSectorsFromDataDir() {
 }
 
 /* ======================================================
-   SECTOR DETECTION (KEYWORDS + PRIORITY + OPTIONAL AI)
+   SECTOR DETECTION
+   ✅ HARD FIX: prevents everything going to "general"
 ====================================================== */
 function buildSectorKeywordsIndex() {
   const index = new Map(); // sector -> keywords[]
@@ -381,8 +388,8 @@ function buildSectorKeywordsIndex() {
     const kw = Array.isArray(sj?.keywords)
       ? sj.keywords
       : Array.isArray(sj?.routing_keywords)
-        ? sj.routing_keywords
-        : [];
+      ? sj.routing_keywords
+      : [];
     const cleaned = safeUniq(kw.map((x) => String(x || "").toLowerCase().trim())).filter(Boolean);
     if (cleaned.length) index.set(sec, cleaned);
   }
@@ -394,43 +401,32 @@ let SECTOR_KEYWORDS_INDEX = buildSectorKeywordsIndex();
 function builtInKeywordMap() {
   return {
     power: ["electricity", "nepa", "aedc", "power", "disco", "tcn", "nerc", "meter", "estimated billing", "transformer"],
-    aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation", "air peace", "airpeace"],
-    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit", "cbn", "failed transfer"],
+    aviation: ["flight", "airport", "airline", "ncaa", "faan", "aviation", "air peace", "airpeace", "baggage", "delay", "cancelled", "cancellation"],
+    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit", "cbn", "failed transfer", "reversal", "ussd", "mobile banking"],
     telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "airtel", "glo", "9mobile"],
     education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund", "transcript"],
     health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
     security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration", "dss", "kidnap", "detention"],
     judiciary: ["court", "judge", "justice", "supreme", "magistrate", "bail", "delayed judgement", "njc"],
     international_escalation: [
-      "united states congress",
-      "u.s. congress",
-      "us congress",
-      "congress",
-      "senate",
-      "house committee",
-      "foreign affairs committee",
-      "house foreign affairs",
-      "senate foreign relations",
-      "tom lantos",
-      "uk parliament",
-      "united kingdom parliament",
-      "house of commons",
-      "fcdo",
-      "european union",
-      "eu parliament",
-      "european parliament",
+      "un",
+      "ecowas",
+      "au",
+      "icc",
+      "eu",
+      "international",
       "united nations",
       "un human rights",
+      "congress",
+      "u.s. congress",
+      "house committee",
+      "senate",
+      "state department",
+      "foreign affairs committee",
+      "house of commons",
+      "uk parliament",
+      "european parliament",
       "ohchr",
-      "human rights council",
-      "special procedures",
-      "icc",
-      "international criminal court",
-      "the hague",
-      "ecowas",
-      "african union",
-      "international escalation",
-      "international",
     ],
     anti_corruption: [
       "anti corruption",
@@ -472,45 +468,110 @@ function builtInKeywordMap() {
   };
 }
 
+// safe matching for short tokens (atm/pos/cbn/un/au/etc.)
+function keywordHit(lower, kw) {
+  const w = String(kw || "").toLowerCase().trim();
+  if (!w) return false;
+
+  // short simple tokens should use word-boundary
+  if (w.length <= 4 && /^[a-z0-9]+$/.test(w)) {
+    const re = new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    return re.test(lower);
+  }
+  return lower.includes(w);
+}
+
+// ✅ Smart sector detection (heuristic + priority override + AI)
 function detectSectorHeuristic(text) {
   const lower = String(text || "").toLowerCase();
 
-  // Strong international override
-  const intlSignals = builtInKeywordMap().international_escalation;
-  if (intlSignals.some((w) => lower.includes(w))) {
+  // Priority override: international escalation signals should win
+  const intlSignals = [
+    "united states congress",
+    "u.s. congress",
+    "us congress",
+    "congress",
+    "senate",
+    "house committee",
+    "foreign affairs committee",
+    "house foreign affairs",
+    "senate foreign relations",
+    "tom lantos",
+    "uk parliament",
+    "united kingdom parliament",
+    "house of commons",
+    "foreign, commonwealth",
+    "fcdo",
+    "european union",
+    "eu parliament",
+    "european parliament",
+    "united nations",
+    "un human rights",
+    "ohchr",
+    "human rights council",
+    "special procedures",
+    "icc",
+    "international criminal court",
+    "the hague",
+    "ecowas",
+    "african union",
+    "au",
+    "international escalation",
+    "international",
+  ];
+  if (intlSignals.some((w) => keywordHit(lower, w))) {
     return { sector: "international_escalation", score: 999, reason: "intl_override" };
   }
 
   const candidates = [];
 
+  // Score JSON keywords (strong)
   for (const [sector, words] of SECTOR_KEYWORDS_INDEX.entries()) {
     let score = 0;
     for (const w of words) {
-      const ww = String(w || "").toLowerCase().trim();
-      if (!ww) continue;
-      if (lower.includes(ww)) score += ww.length >= 10 ? 18 : 12;
+      if (keywordHit(lower, w)) score += 25;
     }
     if (score > 0) candidates.push({ sector, score, reason: "json_keywords" });
   }
 
+  // Score built-in keywords (single hit must be enough)
   const map = builtInKeywordMap();
   for (const [sector, words] of Object.entries(map)) {
-    let score = 0;
+    let hits = 0;
     for (const w of words) {
-      const ww = String(w || "").toLowerCase();
-      if (!ww) continue;
-      if (lower.includes(ww)) score += 8;
+      if (keywordHit(lower, w)) hits++;
     }
-    if (score > 0) candidates.push({ sector, score, reason: "builtin_keywords" });
+    if (hits > 0) {
+      const score = 40 + hits * 15; // ✅ single hit => 55 (no more forced "general")
+      candidates.push({ sector, score, reason: "builtin_keywords" });
+    }
   }
 
   if (!candidates.length) return { sector: "general", score: 0, reason: "no_match" };
 
   candidates.sort((a, b) => b.score - a.score);
-  const best = candidates[0];
+  return candidates[0];
+}
 
-  if (best.score < 12) return { sector: "general", score: best.score, reason: "weak_match" };
-  return best;
+async function detectSectorSmart(text) {
+  const heuristic = detectSectorHeuristic(text);
+
+  // If AI classifier not enabled or OpenAI missing, use heuristic
+  if (!AI_SECTOR_CLASSIFY || !openai) return heuristic.sector || "general";
+
+  // Ask AI only if general OR weak evidence
+  const shouldAskAI = heuristic.sector === "general" || heuristic.score < 60;
+  if (!shouldAskAI) return heuristic.sector;
+
+  const aiSector = await detectSectorAI(text);
+  if (aiSector && aiSector !== "unknown") return aiSector;
+
+  return heuristic.sector || "general";
+}
+
+// Keep old function name for compatibility (not used in generate anymore)
+function detectSector(text) {
+  return detectSectorHeuristic(text).sector || "general";
 }
 
 async function detectSectorAI(text) {
@@ -541,20 +602,6 @@ async function detectSectorAI(text) {
   }
 }
 
-async function detectSectorSmart(text) {
-  const heuristic = detectSectorHeuristic(text);
-
-  if (!AI_SECTOR_CLASSIFY || !openai) return heuristic.sector || "general";
-
-  const shouldAskAI = heuristic.sector === "general" || heuristic.score < 30;
-  if (!shouldAskAI) return heuristic.sector;
-
-  const aiSector = await detectSectorAI(text);
-  if (aiSector && aiSector !== "unknown") return aiSector;
-
-  return heuristic.sector || "general";
-}
-
 function inferCaseType(sector) {
   if (sector === "security" || sector === "judiciary") return "human_rights";
   if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector)) return "service_delivery";
@@ -567,7 +614,9 @@ function inferCaseType(sector) {
 function buildAdminOversightCC({ sector, caseType }) {
   const cc = [];
 
+  // don't CC PCC if sector is general (PCC can be TO)
   if (sector !== "international_escalation" && sector !== "general" && OVERSIGHT_EMAILS.PCC) cc.push(OVERSIGHT_EMAILS.PCC);
+
   if (caseType === "human_rights" && OVERSIGHT_EMAILS.NHRC) cc.push(OVERSIGHT_EMAILS.NHRC);
 
   if (caseType === "service_delivery") {
@@ -613,6 +662,7 @@ function extractEmailsDeep(value, out = []) {
   return out;
 }
 
+// Address extraction (JSON-only; never guess)
 function isLikelyAddress(s) {
   if (typeof s !== "string") return false;
   const v = s.trim();
@@ -707,6 +757,7 @@ function autoAliasesForInternationalTopKey(k = "") {
         "FAC",
         "FCDO",
         "Foreign, Commonwealth and Development Office",
+        "Foreign Commonwealth & Development Office",
       ];
     case "European_Union":
       return [
@@ -729,9 +780,17 @@ function autoAliasesForInternationalTopKey(k = "") {
         "OHCHR",
         "Human Rights Council",
         "Special Procedures",
+        "Special Procedures Branch",
       ];
     case "International_Criminal_Court":
-      return ["International Criminal Court", "ICC", "Office of the Prosecutor", "OTP", "The Hague"];
+      return [
+        "International Criminal Court",
+        "ICC",
+        "Office of the Prosecutor",
+        "OTP",
+        "The Hague",
+        "ICC Prosecutor",
+      ];
     case "Canada":
       return [
         "Parliament of Canada",
@@ -747,7 +806,7 @@ function autoAliasesForInternationalTopKey(k = "") {
 
 function buildInstitutionCatalog(sectorJson) {
   const items = [];
-  const seen = new Set();
+  const seen = new Set(); // norm de-dupe
 
   function addItem(name, obj, extraAliases = []) {
     if (!name) return;
@@ -771,6 +830,7 @@ function buildInstitutionCatalog(sectorJson) {
     seen.add(norm);
 
     const aliasNorms = safeUniq(aliases.map((a) => normalizeName(a))).filter(Boolean);
+
     const shortNorm = stripCorporateSuffixes(name);
     const shortAliasNorms = safeUniq([shortNorm, ...aliasNorms.map(stripCorporateSuffixes)]).filter(Boolean);
 
@@ -788,6 +848,7 @@ function buildInstitutionCatalog(sectorJson) {
 
   if (!sectorJson || typeof sectorJson !== "object") return items;
 
+  // 1) Existing logic (keep)
   const oversightNode = sectorJson.oversight || sectorJson.oversight_ministry || sectorJson.oversightMinistry;
   if (oversightNode && typeof oversightNode === "object") {
     for (const key of Object.keys(oversightNode)) {
@@ -796,18 +857,8 @@ function buildInstitutionCatalog(sectorJson) {
     }
   }
 
-  const arrayKeys = [
-    "core_institutions",
-    "regulators",
-    "watchdogs",
-    "players",
-    "institutions",
-    "bodies",
-    "agencies",
-    "committees",
-    "entities",
-    "contacts",
-  ];
+  // 2) Existing arrays + broader support
+  const arrayKeys = ["core_institutions", "regulators", "watchdogs", "players", "institutions", "bodies", "agencies", "committees", "entities", "contacts"];
   for (const key of arrayKeys) {
     const arr = sectorJson[key];
     if (Array.isArray(arr)) {
@@ -815,11 +866,13 @@ function buildInstitutionCatalog(sectorJson) {
     }
   }
 
+  // 3) Nigeria_Domestic_Escalation.bodies
   const nde = sectorJson.Nigeria_Domestic_Escalation;
   if (nde && Array.isArray(nde.bodies)) {
     nde.bodies.forEach((inst) => addItem(inst?.name || inst, inst, ["Nigeria Domestic Escalation"]));
   }
 
+  // 4) Top-level country nodes (United_States, United_Kingdom, etc.)
   const ignoreTopKeys = new Set([
     "sector",
     "version",
@@ -836,6 +889,7 @@ function buildInstitutionCatalog(sectorJson) {
     if (ignoreTopKeys.has(k)) continue;
     if (!v || typeof v !== "object" || Array.isArray(v)) continue;
 
+    // only treat as institution if it actually contains emails somewhere OR has a clear address
     const hasEmails = extractEmailsDeep(v).some((e) => isEmail(e));
     const hasAddress = typeof v?.address === "string" && isLikelyAddress(String(v.address || ""));
     if (!hasEmails && !hasAddress) continue;
@@ -844,6 +898,30 @@ function buildInstitutionCatalog(sectorJson) {
     const auto = autoAliasesForInternationalTopKey(k);
     addItem(v?.name || keyAlias, v, [keyAlias, ...auto]);
   }
+
+  // 5) Deep discovery: include any object with a "name" and (emails OR address)
+  function walk(node, pathKey = "") {
+    if (!node) return;
+    if (Array.isArray(node)) {
+      node.forEach((x) => walk(x, pathKey));
+      return;
+    }
+    if (typeof node !== "object") return;
+
+    const nm = typeof node.name === "string" ? node.name.trim() : "";
+    if (nm) {
+      const hasEmails = extractEmailsDeep(node).some((e) => isEmail(e));
+      const hasAddress = typeof node?.address === "string" && isLikelyAddress(String(node.address || ""));
+      if (hasEmails || hasAddress) addItem(nm, node, pathKey ? [pathKey] : []);
+    }
+
+    for (const [k, v] of Object.entries(node)) {
+      if (ignoreTopKeys.has(k)) continue;
+      if (["routing_rules", "routing_keywords", "purpose", "minimum_petition_pack", "version", "scope", "last_updated", "sector"].includes(k)) continue;
+      walk(v, k);
+    }
+  }
+  walk(sectorJson, "");
 
   return items;
 }
@@ -875,6 +953,7 @@ function matchInstitutionNameToCatalogWithScore(name, catalog) {
       if (qTokens.has(t) || qShortTokens.has(t)) overlap++;
     }
     if (overlap >= 2) score += overlap * 10;
+
     if (overlap >= 1 && qTokens.size >= 6) score += 8;
 
     if (score > bestScore) {
@@ -986,6 +1065,7 @@ function extractSectionInstitutionNames(petitionText, sectionLabel) {
     .filter(Boolean);
 }
 
+// Only replace TO/CC blocks if we actually have items to inject
 function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccItems = []) {
   const lines = String(petitionText || "").split(/\r?\n/);
   const out = [];
@@ -1033,11 +1113,12 @@ function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccIt
         skippingToBlock = true;
         skippingCcBlock = false;
         continue;
+      } else {
+        skippingToBlock = false;
+        skippingCcBlock = false;
+        out.push(line);
+        continue;
       }
-      skippingToBlock = false;
-      skippingCcBlock = false;
-      out.push(line);
-      continue;
     }
 
     if (isCc) {
@@ -1049,11 +1130,12 @@ function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccIt
         skippingCcBlock = true;
         skippingToBlock = false;
         continue;
+      } else {
+        skippingToBlock = false;
+        skippingCcBlock = false;
+        out.push(line);
+        continue;
       }
-      skippingToBlock = false;
-      skippingCcBlock = false;
-      out.push(line);
-      continue;
     }
 
     if (isSubject) {
@@ -1075,7 +1157,7 @@ function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccIt
 }
 
 /* ======================================================
-   DURABLE PETITION STORAGE
+   DURABLE PETITION STORAGE (Redis + memory)
 ====================================================== */
 async function storePetition(tx_ref, payload) {
   const record = { ...payload, storedAt: Date.now() };
@@ -1109,6 +1191,7 @@ async function deletePetition(tx_ref) {
   }
 }
 
+// Mark tx paid (durable best-effort)
 async function markTxPaid(tx_ref) {
   USED_TX_REFS.add(tx_ref);
   if (redis) {
@@ -1129,6 +1212,7 @@ async function isTxPaid(tx_ref) {
   }
 }
 
+// Persist unlocked response (prevents “looks failed” on refresh)
 async function storeUnlocked(tx_ref, payload) {
   USED_TX_SUCCESS.add(tx_ref);
   petitionStore.set(`__unlocked__:${tx_ref}`, payload);
@@ -1151,6 +1235,7 @@ async function getUnlocked(tx_ref) {
   return petitionStore.get(`__unlocked__:${tx_ref}`) || null;
 }
 
+// Store Flutterwave transaction id (helps verify by ID)
 async function storeTxId(tx_ref, tx_id) {
   const id = String(tx_id || "").trim();
   if (!id) return;
@@ -1220,6 +1305,7 @@ app.get("/admin/stats", async (req, res) => {
   }
 });
 
+// ✅ Reload sector keyword index + catalogs without restarting server
 app.post("/admin/reload-sectors", async (req, res) => {
   try {
     const token = String(req.headers["x-admin-token"] || "");
@@ -1248,24 +1334,19 @@ app.post("/flw-webhook", async (req, res) => {
   try {
     const headerHash = String(req.headers["verif-hash"] || "").trim();
 
+    // If you set FLW_WEBHOOK_HASH, enforce it
     if (FLW_WEBHOOK_HASH) {
       if (!headerHash || headerHash !== FLW_WEBHOOK_HASH) return res.status(401).end();
     } else {
+      // Accept to avoid breaking unlock, but warn strongly
       if (!headerHash) {
-        console.warn("⚠️ Webhook received without verif-hash. Set FLW_WEBHOOK_HASH in Flutterwave + Render env.");
+        console.warn(
+          "⚠️ Webhook received without verif-hash. Set FLW_WEBHOOK_HASH in Flutterwave dashboard + Render env."
+        );
       }
     }
 
-    const payload = (() => {
-      if (req.rawBody) {
-        try {
-          return JSON.parse(req.rawBody);
-        } catch {
-          return req.body;
-        }
-      }
-      return req.body;
-    })();
+    const payload = req.rawBody ? JSON.parse(req.rawBody) : req.body;
 
     if (payload?.event === "charge.completed") {
       const d = payload?.data || {};
@@ -1317,12 +1398,18 @@ app.post("/generate-petition", async (req, res) => {
   const { complaint = "", petitioner = {} } = req.body || {};
   await redisIncr(METRICS.generated);
 
+  // ✅ FIX: smart sector detection (priority + scoring + AI)
+  const heuristic = detectSectorHeuristic(complaint);
   let sector = await detectSectorSmart(complaint);
   if (!sector || sector === "unknown") sector = "general";
 
-  // If sector file is missing, fall back to general
-  if (sector !== "general" && !loadSectorJson(sector)) {
-    sector = "general";
+  if (DEBUG_SECTOR) {
+    console.log("🧠 SECTOR DEBUG:", {
+      heuristic,
+      final: sector,
+      ai_enabled: AI_SECTOR_CLASSIFY,
+      jsonSectors: listJsonSectorsFromDataDir().length,
+    });
   }
 
   const caseType = inferCaseType(sector);
@@ -1335,24 +1422,9 @@ app.post("/generate-petition", async (req, res) => {
 
   if (!openai) return res.status(500).json({ ok: false, error: "OPENAI_API_KEY not configured" });
 
+  // Force TO for general, so tenant/landlord & random issues always route to PCC
   const generalToLine = `TO: Public Complaints Commission (PCC)`;
-  const generalCcLine =
-    `CC: National Human Rights Commission (NHRC), SERVICOM, Federal Competition and Consumer Protection Commission (FCCPC)`;
-
-  // ✅ IMPORTANT: pre-build catalog so OpenAI uses exact names that exist in JSON
-  const sectorJson = sector === "general" ? null : loadSectorJson(sector);
-  const sectorCatalog = sectorJson ? buildInstitutionCatalog(sectorJson) : [];
-
-  const catalogNames = sectorCatalog
-    .slice()
-    .sort((a, b) => (b.emails?.length || 0) - (a.emails?.length || 0))
-    .map((x) => x.name)
-    .filter(Boolean);
-
-  const catalogListForPrompt = catalogNames.length
-    ? `\n\nALLOWED INSTITUTION NAMES FOR THIS SECTOR (use exact spelling):\n` +
-      catalogNames.slice(0, 40).map((n) => `- ${n}`).join("\n")
-    : "";
+  const generalCcLine = `CC: National Human Rights Commission (NHRC), SERVICOM, Federal Competition and Consumer Protection Commission (FCCPC)`;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -1372,12 +1444,8 @@ Address: ${pAddress}
 Email: ${pEmail}
 Phone: ${pPhone}
 
-${sector === "general"
-  ? generalToLine
-  : "TO: [Pick ONE primary institution name ONLY — DO NOT add emails or phone numbers]"}
-${sector === "general"
-  ? generalCcLine
-  : "CC: [Pick relevant oversight/regulatory bodies by NAME ONLY — DO NOT add emails or phone numbers]"}
+${sector === "general" ? generalToLine : "TO: [Full official name of primary institution ONLY — DO NOT add emails or phone numbers]"}
+${sector === "general" ? generalCcLine : "CC: [List relevant oversight/regulatory bodies by name ONLY — DO NOT add emails or phone numbers]"}
 
 SUBJECT: [Clear, specific subject line]
 
@@ -1419,10 +1487,7 @@ CRITICAL RULES:
 - NEVER include any email addresses, phone numbers, or invented contacts for institutions.
 - DO NOT invent institution addresses. The system will insert verified addresses automatically from JSON if present.
 - Keep it professional, firm, evidence-led, and hard to ignore (SAN style).
-- Under 950 words.
-${catalogListForPrompt}
-
-If you see "ALLOWED INSTITUTION NAMES", your TO and CC MUST be chosen from that list (exact spelling).`,
+- Under 950 words.`,
         },
         { role: "user", content: `Complaint: ${complaint}` },
       ],
@@ -1432,9 +1497,15 @@ If you see "ALLOWED INSTITUTION NAMES", your TO and CC MUST be chosen from that 
     let petitionText = completion.choices?.[0]?.message?.content?.trim() || "Generation failed.";
     const subject = extractSubjectFromPetition(petitionText);
 
+    // Load sector JSON and build catalog
+    const sectorJson = loadSectorJson(sector);
+    const sectorCatalog = buildInstitutionCatalog(sectorJson);
+
+    // Parse TO/CC institution names from petition text
     const toNames = extractSectionInstitutionNames(petitionText, "TO");
     const ccNames = extractSectionInstitutionNames(petitionText, "CC");
 
+    // Match institutions (sector-first + cross-sector fallback)
     const toItems = safeUniq(
       toNames
         .map((n) => matchInstitutionNameToCatalog(n, sectorCatalog) || matchInstitutionAcrossAllSectors(n, sector))
@@ -1447,14 +1518,20 @@ If you see "ALLOWED INSTITUTION NAMES", your TO and CC MUST be chosen from that 
         .filter(Boolean)
     );
 
+    // Inject verified addresses (JSON-only)
     petitionText = injectInstitutionAddressesIntoPetition(petitionText, toItems, ccItems);
 
+    // Extract verified emails from JSON catalog hits
     const toEmailsFromJson = safeUniq(toItems.flatMap((m) => m.emails)).filter(isEmail);
     const ccEmailsFromJson = safeUniq(ccItems.flatMap((m) => m.emails)).filter(isEmail);
 
+    // Add admin oversight CC rules
     const adminCC = buildAdminOversightCC({ sector, caseType });
     const finalCC = safeUniq([...ccEmailsFromJson, ...adminCC]).filter(isEmail);
 
+    // FINAL TO logic:
+    // - if sector is general: always TO PCC (env), else fallback list
+    // - else: use JSON TO emails
     let finalToEmails = toEmailsFromJson;
     let finalToInstitutions = toItems.map((m) => m.name);
 
@@ -1464,7 +1541,7 @@ If you see "ALLOWED INSTITUTION NAMES", your TO and CC MUST be chosen from that 
       finalToInstitutions = ["Public Complaints Commission (PCC)"];
     }
 
-    // ✅ PDF-only mode if TO emails are missing
+    // ✅ don't hard-fail — allow PDF-only mode if no recipient email exists
     let emailRoutingAvailable = true;
     if (!finalToEmails.length) {
       emailRoutingAvailable = false;
@@ -1567,7 +1644,7 @@ app.post("/pay/initialize", async (req, res) => {
 });
 
 /* ======================================================
-   UNLOCK PETITION
+   UNLOCK PETITION (Admin override OR webhook OR verify)
 ====================================================== */
 app.post("/unlock-petition", async (req, res) => {
   try {
@@ -1656,7 +1733,11 @@ app.post("/unlock-petition", async (req, res) => {
 
     if (!verifyResponse.ok) {
       if (recentlyInitialized) {
-        return res.status(202).json({ ok: false, pending: true, error: "Payment processing. Please try again shortly." });
+        return res.status(202).json({
+          ok: false,
+          pending: true,
+          error: "Payment processing. Please wait a moment and try again.",
+        });
       }
       return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
@@ -1673,11 +1754,17 @@ app.post("/unlock-petition", async (req, res) => {
 
     if (returnedTxId) await storeTxId(tx_ref, returnedTxId);
 
-    if (returnedTxRef && returnedTxRef !== tx_ref) return res.status(402).json({ ok: false, error: "Payment not verified" });
+    if (returnedTxRef && returnedTxRef !== tx_ref) {
+      return res.status(402).json({ ok: false, error: "Payment not verified" });
+    }
 
     if (isPendingStatus(status)) {
       if (recentlyInitialized) {
-        return res.status(202).json({ ok: false, pending: true, error: "Payment is still processing. Try again shortly." });
+        return res.status(202).json({
+          ok: false,
+          pending: true,
+          error: "Payment is still processing. Please try again shortly.",
+        });
       }
       return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
@@ -1720,6 +1807,7 @@ app.get("/download-pdf", (req, res) => {
     if (!text) return res.status(400).send("Missing text");
 
     res.setHeader("Content-Type", "application/pdf");
+    // ✅ FIXED: corrupted header string
     res.setHeader("Content-Disposition", 'attachment; filename="petition.pdf"');
 
     const pdf = new PDFDocument({ margin: 50 });
