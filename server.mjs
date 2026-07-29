@@ -917,8 +917,20 @@ function inferGeneralOversightInstitutions(complaint) {
 function buildAdminOversightCC({ sector, caseType }) {
   const cc = [];
 
-  // don't CC PCC if sector is general (PCC can be TO)
-  if (sector !== "international_escalation" && sector !== "general" && OVERSIGHT_EMAILS.PCC) cc.push(OVERSIGHT_EMAILS.PCC);
+  // PCC is not automatically copied on
+  // general or private civil disputes.
+  if (
+    sector !==
+      "international_escalation" &&
+    sector !== "general" &&
+    sector !==
+      "civil_disputes" &&
+    OVERSIGHT_EMAILS.PCC
+  ) {
+    cc.push(
+      OVERSIGHT_EMAILS.PCC
+    );
+  }
 
   if (caseType === "human_rights" && OVERSIGHT_EMAILS.NHRC) cc.push(OVERSIGHT_EMAILS.NHRC);
 
