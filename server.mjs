@@ -732,6 +732,99 @@ function inferCaseType(sector) {
   return "other";
 }
 
+function inferGeneralOversightInstitutions(complaint) {
+  const lower = String(complaint || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const names = [];
+
+  const humanRightsSignals = [
+    "human rights",
+    "rights violation",
+    "violation of my rights",
+    "unlawful arrest",
+    "unlawful detention",
+    "illegal detention",
+    "torture",
+    "police brutality",
+    "discrimination",
+    "inhuman treatment",
+    "degrading treatment",
+    "freedom of expression",
+    "freedom of speech",
+  ];
+
+  const publicServiceSignals = [
+    "ministry",
+    "government agency",
+    "government office",
+    "public office",
+    "public institution",
+    "public servant",
+    "civil service",
+    "administrative delay",
+    "refusal to act",
+    "failure to respond",
+    "failure to acknowledge",
+    "no acknowledgement",
+    "no acknowledgment",
+    "government application",
+    "public service",
+    "federal government",
+    "state government",
+    "local government",
+  ];
+
+  const consumerSignals = [
+    "consumer",
+    "customer",
+    "service provider",
+    "private company",
+    "merchant",
+    "product",
+    "refund",
+    "warranty",
+    "billing dispute",
+    "unfair charge",
+    "subscription",
+    "defective product",
+    "poor service",
+    "consumer complaint",
+  ];
+
+  if (
+    humanRightsSignals.some(
+      (signal) => lower.includes(signal)
+    )
+  ) {
+    names.push(
+      "National Human Rights Commission (NHRC)"
+    );
+  }
+
+  if (
+    publicServiceSignals.some(
+      (signal) => lower.includes(signal)
+    )
+  ) {
+    names.push("SERVICOM");
+  }
+
+  if (
+    consumerSignals.some(
+      (signal) => lower.includes(signal)
+    )
+  ) {
+    names.push(
+      "Federal Competition and Consumer Protection Commission (FCCPC)"
+    );
+  }
+
+  return safeUniq(names);
+}
+
 function buildAdminOversightCC({ sector, caseType }) {
   const cc = [];
 
@@ -1555,8 +1648,18 @@ app.post("/generate-petition", async (req, res) => {
     });
   }
 
-  const generalToLine = `TO: Public Complaints Commission (PCC)`;
-  const generalCcLine = `CC: National Human Rights Commission (NHRC), SERVICOM, Federal Competition and Consumer Protection Commission (FCCPC)`;
+  const generalToLine =
+    "TO: Public Complaints Commission (PCC)";
+
+  const generalCcInstitutions =
+    inferGeneralOversightInstitutions(
+      complaint
+    );
+
+  const generalCcLine =
+    generalCcInstitutions.length
+      ? `CC: ${generalCcInstitutions.join(", ")}`
+      : "CC: None";
 
   try {
     let petitionText =
