@@ -1962,7 +1962,7 @@ app.listen(PORT, "0.0.0.0", () => {
   if (!FLW_WEBHOOK_HASH) {
     console.log("⚠️ FLW_WEBHOOK_HASH not set — store the Flutterwave webhook hash in Secret Manager and attach it to Cloud Run.");
   }
-  if (!OPENAI_KEY) {
+  if (!GEMINI_API_KEY) {
     console.log("⚠️ GOOGLE_API_KEY not set — petition generation will fail.");
   }
   if (!FLW_SECRET_KEY) {
