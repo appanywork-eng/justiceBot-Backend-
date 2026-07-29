@@ -1,0 +1,105 @@
+{
+  "sector": "civil_disputes",
+  "version": "1.0.0",
+  "country": "Nigeria",
+  "description": "Verified routing for private civil disputes, beginning with landlord and tenant matters.",
+  "last_verified": "2026-07-29",
+  "verification_policy": {
+    "official_sources_only": true,
+    "no_invented_contacts": true,
+    "unverified_email_routing_disabled": true
+  },
+  "keywords": [
+    "landlord",
+    "tenant",
+    "tenancy",
+    "rent increase",
+    "house rent",
+    "rent dispute",
+    "quit notice",
+    "eviction notice",
+    "rented apartment",
+    "rented house",
+    "lease agreement",
+    "property manager"
+  ],
+  "institutions": [
+    {
+      "name": "Abuja Multi-Door Court (AMDC)",
+      "aliases": [
+        "Abuja Multi Door Court",
+        "Abuja Multi-Door Court",
+        "Abuja Multi-Door Court House",
+        "AMDC"
+      ],
+      "emails": [],
+      "phones": [],
+      "addresses": [
+        "Abuja Multi-Door Court House, Gudu, Abuja, FCT, Nigeria"
+      ],
+      "websites": [
+        "https://www.fcthighcourt.gov.ng/abuja-multi-door-court-amdc/",
+        "https://www.fcthighcourt.gov.ng/wp-content/uploads/2025/07/AMDC-User-Guide.pdf"
+      ],
+      "email_routing_enabled": false,
+      "submission_methods": [
+        "Walk-in filing",
+        "Request Form filed at the AMDC Registry",
+        "Court referral"
+      ],
+      "routing_scope": "FCT civil disputes and alternative dispute resolution",
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-29",
+      "source_urls": [
+        "https://www.fcthighcourt.gov.ng/abuja-multi-door-court-amdc/",
+        "https://www.fcthighcourt.gov.ng/court-listing/specialized-courts/",
+        "https://www.fcthighcourt.gov.ng/wp-content/uploads/2025/07/AMDC-User-Guide.pdf"
+      ]
+    },
+    {
+      "name": "Citizens' Mediation Bureau (CMB), Lagos State",
+      "aliases": [
+        "Citizens Mediation Bureau",
+        "Citizens' Mediation Bureau",
+        "Citizens Mediation Centre",
+        "Citizens' Mediation Centre",
+        "Lagos CMB",
+        "Lagos CMC",
+        "CMC Ikeja"
+      ],
+      "emails": [
+        "cmcikeja01@gmail.com"
+      ],
+      "phones": [
+        "08118161620"
+      ],
+      "addresses": [
+        "7 LJ Dosunmu Street, Opposite Beehive School, CBD, Alausa, Ikeja, Lagos, Nigeria"
+      ],
+      "websites": [
+        "https://lagosstatemoj.org/cmc/"
+      ],
+      "email_routing_enabled": true,
+      "submission_methods": [
+        "Email petition",
+        "Walk-in submission",
+        "Telephone request",
+        "Court referral"
+      ],
+      "routing_scope": "Lagos landlord-tenant and other civil mediation disputes",
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-29",
+      "source_urls": [
+        "https://lagosstatemoj.org/cmc/",
+        "https://lagosstate.gov.ng/news/all/view/67dd8f1a51182815ea6c0bb7"
+      ]
+    }
+  ],
+  "routing_rules": [
+    "FCT landlord-tenant disputes route to Abuja Multi-Door Court.",
+    "Lagos landlord-tenant disputes route to Citizens' Mediation Bureau.",
+    "Where no verified jurisdiction-specific institution is available, generate a formal notice to the landlord or property manager without an email route.",
+    "Do not route a private dispute against an unidentified individual landlord to PCC.",
+    "Do not claim that a rent increase is unlawful merely because the percentage is high."
+  ]
+}

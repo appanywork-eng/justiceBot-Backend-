@@ -14,6 +14,9 @@ import {
   extractAddressesDeep,
   isLikelyAddress,
 } from "./lib/institutionContactUtils.mjs";
+import {
+  resolveCivilRouting,
+} from "./lib/civilJurisdiction.mjs";
 
 dotenv.config();
 
@@ -770,11 +773,51 @@ async function detectSectorAI(text) {
 }
 
 function inferCaseType(sector) {
-  if (sector === "security" || sector === "judiciary") return "human_rights";
-  if (["health", "telecoms", "aviation", "banking", "power", "education"].includes(sector)) return "service_delivery";
-  if (sector === "international_escalation") return "international";
-  if (sector === "anti_corruption") return "anti_corruption";
-  if (sector === "diaspora_report") return "diaspora";
+  if (sector === "civil_disputes") {
+    return "civil_dispute";
+  }
+
+  if (
+    sector === "security" ||
+    sector === "judiciary"
+  ) {
+    return "human_rights";
+  }
+
+  if (
+    [
+      "health",
+      "telecoms",
+      "aviation",
+      "banking",
+      "power",
+      "education",
+    ].includes(sector)
+  ) {
+    return "service_delivery";
+  }
+
+  if (
+    sector ===
+    "international_escalation"
+  ) {
+    return "international";
+  }
+
+  if (
+    sector ===
+    "anti_corruption"
+  ) {
+    return "anti_corruption";
+  }
+
+  if (
+    sector ===
+    "diaspora_report"
+  ) {
+    return "diaspora";
+  }
+
   return "other";
 }
 
@@ -1248,6 +1291,89 @@ function matchInstitutionAcrossAllSectors(name, preferredSector) {
   return bestScore >= 30 ? best : null;
 }
 
+function enforceRoutingHeaders(
+  petitionText,
+  toLine,
+  ccLine
+) {
+  const lines = String(
+    petitionText || ""
+  ).split(/\r?\n/);
+
+  const output = [];
+
+  let wroteTo = false;
+  let wroteCc = false;
+
+  for (const line of lines) {
+    if (
+      /^\s*TO\s*:/i.test(line)
+    ) {
+      if (!wroteTo) {
+        output.push(toLine);
+        wroteTo = true;
+      }
+
+      continue;
+    }
+
+    if (
+      /^\s*CC\s*:/i.test(line)
+    ) {
+      if (!wroteCc) {
+        output.push(ccLine);
+        wroteCc = true;
+      }
+
+      continue;
+    }
+
+    if (
+      /^\s*SUBJECT\s*:/i.test(line)
+    ) {
+      if (!wroteTo) {
+        output.push(toLine);
+        wroteTo = true;
+      }
+
+      if (!wroteCc) {
+        output.push(ccLine);
+        wroteCc = true;
+      }
+
+      output.push(line);
+      continue;
+    }
+
+    output.push(line);
+  }
+
+  if (!wroteTo) {
+    output.unshift(toLine);
+  }
+
+  if (!wroteCc) {
+    const toIndex =
+      output.findIndex(
+        (line) =>
+          /^\s*TO\s*:/i.test(
+            line
+          )
+      );
+
+    output.splice(
+      toIndex + 1,
+      0,
+      ccLine
+    );
+  }
+
+  return output
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function extractSectionInstitutionNames(petitionText, sectionLabel) {
   const lines = String(petitionText || "").split(/\r?\n/);
 
@@ -1655,12 +1781,50 @@ app.post("/generate-petition", async (req, res) => {
   const v = validateGenerateBody(req.body || {});
   if (!v.ok) return res.status(400).json(v);
 
-  const { complaint = "", petitioner = {} } = req.body || {};
-  await redisIncr(METRICS.generated);
+  const {
+    complaint = "",
+    petitioner = {},
+    disputeLocation = "",
+  } = req.body || {};
 
-  const heuristic = detectSectorHeuristic(complaint);
-  let sector = await detectSectorSmart(complaint);
-  if (!sector || sector === "unknown") sector = "general";
+  await redisIncr(
+    METRICS.generated
+  );
+
+  const civilRouting =
+    resolveCivilRouting({
+      complaint,
+      disputeLocation,
+      petitionerAddress:
+        petitioner.address,
+    });
+
+  const heuristic =
+    civilRouting.matched
+      ? {
+          sector:
+            "civil_disputes",
+          score: 1000,
+          reason:
+            "jurisdiction_override",
+        }
+      : detectSectorHeuristic(
+          complaint
+        );
+
+  let sector =
+    civilRouting.matched
+      ? "civil_disputes"
+      : await detectSectorSmart(
+          complaint
+        );
+
+  if (
+    !sector ||
+    sector === "unknown"
+  ) {
+    sector = "general";
+  }
 
   if (DEBUG_SECTOR) {
     console.log("🧠 SECTOR DEBUG:", {
@@ -1671,7 +1835,10 @@ app.post("/generate-petition", async (req, res) => {
     });
   }
 
-  const caseType = inferCaseType(sector);
+  const caseType =
+    civilRouting.matched
+      ? civilRouting.caseType
+      : inferCaseType(sector);
 
   const pName = (petitioner.fullName || "").trim() || "[Your Full Name]";
   const pAddress = (petitioner.address || "").trim() || "[Your Address]";
@@ -1699,6 +1866,36 @@ app.post("/generate-petition", async (req, res) => {
       ? `CC: ${generalCcInstitutions.join(", ")}`
       : "CC: None";
 
+  const civilToLine =
+    civilRouting.matched
+      ? `TO: ${civilRouting.primaryInstitution}`
+      : "";
+
+  const civilCcLine =
+    civilRouting.matched &&
+    civilRouting.ccInstitutions.length
+      ? `CC: ${civilRouting.ccInstitutions.join(", ")}`
+      : "CC: None";
+
+  const deterministicRouting =
+    sector === "general" ||
+    civilRouting.matched;
+
+  const deterministicToLine =
+    civilRouting.matched
+      ? civilToLine
+      : generalToLine;
+
+  const deterministicCcLine =
+    civilRouting.matched
+      ? civilCcLine
+      : generalCcLine;
+
+  const documentPurpose =
+    civilRouting.matched
+      ? civilRouting.documentPurpose
+      : "Professional petition requesting investigation and appropriate administrative action";
+
   try {
     let petitionText =
       await generateGeminiText({
@@ -1717,8 +1914,8 @@ Address: ${pAddress}
 Email: ${pEmail}
 Phone: ${pPhone}
 
-${sector === "general" ? generalToLine : "TO: [Full official name of primary institution ONLY — DO NOT add emails or phone numbers]"}
-${sector === "general" ? generalCcLine : "CC: [List relevant oversight/regulatory bodies by name ONLY — DO NOT add emails or phone numbers]"}
+${deterministicRouting ? deterministicToLine : "TO: [Full official name of primary institution ONLY — DO NOT add emails or phone numbers]"}
+${deterministicRouting ? deterministicCcLine : "CC: [List relevant oversight/regulatory bodies by name ONLY — DO NOT add emails or phone numbers]"}
 
 SUBJECT: [Clear, specific subject line]
 
@@ -1756,8 +1953,13 @@ ${pPhone}
 ${pEmail}
 
 CRITICAL RULES:
+- Document purpose: ${documentPurpose}
 - Sector: ${sector} | Case Type: ${caseType}
 - NEVER include any email addresses, phone numbers, or invented contacts for institutions.
+- For landlord-tenant disputes, do not state that a rent increase is unlawful merely because the percentage is high.
+- Do not describe the matter as constructive eviction unless the supplied facts independently support that allegation.
+- Do not invent a tenancy statute, court decision, notice period, rent-control rule, landlord name, property-manager name or legal entitlement.
+- Present disputed matters as the petitioner's allegations and request mediation or lawful resolution.
 - DO NOT invent institution addresses. The system will insert verified addresses automatically from JSON if present.
 - Keep it professional, firm, evidence-led, and hard to ignore.
 - Do not invent facts, dates, evidence, laws, court decisions, institutions, addresses, or allegations.
@@ -1770,7 +1972,19 @@ CRITICAL RULES:
         maxOutputTokens: 4096,
       });
 
-    const subject = extractSubjectFromPetition(petitionText);
+    if (deterministicRouting) {
+      petitionText =
+        enforceRoutingHeaders(
+          petitionText,
+          deterministicToLine,
+          deterministicCcLine
+        );
+    }
+
+    const subject =
+      extractSubjectFromPetition(
+        petitionText
+      );
 
     const sectorJson = loadSectorJson(sector);
     const sectorCatalog = buildInstitutionCatalog(sectorJson);
@@ -1829,6 +2043,20 @@ CRITICAL RULES:
       ];
     }
 
+    if (civilRouting.matched) {
+      finalToInstitutions = [
+        civilRouting
+          .primaryInstitution,
+      ];
+
+      if (
+        civilRouting.routeKey ===
+        "formal_notice"
+      ) {
+        finalToEmails = [];
+      }
+    }
+
     let emailRoutingAvailable = true;
     if (!finalToEmails.length) {
       emailRoutingAvailable = false;
@@ -1847,6 +2075,10 @@ CRITICAL RULES:
       toEmails: finalToEmails,
       ccEmails: finalCC,
       emailRoutingAvailable,
+      routingDecision:
+        civilRouting.matched
+          ? civilRouting
+          : null,
       paymentInitializedAt: null,
       flw_tx_id: "",
       return_to: "",
@@ -1866,6 +2098,10 @@ CRITICAL RULES:
       sector,
       caseType,
       emailRoutingAvailable,
+      routingDecision:
+        civilRouting.matched
+          ? civilRouting
+          : null,
     });
   } catch (err) {
     console.error("Generation error:", err);
@@ -1989,6 +2225,9 @@ app.post("/unlock-petition", async (req, res) => {
         cc: stored.ccEmails,
         mailto,
         emailRoutingAvailable: !!stored.emailRoutingAvailable,
+        routingDecision:
+          stored.routingDecision ||
+          null,
       };
       await storeUnlocked(tx_ref, payload);
       return res.json(payload);
@@ -2007,6 +2246,9 @@ app.post("/unlock-petition", async (req, res) => {
         cc: stored.ccEmails,
         mailto,
         emailRoutingAvailable: !!stored.emailRoutingAvailable,
+        routingDecision:
+          stored.routingDecision ||
+          null,
       };
 
       await storeUnlocked(tx_ref, payload);
