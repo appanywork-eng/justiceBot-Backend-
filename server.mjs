@@ -8,10 +8,13 @@ import path from "path";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
 import { FirestoreRedisCompat } from "./lib/firestoreRedisCompat.mjs";
+import { SupportStore } from "./lib/supportStore.mjs";
+import { createSupportRouter } from "./lib/supportRoutes.mjs";
 
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 
 /*
  * Firebase Hosting forwards the complete original path to Cloud Run.
@@ -50,6 +53,36 @@ const FIRESTORE_ENABLED =
       (process.env.K_SERVICE ? "true" : "false")
   ).toLowerCase() === "true";
 
+const SUPPORT_EMAIL = String(
+  process.env.SUPPORT_EMAIL ||
+    "info@petitiondesk.com"
+).trim();
+
+const SUPPORT_TICKET_COLLECTION =
+  String(
+    process.env.SUPPORT_TICKET_COLLECTION ||
+      "petitiondesk_support_tickets"
+  ).trim();
+
+const SUPPORT_RATE_LIMIT_MAX =
+  Math.max(
+    Number(
+      process.env.SUPPORT_RATE_LIMIT_MAX ||
+        5
+    ),
+    1
+  );
+
+const SUPPORT_RATE_LIMIT_WINDOW_MS =
+  Math.max(
+    Number(
+      process.env
+        .SUPPORT_RATE_LIMIT_WINDOW_MS ||
+        15 * 60 * 1000
+    ),
+    60 * 1000
+  );
+
 const FLW_SECRET_KEY = String(process.env.FLW_SECRET_KEY || "").trim();
 // ✅ dedicated webhook secret (recommended)
 const FLW_WEBHOOK_HASH = String(process.env.FLW_WEBHOOK_HASH || "").trim();
@@ -78,7 +111,7 @@ const DEBUG_PAYMENT = String(process.env.DEBUG_PAYMENT || "").toLowerCase() === 
 app.use(
   cors({
     origin: "*",
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-admin-token"],
   })
 );
@@ -135,6 +168,13 @@ if (FIRESTORE_ENABLED) {
   );
 }
 
+const supportStore =
+  new SupportStore({
+    enabled: FIRESTORE_ENABLED,
+    collection:
+      SUPPORT_TICKET_COLLECTION,
+  });
+
 /* ======================================================
    FIRESTORE-COMPATIBLE HELPERS
 ====================================================== */
@@ -180,6 +220,8 @@ const METRICS = {
   paymentSuccess: "pd:metrics:payment_success",
   unlockedPaid: "pd:metrics:unlocked_paid",
   adminSessions: "pd:metrics:admin_sessions",
+  supportSubmitted:
+    "pd:metrics:support_submitted",
   uniquePayInit: "pd:set:payinit_txrefs",
   uniquePaySuccess: "pd:set:paysuccess_txrefs",
 };
@@ -1488,6 +1530,26 @@ async function getTxId(tx_ref) {
   return String(rec?.flw_tx_id || "").trim();
 }
 
+app.use(
+  createSupportRouter({
+    supportStore,
+    supportEmail:
+      SUPPORT_EMAIL,
+    isEmail,
+    isAdminTokenValid,
+    incrementSupportMetric:
+      async () => {
+        await redisIncr(
+          METRICS.supportSubmitted
+        );
+      },
+    rateLimitMax:
+      SUPPORT_RATE_LIMIT_MAX,
+    rateLimitWindowMs:
+      SUPPORT_RATE_LIMIT_WINDOW_MS,
+  })
+);
+
 /* ======================================================
    ADMIN ENDPOINTS
 ====================================================== */
@@ -1519,6 +1581,14 @@ app.get("/admin/stats", async (req, res) => {
       payment_initiated: await redisGetInt(METRICS.paymentInitiated),
       payment_success: await redisGetInt(METRICS.paymentSuccess),
       unlocked_paid: await redisGetInt(METRICS.unlockedPaid),
+      admin_sessions:
+        await redisGetInt(
+          METRICS.adminSessions
+        ),
+      support_submitted:
+        await redisGetInt(
+          METRICS.supportSubmitted
+        ),
       unique_payinit_txrefs: await redisSCard(METRICS.uniquePayInit),
       unique_paysuccess_txrefs: await redisSCard(METRICS.uniquePaySuccess),
     };
