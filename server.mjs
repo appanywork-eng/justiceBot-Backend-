@@ -15,8 +15,10 @@ import {
   isLikelyAddress,
 } from "./lib/institutionContactUtils.mjs";
 import {
-  resolveCivilRouting,
-} from "./lib/civilJurisdiction.mjs";
+  getJurisdictionCapabilities,
+  resolveJurisdictionRouting,
+  resolvePreSectorJurisdiction,
+} from "./lib/jurisdictionEngine.mjs";
 
 dotenv.config();
 
@@ -1786,6 +1788,21 @@ app.get("/health", (req, res) => {
   res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
 });
 
+app.get(
+  "/routing/capabilities",
+  (req, res) => {
+    const capabilities =
+      getJurisdictionCapabilities(
+        listJsonSectorsFromDataDir()
+      );
+
+    res.json({
+      ok: true,
+      ...capabilities,
+    });
+  }
+);
+
 /* ======================================================
    GENERATE PETITION
 ====================================================== */
@@ -1797,24 +1814,45 @@ app.post("/generate-petition", async (req, res) => {
     complaint = "",
     petitioner = {},
     disputeLocation = "",
+    issueLocation = "",
+    institutionName = "",
+    institutionLevel = "",
+    country = "Nigeria",
   } = req.body || {};
+
+  /*
+   * disputeLocation is retained for
+   * backwards compatibility with the
+   * current frontend.
+   */
+  const resolvedIssueLocation =
+    String(
+      issueLocation ||
+      disputeLocation ||
+      ""
+    ).trim();
 
   await redisIncr(
     METRICS.generated
   );
 
-  const civilRouting =
-    resolveCivilRouting({
+  const preSectorRouting =
+    resolvePreSectorJurisdiction({
       complaint,
-      disputeLocation,
+      issueLocation:
+        resolvedIssueLocation,
       petitionerAddress:
         petitioner.address,
+      institutionName,
+      institutionLevel,
+      country,
     });
 
   const heuristic =
-    civilRouting.matched
+    preSectorRouting.matched
       ? {
           sector:
+            preSectorRouting.sector ||
             "civil_disputes",
           score: 1000,
           reason:
@@ -1825,8 +1863,11 @@ app.post("/generate-petition", async (req, res) => {
         );
 
   let sector =
-    civilRouting.matched
-      ? "civil_disputes"
+    preSectorRouting.matched
+      ? (
+          preSectorRouting.sector ||
+          "civil_disputes"
+        )
       : await detectSectorSmart(
           complaint
         );
@@ -1838,6 +1879,21 @@ app.post("/generate-petition", async (req, res) => {
     sector = "general";
   }
 
+  const jurisdictionRouting =
+    preSectorRouting.matched
+      ? preSectorRouting
+      : resolveJurisdictionRouting({
+          sector,
+          complaint,
+          issueLocation:
+            resolvedIssueLocation,
+          petitionerAddress:
+            petitioner.address,
+          institutionName,
+          institutionLevel,
+          country,
+        });
+
   if (DEBUG_SECTOR) {
     console.log("🧠 SECTOR DEBUG:", {
       heuristic,
@@ -1848,8 +1904,8 @@ app.post("/generate-petition", async (req, res) => {
   }
 
   const caseType =
-    civilRouting.matched
-      ? civilRouting.caseType
+    jurisdictionRouting.matched
+      ? jurisdictionRouting.caseType
       : inferCaseType(sector);
 
   const pName = (petitioner.fullName || "").trim() || "[Your Full Name]";
@@ -1878,34 +1934,37 @@ app.post("/generate-petition", async (req, res) => {
       ? `CC: ${generalCcInstitutions.join(", ")}`
       : "CC: None";
 
-  const civilToLine =
-    civilRouting.matched
-      ? `TO: ${civilRouting.primaryInstitution}`
+  const jurisdictionToLine =
+    jurisdictionRouting.matched
+      ? `TO: ${jurisdictionRouting.primaryInstitution}`
       : "";
 
-  const civilCcLine =
-    civilRouting.matched &&
-    civilRouting.ccInstitutions.length
-      ? `CC: ${civilRouting.ccInstitutions.join(", ")}`
+  const jurisdictionCcLine =
+    jurisdictionRouting.matched &&
+    Array.isArray(
+      jurisdictionRouting.ccInstitutions
+    ) &&
+    jurisdictionRouting.ccInstitutions.length
+      ? `CC: ${jurisdictionRouting.ccInstitutions.join(", ")}`
       : "CC: None";
 
   const deterministicRouting =
     sector === "general" ||
-    civilRouting.matched;
+    jurisdictionRouting.matched;
 
   const deterministicToLine =
-    civilRouting.matched
-      ? civilToLine
+    jurisdictionRouting.matched
+      ? jurisdictionToLine
       : generalToLine;
 
   const deterministicCcLine =
-    civilRouting.matched
-      ? civilCcLine
+    jurisdictionRouting.matched
+      ? jurisdictionCcLine
       : generalCcLine;
 
   const documentPurpose =
-    civilRouting.matched
-      ? civilRouting.documentPurpose
+    jurisdictionRouting.matched
+      ? jurisdictionRouting.documentPurpose
       : "Professional petition requesting investigation and appropriate administrative action";
 
   try {
@@ -2055,14 +2114,16 @@ CRITICAL RULES:
       ];
     }
 
-    if (civilRouting.matched) {
+    if (
+      jurisdictionRouting.matched
+    ) {
       finalToInstitutions = [
-        civilRouting
+        jurisdictionRouting
           .primaryInstitution,
       ];
 
       if (
-        civilRouting.routeKey ===
+        jurisdictionRouting.routeKey ===
         "formal_notice"
       ) {
         finalToEmails = [];
@@ -2088,8 +2149,8 @@ CRITICAL RULES:
       ccEmails: finalCC,
       emailRoutingAvailable,
       routingDecision:
-        civilRouting.matched
-          ? civilRouting
+        jurisdictionRouting.matched
+          ? jurisdictionRouting
           : null,
       paymentInitializedAt: null,
       flw_tx_id: "",
@@ -2111,8 +2172,8 @@ CRITICAL RULES:
       caseType,
       emailRoutingAvailable,
       routingDecision:
-        civilRouting.matched
-          ? civilRouting
+        jurisdictionRouting.matched
+          ? jurisdictionRouting
           : null,
     });
   } catch (err) {
