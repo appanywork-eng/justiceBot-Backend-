@@ -1,7 +1,7 @@
 // server.mjs
 import express from "express";
 import cors from "cors";
-import OpenAI from "openai";
+import { generateGeminiText } from "./lib/geminiClient.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -31,8 +31,14 @@ app.use((req, res, next) => {
 /* ======================================================
    CORE CONFIG
 ====================================================== */
-const OPENAI_KEY = String(process.env.OPENAI_API_KEY || "").trim();
-const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "gpt-4o").trim();
+const GEMINI_API_KEY = String(
+  process.env.GOOGLE_API_KEY || ""
+).trim();
+
+const GEMINI_MODEL = String(
+  process.env.GEMINI_MODEL ||
+    "gemini-3.6-flash"
+).trim();
 
 const FIRESTORE_COLLECTION = String(
   process.env.FIRESTORE_COLLECTION || "petitiondesk_runtime"
@@ -88,9 +94,11 @@ app.use(
 );
 
 /* ======================================================
-   OPENAI (GUARDED)
+   GEMINI AI CONFIGURATION
 ====================================================== */
-const openai = OPENAI_KEY ? new OpenAI({ apiKey: OPENAI_KEY }) : null;
+console.log(
+  `AI provider: Gemini | Model: ${GEMINI_MODEL}`
+);
 
 /* ======================================================
    PATHS
@@ -612,8 +620,8 @@ function detectSectorHeuristic(text) {
 async function detectSectorSmart(text) {
   const heuristic = detectSectorHeuristic(text);
 
-  // If AI classifier not enabled or OpenAI missing, use heuristic
-  if (!AI_SECTOR_CLASSIFY || !openai) return heuristic.sector || "general";
+  // If AI classifier is disabled or Gemini is unavailable, use heuristic
+  if (!AI_SECTOR_CLASSIFY || !GEMINI_API_KEY) return heuristic.sector || "general";
 
   // Ask AI only if general OR weak evidence
   const shouldAskAI = heuristic.sector === "general" || heuristic.score < 60;
@@ -631,29 +639,51 @@ function detectSector(text) {
 }
 
 async function detectSectorAI(text) {
-  if (!openai) return "unknown";
-  const allowed = listJsonSectorsFromDataDir();
-  if (!allowed.length) return "unknown";
+  if (!GEMINI_API_KEY) {
+    return "unknown";
+  }
+
+  const allowed =
+    listJsonSectorsFromDataDir();
+
+  if (!allowed.length) {
+    return "unknown";
+  }
 
   try {
-    const resp = await openai.chat.completions.create({
-      model: OPENAI_MODEL,
-      messages: [
-        {
-          role: "system",
-          content:
-            `You are a strict classifier. Choose exactly ONE sector from this list:\n` +
-            allowed.map((s) => `- ${s}`).join("\n") +
-            `\n\nReturn ONLY the sector key. If none fits, return "unknown".`,
-        },
-        { role: "user", content: String(text || "") },
-      ],
-      temperature: 0,
-    });
+    const output =
+      await generateGeminiText({
+        apiKey: GEMINI_API_KEY,
+        model: GEMINI_MODEL,
 
-    const out = String(resp.choices?.[0]?.message?.content || "").trim();
-    return allowed.includes(out) ? out : "unknown";
-  } catch {
+        systemInstruction:
+          `You are a strict classifier. ` +
+          `Choose exactly ONE sector from this list:\n` +
+          allowed
+            .map((sector) => `- ${sector}`)
+            .join("\n") +
+          `\n\nReturn ONLY the sector key. ` +
+          `If none fits, return "unknown".`,
+
+        prompt: String(text || ""),
+
+        maxOutputTokens: 64,
+      });
+
+    const sector =
+      String(output || "")
+        .trim()
+        .replace(/^["'`]+|["'`]+$/g, "");
+
+    return allowed.includes(sector)
+      ? sector
+      : "unknown";
+  } catch (error) {
+    console.error(
+      "Gemini sector classification error:",
+      error?.message || error
+    );
+
     return "unknown";
   }
 }
@@ -1483,18 +1513,23 @@ app.post("/generate-petition", async (req, res) => {
   const pPhone = (petitioner.phone || "").trim() || "[Phone Number]";
   const autoDate = new Date().toLocaleDateString("en-GB");
 
-  if (!openai) return res.status(500).json({ ok: false, error: "OPENAI_API_KEY not configured" });
+  if (!GEMINI_API_KEY) {
+    return res.status(500).json({
+      ok: false,
+      error: "GOOGLE_API_KEY not configured",
+    });
+  }
 
   const generalToLine = `TO: Public Complaints Commission (PCC)`;
   const generalCcLine = `CC: National Human Rights Commission (NHRC), SERVICOM, Federal Competition and Consumer Protection Commission (FCCPC)`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: OPENAI_MODEL,
-      messages: [
-        {
-          role: "system",
-          content: `You are a top-tier Nigerian legal draftsman writing a SAN-grade petition/complaint.
+    let petitionText =
+      await generateGeminiText({
+        apiKey: GEMINI_API_KEY,
+        model: GEMINI_MODEL,
+
+        systemInstruction: `You are a top-tier Nigerian legal draftsman writing a SAN-grade petition/complaint.
 
 MANDATORY STRUCTURE (use exactly this format, no deviations):
 
@@ -1548,15 +1583,17 @@ CRITICAL RULES:
 - Sector: ${sector} | Case Type: ${caseType}
 - NEVER include any email addresses, phone numbers, or invented contacts for institutions.
 - DO NOT invent institution addresses. The system will insert verified addresses automatically from JSON if present.
-- Keep it professional, firm, evidence-led, and hard to ignore (SAN style).
+- Keep it professional, firm, evidence-led, and hard to ignore.
+- Do not invent facts, dates, evidence, laws, court decisions, institutions, addresses, or allegations.
+- Clearly distinguish the petitioner's allegations from established facts.
 - Under 950 words.`,
-        },
-        { role: "user", content: `Complaint: ${complaint}` },
-      ],
-      temperature: 0,
-    });
 
-    let petitionText = completion.choices?.[0]?.message?.content?.trim() || "Generation failed.";
+        prompt:
+          `Draft the petition from this complaint:\n\n${complaint}`,
+
+        maxOutputTokens: 4096,
+      });
+
     const subject = extractSubjectFromPetition(petitionText);
 
     const sectorJson = loadSectorJson(sector);
@@ -1926,7 +1963,7 @@ app.listen(PORT, "0.0.0.0", () => {
     console.log("⚠️ FLW_WEBHOOK_HASH not set — store the Flutterwave webhook hash in Secret Manager and attach it to Cloud Run.");
   }
   if (!OPENAI_KEY) {
-    console.log("⚠️ OPENAI_API_KEY not set — petition generation will fail.");
+    console.log("⚠️ GOOGLE_API_KEY not set — petition generation will fail.");
   }
   if (!FLW_SECRET_KEY) {
     console.log("⚠️ FLW_SECRET_KEY not set — payments will fail.");
