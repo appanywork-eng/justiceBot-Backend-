@@ -7,7 +7,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
-import Redis from "ioredis";
+import { FirestoreRedisCompat } from "./lib/firestoreRedisCompat.mjs";
 
 dotenv.config();
 
@@ -19,7 +19,15 @@ const app = express();
 const OPENAI_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "gpt-4o").trim();
 
-const REDIS_URL = String(process.env.REDIS_URL || "").trim();
+const FIRESTORE_COLLECTION = String(
+  process.env.FIRESTORE_COLLECTION || "petitiondesk_runtime"
+).trim();
+
+const FIRESTORE_ENABLED =
+  String(
+    process.env.FIRESTORE_ENABLED ||
+      (process.env.K_SERVICE ? "true" : "false")
+  ).toLowerCase() === "true";
 
 const FLW_SECRET_KEY = String(process.env.FLW_SECRET_KEY || "").trim();
 // ✅ dedicated webhook secret (recommended)
@@ -77,32 +85,35 @@ const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, "data");
 
 /* ======================================================
-   REDIS (Render Redis)
+   FIRESTORE PERSISTENCE (GOOGLE CLOUD)
 ====================================================== */
 let redis = null;
 
-if (REDIS_URL) {
+if (FIRESTORE_ENABLED) {
   try {
-    redis = new Redis(REDIS_URL, {
-      maxRetriesPerRequest: 2,
-      enableReadyCheck: true,
-      lazyConnect: true,
+    redis = new FirestoreRedisCompat({
+      collection: FIRESTORE_COLLECTION,
     });
 
-    redis.on("error", (e) => console.error("Redis error:", e?.message || e));
-    redis.on("connect", () => console.log("✅ Redis connected"));
+    console.log(
+      `✅ Firestore persistence enabled: ${FIRESTORE_COLLECTION}`
+    );
+  } catch (error) {
+    console.error(
+      "Firestore initialization error:",
+      error?.message || error
+    );
 
-    redis.connect().catch(() => {});
-  } catch (e) {
-    console.error("Redis init error:", e?.message || e);
     redis = null;
   }
 } else {
-  console.log("⚠️ REDIS_URL not set — Redis durability/metrics disabled");
+  console.log(
+    "ℹ️ Firestore disabled — using in-memory storage for local testing"
+  );
 }
 
 /* ======================================================
-   REDIS HELPERS
+   FIRESTORE-COMPATIBLE HELPERS
 ====================================================== */
 async function redisIncr(key) {
   if (!redis) return;
@@ -171,7 +182,7 @@ const PCC_FALLBACK_EMAILS = [
 /* ======================================================
    IN-MEMORY FALLBACK STORAGE
 ====================================================== */
-// Note: Render free tier restarts = memory resets. Redis is best.
+// Note: Cloud Run instances are ephemeral; Firestore provides durable storage.
 const petitionStore = new Map(); // tx_ref -> record
 const USED_TX_REFS = new Set(); // webhook/verify confirmed tx_ref (memory)
 const USED_TX_SUCCESS = new Set(); // prevent double unlock in-memory
@@ -1197,7 +1208,7 @@ function injectInstitutionAddressesIntoPetition(petitionText, toItems = [], ccIt
 }
 
 /* ======================================================
-   DURABLE PETITION STORAGE (Redis + memory)
+   DURABLE PETITION STORAGE (Firestore + memory)
 ====================================================== */
 async function storePetition(tx_ref, payload) {
   const record = { ...payload, storedAt: Date.now() };
@@ -1374,13 +1385,13 @@ app.post("/flw-webhook", async (req, res) => {
   try {
     const headerHash = String(req.headers["verif-hash"] || "").trim();
 
-    // If you set FLW_WEBHOOK_HASH, enforce it
+    // If FLW_WEBHOOK_HASH is configured, enforce it
     if (FLW_WEBHOOK_HASH) {
       if (!headerHash || headerHash !== FLW_WEBHOOK_HASH) return res.status(401).end();
     } else {
       // Accept to avoid breaking unlock, but warn strongly
       if (!headerHash) {
-        console.warn("⚠️ Webhook received without verif-hash. Set FLW_WEBHOOK_HASH in Flutterwave + Render env.");
+        console.warn("⚠️ Webhook received without verif-hash. Store FLW_WEBHOOK_HASH in Google Secret Manager and attach it to Cloud Run.");
       }
     }
 
@@ -1733,7 +1744,7 @@ app.post("/unlock-petition", async (req, res) => {
       return res.json(payload);
     }
 
-    // ✅ Webhook-confirmed (or Redis-paid flag)
+    // ✅ Webhook-confirmed (or Firestore-paid flag)
     if (await isTxPaid(tx_ref)) {
       const payload = {
         ok: true,
@@ -1890,14 +1901,14 @@ app.get("/download-pdf", (req, res) => {
 /* ======================================================
    BOOT
 ====================================================== */
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
   console.log(`📁 Data dir: ${DATA_DIR}`);
-  console.log(`Webhook URL: ${process.env.RENDER_EXTERNAL_URL || `https://your-app.onrender.com`}/flw-webhook`);
+  console.log("Webhook path: /flw-webhook");
 
   if (!FLW_WEBHOOK_HASH) {
-    console.log("⚠️ FLW_WEBHOOK_HASH not set — set Secret Hash in Flutterwave + set env var in Render (recommended).");
+    console.log("⚠️ FLW_WEBHOOK_HASH not set — store the Flutterwave webhook hash in Secret Manager and attach it to Cloud Run.");
   }
   if (!OPENAI_KEY) {
     console.log("⚠️ OPENAI_API_KEY not set — petition generation will fail.");

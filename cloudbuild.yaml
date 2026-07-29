@@ -1,0 +1,45 @@
+substitutions:
+  _REGION: europe-west1
+  _REPOSITORY: petitiondesk
+  _IMAGE: petitiondesk-backend
+  _SERVICE: petitiondesk-backend
+
+steps:
+  - id: build-container
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID'
+      - .
+
+  - id: push-container
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID'
+
+  - id: deploy-cloud-run
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - '${_SERVICE}'
+      - '--image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--cpu=1'
+      - '--memory=1Gi'
+      - '--concurrency=20'
+      - '--timeout=300'
+      - '--min-instances=0'
+      - '--max-instances=3'
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
