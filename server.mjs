@@ -2344,12 +2344,18 @@ app.post("/unlock-petition", async (req, res) => {
       unlocked: true,
       petition: stored.petition,
       sector: stored.sector,
-      toInstitutions: stored.toInstitutions,
-      ccInstitutions: stored.ccInstitutions,
+      toInstitutions:
+        stored.toInstitutions,
+      ccInstitutions:
+        stored.ccInstitutions,
       to: stored.toEmails,
       cc: stored.ccEmails,
       mailto,
-      emailRoutingAvailable: !!stored.emailRoutingAvailable,
+      emailRoutingAvailable:
+        !!stored.emailRoutingAvailable,
+      routingDecision:
+        stored.routingDecision ||
+        null,
     };
 
     await storeUnlocked(tx_ref, payload);
