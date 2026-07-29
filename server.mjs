@@ -1817,6 +1817,8 @@ app.post("/generate-petition", async (req, res) => {
     issueLocation = "",
     institutionName = "",
     institutionLevel = "",
+    escalationStage = "",
+    priorComplaintReference = "",
     country = "Nigeria",
   } = req.body || {};
 
@@ -1845,6 +1847,8 @@ app.post("/generate-petition", async (req, res) => {
         petitioner.address,
       institutionName,
       institutionLevel,
+      escalationStage,
+      priorComplaintReference,
       country,
     });
 
@@ -1891,6 +1895,8 @@ app.post("/generate-petition", async (req, res) => {
             petitioner.address,
           institutionName,
           institutionLevel,
+          escalationStage,
+          priorComplaintReference,
           country,
         });
 
@@ -2080,8 +2086,25 @@ CRITICAL RULES:
     const toEmailsFromJson = safeUniq(toItems.flatMap((m) => m.emails)).filter(isEmail);
     const ccEmailsFromJson = safeUniq(ccItems.flatMap((m) => m.emails)).filter(isEmail);
 
-    const adminCC = buildAdminOversightCC({ sector, caseType });
-    const finalCC = safeUniq([...ccEmailsFromJson, ...adminCC]).filter(isEmail);
+    /*
+     * Active jurisdiction resolvers specify
+     * their own precise CC recipients.
+     * Legacy sectors retain the earlier
+     * general oversight behaviour.
+     */
+    const adminCC =
+      jurisdictionRouting.matched
+        ? []
+        : buildAdminOversightCC({
+            sector,
+            caseType,
+          });
+
+    const finalCC =
+      safeUniq([
+        ...ccEmailsFromJson,
+        ...adminCC,
+      ]).filter(isEmail);
 
     let finalToEmails = toEmailsFromJson;
     let finalToInstitutions = toItems.map((m) => m.name);
@@ -2122,9 +2145,14 @@ CRITICAL RULES:
           .primaryInstitution,
       ];
 
+      /*
+       * A portal-only or physical-filing route
+       * must never create an email action.
+       */
       if (
-        jurisdictionRouting.routeKey ===
-        "formal_notice"
+        jurisdictionRouting
+          .emailRoutingExpected ===
+          false
       ) {
         finalToEmails = [];
       }

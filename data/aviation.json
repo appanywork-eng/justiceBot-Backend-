@@ -1,8 +1,8 @@
 {
   "sector": "aviation",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "country": "Nigeria",
-  "last_updated": "2026-01-07",
+  "last_updated": "2026-07-29",
   "data_quality_rules": {
     "no_invented_contacts": true,
     "allow_webforms_when_no_email": true
@@ -10,9 +10,15 @@
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Aviation and Aerospace Development",
-      "aliases": ["Ministry of Aviation", "FMAAD", "Federal Ministry of Aviation"],
+      "aliases": [
+        "Ministry of Aviation",
+        "FMAAD",
+        "Federal Ministry of Aviation"
+      ],
       "contact": {
-        "emails": ["info@aviation.gov.ng"],
+        "emails": [
+          "info@aviation.gov.ng"
+        ],
         "address": "Federal Secretariat Complex (Phase 1), Shehu Shagari Way, Abuja, FCT, Nigeria",
         "website": "https://aviation.gov.ng"
       }
@@ -21,41 +27,75 @@
   "regulators": [
     {
       "name": "Nigerian Civil Aviation Authority (NCAA)",
-      "aliases": ["NCAA", "Nigerian Civil Aviation Authority"],
+      "aliases": [
+        "NCAA",
+        "Nigerian Civil Aviation Authority"
+      ],
       "contact": {
-        "emails": ["info@ncaa.gov.ng"],
-        "website": "https://ncaa.gov.ng"
+        "emails": [
+          "cpd@ncaa.gov.ng"
+        ],
+        "website": "https://cpd.ncaa.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://ncaa.gov.ng/report-forms/complaint-form/"
       }
     },
     {
       "name": "Federal Airports Authority of Nigeria (FAAN)",
-      "aliases": ["FAAN", "Federal Airports Authority of Nigeria"],
+      "aliases": [
+        "FAAN",
+        "Federal Airports Authority of Nigeria"
+      ],
       "contact": {
-        "emails": ["info@faan.gov.ng", "contact@faan.gov.ng"],
+        "emails": [
+          "info@faan.gov.ng",
+          "contact@faan.gov.ng"
+        ],
         "website": "https://faan.gov.ng"
       }
     },
     {
       "name": "Nigerian Airspace Management Agency (NAMA)",
-      "aliases": ["NAMA", "Nigerian Airspace Management Agency"],
+      "aliases": [
+        "NAMA",
+        "Nigerian Airspace Management Agency"
+      ],
       "contact": {
-        "emails": ["info@nama.gov.ng", "servicom@nama.gov.ng"],
+        "emails": [
+          "info@nama.gov.ng",
+          "servicom@nama.gov.ng"
+        ],
         "website": "https://nama.gov.ng"
       }
     },
     {
       "name": "Nigerian Meteorological Agency (NiMet)",
-      "aliases": ["NiMet", "Nigerian Meteorological Agency", "NIMET"],
+      "aliases": [
+        "NiMet",
+        "Nigerian Meteorological Agency",
+        "NIMET"
+      ],
       "contact": {
-        "emails": ["info@nimet.gov.ng"],
+        "emails": [
+          "info@nimet.gov.ng"
+        ],
         "website": "https://nimet.gov.ng"
       }
     },
     {
       "name": "Nigerian Safety Investigation Bureau (NSIB)",
-      "aliases": ["NSIB", "Nigerian Safety Investigation Bureau"],
+      "aliases": [
+        "NSIB",
+        "Nigerian Safety Investigation Bureau"
+      ],
       "contact": {
-        "emails": ["info@nsib.gov.ng", "dg@nsib.gov.ng"],
+        "emails": [
+          "info@nsib.gov.ng",
+          "dg@nsib.gov.ng"
+        ],
         "website": "https://nsib.gov.ng"
       }
     }
@@ -63,65 +103,112 @@
   "watchdogs": [
     {
       "name": "SERVICOM (Service Compact with All Nigerians)",
-      "aliases": ["SERVICOM", "Service Compact with All Nigerians"],
+      "aliases": [
+        "SERVICOM",
+        "Service Compact with All Nigerians"
+      ],
       "contact": {
-        "emails": ["complaints@servicom.gov.ng"]
+        "emails": [
+          "complaints@servicom.gov.ng"
+        ]
       }
     },
     {
       "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
-      "aliases": ["FCCPC", "Federal Competition and Consumer Protection Commission"],
+      "aliases": [
+        "FCCPC",
+        "Federal Competition and Consumer Protection Commission"
+      ],
       "contact": {
-        "emails": ["contact@fccpc.gov.ng"]
+        "emails": [
+          "contact@fccpc.gov.ng"
+        ]
       }
     }
   ],
   "players": [
     {
       "name": "Air Peace",
-      "aliases": ["Air Peace Airline", "Air Peace Limited", "Air Peace Airlines"],
+      "aliases": [
+        "Air Peace Airline",
+        "Air Peace Limited",
+        "Air Peace Airlines"
+      ],
       "contact": {
-        "emails": ["callcenter@flyairpeace.com"],
+        "emails": [
+          "callcenter@flyairpeace.com"
+        ],
         "website": "https://flyairpeace.com"
       }
     },
     {
       "name": "Arik Air",
-      "aliases": ["Arik", "Arik Air Limited"],
+      "aliases": [
+        "Arik",
+        "Arik Air Limited"
+      ],
       "contact": {
-        "emails": ["callcentre@arikair.com", "talktous@arikair.com"],
+        "emails": [
+          "callcentre@arikair.com",
+          "talktous@arikair.com"
+        ],
         "website": "https://arikair.com"
       }
     },
     {
       "name": "Ibom Air",
-      "aliases": ["Ibom Air Limited", "IbomAir", "Ibom Airlines"],
+      "aliases": [
+        "Ibom Air Limited",
+        "IbomAir",
+        "Ibom Airlines"
+      ],
       "contact": {
-        "emails": ["reservations@ibomair.com", "info@ibomair.com", "ibomflyersupport@ibomair.com"],
+        "emails": [
+          "reservations@ibomair.com",
+          "info@ibomair.com",
+          "ibomflyersupport@ibomair.com"
+        ],
         "website": "https://ibomair.com"
       }
     },
     {
       "name": "Dana Air",
-      "aliases": ["Dana", "Dana Airlines"],
+      "aliases": [
+        "Dana",
+        "Dana Airlines"
+      ],
       "contact": {
-        "emails": ["contact@flydanaair.com"],
+        "emails": [
+          "contact@flydanaair.com"
+        ],
         "website": "https://flydanaair.com"
       }
     },
     {
       "name": "Nigerian Aviation Handling Company (NAHCO Aviance)",
-      "aliases": ["NAHCO", "NAHCO Aviance", "Nigerian Aviation Handling Company"],
+      "aliases": [
+        "NAHCO",
+        "NAHCO Aviance",
+        "Nigerian Aviation Handling Company"
+      ],
       "contact": {
-        "emails": ["info@nahcoaviance.com"],
+        "emails": [
+          "info@nahcoaviance.com"
+        ],
         "website": "https://nahcoaviance.com"
       }
     },
     {
       "name": "Skyway Aviation Handling Company (SAHCO PLC)",
-      "aliases": ["SAHCO", "SAHCO PLC", "Skyway Aviation Handling Company"],
+      "aliases": [
+        "SAHCO",
+        "SAHCO PLC",
+        "Skyway Aviation Handling Company"
+      ],
       "contact": {
-        "emails": ["info@sahcoplc.com"],
+        "emails": [
+          "info@sahcoplc.com"
+        ],
         "website": "https://sahcoplc.com"
       }
     }

@@ -1,115 +1,548 @@
 {
   "sector": "power",
   "country": "Nigeria",
-  "last_updated": "2025-12-25",
-
+  "last_updated": "2026-07-29",
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Power",
-      "aliases": ["Ministry of Power", "FMP"],
+      "aliases": [
+        "Ministry of Power",
+        "FMP"
+      ],
       "contact": {
-        "emails": ["info@power.gov.ng"]
+        "emails": [
+          "info@power.gov.ng"
+        ]
       },
       "address": "POWER HOUSE, Plot 14, Zambezi Crescent, Maitama, Abuja, Nigeria"
     }
   },
-
   "regulators": [
     {
       "name": "Nigerian Electricity Regulatory Commission (NERC)",
-      "aliases": ["NERC", "Nigerian Electricity Regulatory Commission"],
-      "contact": { "emails": ["info@nerc.gov.ng", "complaints@nerc.gov.ng"] }
+      "aliases": [
+        "NERC",
+        "Nigerian Electricity Regulatory Commission"
+      ],
+      "contact": {
+        "emails": [
+          "info@nerc.gov.ng",
+          "complaints@nerc.gov.ng"
+        ]
+      }
     },
     {
       "name": "Nigerian Electricity Management Services Agency (NEMSA)",
-      "aliases": ["NEMSA", "Nigerian Electricity Management Services Agency"],
-      "contact": { "emails": ["info@nemsa.gov.ng"] }
+      "aliases": [
+        "NEMSA",
+        "Nigerian Electricity Management Services Agency"
+      ],
+      "contact": {
+        "emails": [
+          "info@nemsa.gov.ng"
+        ]
+      }
+    },
+    {
+      "name": "NERC Abuja Forum",
+      "aliases": [
+        "Abuja Forum",
+        "NERC Abuja Consumer Forum"
+      ],
+      "contact": {
+        "emails": [
+          "abujaforum@nerc.gov.ng"
+        ],
+        "address": "No. 14, Road 131, Gwarinpa, Abuja, Nigeria",
+        "website": "https://nerc.gov.ng/forum-offices/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/forum-offices/"
+      }
+    },
+    {
+      "name": "Abia State Electricity Regulatory Authority",
+      "aliases": [
+        "ASERA"
+      ],
+      "contact": {
+        "emails": [
+          "info.asera@abiastate.gov.ng"
+        ],
+        "address": "15 Library Avenue, Umuahia, Abia State, Nigeria",
+        "website": "https://asera.abiastate.gov.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Anambra State Electricity Regulatory Commission",
+      "aliases": [
+        "ASERC"
+      ],
+      "contact": {
+        "emails": [
+          "info@aserc.anambrastate.gov.ng"
+        ],
+        "address": "ASERC Complex, Old Government House Complex, Awka, Anambra State, Nigeria",
+        "website": "https://aserc.anambrastate.gov.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Bayelsa State Electricity Regulatory Authority",
+      "aliases": [
+        "BYERA"
+      ],
+      "contact": {
+        "emails": [
+          "office@byera.energy"
+        ],
+        "address": "Oxbow Lake, Yenagoa, Bayelsa State, Nigeria",
+        "website": "https://byera.energy"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Edo State Electricity Regulatory Commission",
+      "aliases": [
+        "Edo State Electricity Regulator"
+      ],
+      "contact": {},
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Ekiti State Electricity Regulatory Bureau",
+      "aliases": [
+        "EKSERB"
+      ],
+      "contact": {
+        "address": "Old NERC Forum Building, Adebayo Road, Ado Ekiti, Ekiti State, Nigeria",
+        "website": "https://ekserb.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Enugu State Electricity Regulatory Commission",
+      "aliases": [
+        "EERC"
+      ],
+      "contact": {
+        "emails": [
+          "info@eerc.en.gov.ng"
+        ],
+        "address": "No. 2 Forest Close, Off Forest Crescent, Off Park Avenue, G.R.A. Enugu, Enugu State, Nigeria",
+        "website": "https://eerc.en.gov.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Gombe State Electricity Regulatory Commission",
+      "aliases": [
+        "GOSERC"
+      ],
+      "contact": {
+        "emails": [
+          "infogoserc@gmail.com"
+        ],
+        "address": "Mohammed Aliyu Plaza, Gombe-Bauchi Express Road, Gombe State, Nigeria"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Imo State Electricity Regulatory Commission",
+      "aliases": [
+        "ISERC"
+      ],
+      "contact": {
+        "address": "Electricity House, Concorde Boulevard, New Owerri, Imo State, Nigeria",
+        "website": "https://iserc.com.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Kogi State Electricity Regulatory Commission",
+      "aliases": [
+        "KERC"
+      ],
+      "contact": {
+        "emails": [
+          "info@kerc.kg.gov.ng"
+        ],
+        "address": "Alheri Junction, Along Crowther Memorial College, Lokoja, Kogi State, Nigeria",
+        "website": "https://kerc.kg.gov.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Lagos State Electricity Regulatory Commission",
+      "aliases": [
+        "LASERC"
+      ],
+      "contact": {
+        "emails": [
+          "info@laserc.com.ng"
+        ],
+        "address": "Block B Lagos Revenue House, Assbifi Road, Alausa, Lagos 101233, Lagos State, Nigeria",
+        "website": "https://laserc.com.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Nasarawa State Electricity Regulatory Commission",
+      "aliases": [
+        "NASERC"
+      ],
+      "contact": {
+        "address": "Former Ministry of Health, Opposite Federal Secretariat, Jos Road, Lafia, Nasarawa State, Nigeria",
+        "website": "https://naserc.na.gov.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Niger State Electricity Regulatory Commission",
+      "aliases": [
+        "NSERC"
+      ],
+      "contact": {
+        "emails": [
+          "info@nserc.ni.gov.ng"
+        ],
+        "address": "No. 6 Nnamdi Azikwe Road, Minna, Niger State, Nigeria",
+        "website": "https://nserc.ni.gov.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Ogun State Electricity Regulatory Commission",
+      "aliases": [
+        "Ogun State Electricity Regulator"
+      ],
+      "contact": {},
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Ondo State Electricity Regulatory Bureau",
+      "aliases": [
+        "OSERB"
+      ],
+      "contact": {
+        "emails": [
+          "ondoserb@gmail.com"
+        ],
+        "address": "5 Samuel Olukayode Street, Old UNICEF Building, Alagbaka, Akure, Ondo State, Nigeria",
+        "website": "https://oserb.ng"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Oyo State Electricity Regulatory Commission",
+      "aliases": [
+        "Oyo State Electricity Regulator"
+      ],
+      "contact": {},
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
+    },
+    {
+      "name": "Plateau State Electricity Regulatory Commission",
+      "aliases": [
+        "Plateau State Electricity Regulator"
+      ],
+      "contact": {
+        "address": "Former Tati Hotel, Gada Biu, Jos, Plateau State, Nigeria"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-29",
+        "source": "https://nerc.gov.ng/resources/sercs/"
+      }
     }
   ],
-
   "public_agencies": [
     {
       "name": "Transmission Company of Nigeria (TCN)",
-      "aliases": ["TCN", "Transmission Company of Nigeria"],
-      "contact": { "emails": ["info@tcn.org.ng"] }
+      "aliases": [
+        "TCN",
+        "Transmission Company of Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "info@tcn.org.ng"
+        ]
+      }
     },
     {
       "name": "Nigeria Bulk Electricity Trading Plc (NBET)",
-      "aliases": ["NBET", "Nigeria Bulk Electricity Trading", "Nigeria Bulk Electricity Trading Plc"],
-      "contact": { "emails": ["info@nbet.com.ng"] }
+      "aliases": [
+        "NBET",
+        "Nigeria Bulk Electricity Trading",
+        "Nigeria Bulk Electricity Trading Plc"
+      ],
+      "contact": {
+        "emails": [
+          "info@nbet.com.ng"
+        ]
+      }
     },
     {
       "name": "Niger Delta Power Holding Company (NDPHC) / NIPP",
-      "aliases": ["NDPHC", "NIPP", "Niger Delta Power Holding Company", "Niger Delta Power Holding Company (NDPHC)"],
-      "contact": { "emails": ["cpr@ndphc.net"] }
+      "aliases": [
+        "NDPHC",
+        "NIPP",
+        "Niger Delta Power Holding Company",
+        "Niger Delta Power Holding Company (NDPHC)"
+      ],
+      "contact": {
+        "emails": [
+          "cpr@ndphc.net"
+        ]
+      }
     },
     {
       "name": "Nigeria Electricity Liability Management Company (NELMCO)",
-      "aliases": ["NELMCO", "Nigeria Electricity Liability Management Company"],
-      "contact": { "emails": ["procurement@nelmco.gov.ng"] }
+      "aliases": [
+        "NELMCO",
+        "Nigeria Electricity Liability Management Company"
+      ],
+      "contact": {
+        "emails": [
+          "procurement@nelmco.gov.ng"
+        ]
+      }
     },
     {
       "name": "Rural Electrification Agency (REA) / Nigeria Electrification Project (NEP)",
-      "aliases": ["REA", "NEP", "Rural Electrification Agency", "Nigeria Electrification Project"],
-      "contact": { "emails": ["nep@rea.gov.ng", "ref.info@rea.gov.ng"] }
+      "aliases": [
+        "REA",
+        "NEP",
+        "Rural Electrification Agency",
+        "Nigeria Electrification Project"
+      ],
+      "contact": {
+        "emails": [
+          "nep@rea.gov.ng",
+          "ref.info@rea.gov.ng"
+        ]
+      }
     }
   ],
-
   "players": [
     {
       "name": "Abuja Electricity Distribution Plc (AEDC)",
-      "aliases": ["AEDC", "Abuja Electricity", "Abuja Electricity Distribution Company", "Abuja DisCo"],
-      "contact": { "emails": ["customercare@abujaelectricity.com", "webmaster@abujaelectricity.com"] }
+      "aliases": [
+        "AEDC",
+        "Abuja Electricity",
+        "Abuja Electricity Distribution Company",
+        "Abuja DisCo"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@abujaelectricity.com",
+          "webmaster@abujaelectricity.com"
+        ]
+      }
     },
     {
       "name": "Eko Electricity Distribution Company (EKEDC)",
-      "aliases": ["EKEDC", "Eko DisCo", "Eko Electricity", "Eko Electric"],
-      "contact": { "emails": ["customercare@ekedp.com"] }
+      "aliases": [
+        "EKEDC",
+        "Eko DisCo",
+        "Eko Electricity",
+        "Eko Electric"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@ekedp.com"
+        ]
+      }
     },
     {
       "name": "Ikeja Electric Plc (IE)",
-      "aliases": ["Ikeja Electric", "IE", "Ikeja DisCo"],
-      "contact": { "emails": ["customercare@ikejaelectric.com", "info@ikejaelectric.com"] }
+      "aliases": [
+        "Ikeja Electric",
+        "IE",
+        "Ikeja DisCo"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@ikejaelectric.com",
+          "info@ikejaelectric.com"
+        ]
+      }
     },
     {
       "name": "Benin Electricity Distribution Plc (BEDC)",
-      "aliases": ["BEDC", "Benin Electric", "Benin DisCo"],
-      "contact": { "emails": ["customercomplaints@beninelectric.com", "servicedesk@beninelectric.com"] }
+      "aliases": [
+        "BEDC",
+        "Benin Electric",
+        "Benin DisCo"
+      ],
+      "contact": {
+        "emails": [
+          "customercomplaints@beninelectric.com",
+          "servicedesk@beninelectric.com"
+        ]
+      }
     },
     {
       "name": "Ibadan Electricity Distribution Company (IBEDC)",
-      "aliases": ["IBEDC", "Ibadan DisCo", "Ibadan Electric"],
-      "contact": { "emails": ["customerservice@ibedc.com", "whistleblower@ibedc.com"] }
+      "aliases": [
+        "IBEDC",
+        "Ibadan DisCo",
+        "Ibadan Electric"
+      ],
+      "contact": {
+        "emails": [
+          "customerservice@ibedc.com",
+          "whistleblower@ibedc.com"
+        ]
+      }
     },
     {
       "name": "Jos Electricity Distribution Plc (JED Plc)",
-      "aliases": ["JED", "JED Plc", "Jos DisCo", "Jos Electricity"],
-      "contact": { "emails": ["customercare@jedplc.com"] }
+      "aliases": [
+        "JED",
+        "JED Plc",
+        "Jos DisCo",
+        "Jos Electricity"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@jedplc.com"
+        ]
+      }
     },
     {
       "name": "Kaduna Electric",
-      "aliases": ["Kaduna Electric", "Kaduna DisCo", "KAEDCO"],
-      "contact": { "emails": ["info@kadunaelectric.com", "customercare@kadunaelectric.com"] }
+      "aliases": [
+        "Kaduna Electric",
+        "Kaduna DisCo",
+        "KAEDCO"
+      ],
+      "contact": {
+        "emails": [
+          "info@kadunaelectric.com",
+          "customercare@kadunaelectric.com"
+        ]
+      }
     },
     {
       "name": "Kano Electricity Distribution Company (KEDCO)",
-      "aliases": ["KEDCO", "Kano DisCo", "Kano Electricity"],
-      "contact": { "emails": ["customercare@kedco.ng"] }
+      "aliases": [
+        "KEDCO",
+        "Kano DisCo",
+        "Kano Electricity"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@kedco.ng"
+        ]
+      }
     },
     {
       "name": "Yola Electricity Distribution Company (YEDC)",
-      "aliases": ["YEDC", "Yola DisCo", "Yola Electricity"],
-      "contact": { "emails": ["info@yedc.com.ng", "complaints@yedc.com.ng"] }
+      "aliases": [
+        "YEDC",
+        "Yola DisCo",
+        "Yola Electricity"
+      ],
+      "contact": {
+        "emails": [
+          "info@yedc.com.ng",
+          "complaints@yedc.com.ng"
+        ]
+      }
     },
     {
       "name": "Enugu Electricity Distribution Company (EEDC)",
-      "aliases": ["EEDC", "Enugu DisCo", "Enugu Electricity"],
-      "contact": { "emails": ["customerservice@enugudisco.com"] }
+      "aliases": [
+        "EEDC",
+        "Enugu DisCo",
+        "Enugu Electricity"
+      ],
+      "contact": {
+        "emails": [
+          "customerservice@enugudisco.com"
+        ]
+      }
     },
     {
       "name": "Port Harcourt Electricity Distribution Plc (PHED)",
-      "aliases": ["PHED", "PHEDC", "Port Harcourt DisCo", "Port Harcourt Electricity"],
-      "contact": { "emails": ["info@phed.com.ng", "customercare@phed.com.ng", "enquiries@phedc.com"] }
+      "aliases": [
+        "PHED",
+        "PHEDC",
+        "Port Harcourt DisCo",
+        "Port Harcourt Electricity"
+      ],
+      "contact": {
+        "emails": [
+          "info@phed.com.ng",
+          "customercare@phed.com.ng",
+          "enquiries@phedc.com"
+        ]
+      }
     }
-  ]
+  ],
+  "version": "2.0.0"
 }
