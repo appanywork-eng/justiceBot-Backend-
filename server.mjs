@@ -13,6 +13,21 @@ dotenv.config();
 
 const app = express();
 
+/*
+ * Firebase Hosting forwards the complete original path to Cloud Run.
+ * This allows both direct routes such as /health and Firebase routes
+ * such as /api/health to use the same Express handlers.
+ */
+app.use((req, res, next) => {
+  if (req.url === "/api") {
+    req.url = "/";
+  } else if (req.url.startsWith("/api/")) {
+    req.url = req.url.slice(4);
+  }
+
+  next();
+});
+
 /* ======================================================
    CORE CONFIG
 ====================================================== */
