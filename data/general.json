@@ -1,60 +1,215 @@
 {
   "sector": "general",
-  "description": "Fallback sector for complaints that do not match any other sector keywords. Routes to PCC and core oversight/watchdog bodies.",
+  "version": "2.0.0",
+  "country": "Nigeria",
+  "description": "Fallback sector for complaints that do not match a specialist sector. General administrative complaints route primarily to the Public Complaints Commission.",
+  "last_verified": "2026-07-29",
+  "verification_policy": {
+    "official_sources_only": true,
+    "no_invented_contacts": true,
+    "unverified_email_routing_disabled": true,
+    "review_interval_days": 90
+  },
   "keywords": [],
   "oversight": {
     "pcc": {
       "name": "Public Complaints Commission (PCC)",
-      "aliases": ["Public Complaints Commission", "PCC", "Ombudsman", "Federal Ombudsman"],
-      "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"],
-      "addresses": ["25 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria"]
+      "aliases": [
+        "Public Complaints Commission",
+        "PCC",
+        "Ombudsman",
+        "Federal Ombudsman",
+        "Nigeria Ombudsman"
+      ],
+      "emails": [
+        "complaint@pcc.gov.ng",
+        "info@pcc.gov.ng"
+      ],
+      "phones": [
+        "+2348070100580",
+        "+2342097000099"
+      ],
+      "addresses": [
+        "25 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria"
+      ],
+      "websites": [
+        "https://pcc.gov.ng/",
+        "https://pcc.gov.ng/contact-us/",
+        "https://pcc.gov.ng/procedures-for-lodging-complaints/"
+      ],
+      "email_routing_enabled": true,
+      "routing_priority": "primary",
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-29",
+      "source_urls": [
+        "https://pcc.gov.ng/contact-us/",
+        "https://pcc.gov.ng/procedures-for-lodging-complaints/"
+      ]
     }
   },
   "watchdogs": [
     {
       "name": "National Human Rights Commission (NHRC)",
-      "aliases": ["NHRC", "Human Rights Commission"],
-      "emails": ["info@nhrc.gov.ng"],
-      "addresses": []
+      "aliases": [
+        "NHRC",
+        "National Human Rights Commission",
+        "Human Rights Commission"
+      ],
+      "emails": [
+        "info@nhrc.gov.ng"
+      ],
+      "phones": [
+        "08006472428",
+        "092903746",
+        "092908829",
+        "09032192577"
+      ],
+      "addresses": [
+        "No. 19 Aguiyi Ironsi Street, Maitama, PMB 444, Garki, Abuja, Nigeria"
+      ],
+      "websites": [
+        "https://www.nhrc.gov.ng/",
+        "https://www.nhrc.gov.ng/contact-us.html"
+      ],
+      "email_routing_enabled": true,
+      "routing_scope": "human_rights_and_related_matters",
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-29",
+      "source_urls": [
+        "https://www.nhrc.gov.ng/contact-us.html"
+      ]
     },
     {
       "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
-      "aliases": ["FCCPC", "Consumer Protection"],
-      "emails": ["contact@fccpc.gov.ng"],
-      "addresses": ["23 Jimmy Carter Street, Asokoro, Abuja"]
+      "aliases": [
+        "FCCPC",
+        "Federal Competition and Consumer Protection Commission",
+        "Consumer Protection Commission",
+        "Consumer Protection"
+      ],
+      "emails": [
+        "contact@fccpc.gov.ng"
+      ],
+      "phones": [
+        "08056002020",
+        "08056003030"
+      ],
+      "addresses": [
+        "23 Jimmy Carter Street, Asokoro, Abuja, Nigeria"
+      ],
+      "websites": [
+        "https://fccpc.gov.ng/",
+        "https://fccpc.gov.ng/about-us/contact/"
+      ],
+      "email_routing_enabled": true,
+      "routing_scope": "consumer_and_service_delivery_matters",
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-29",
+      "source_urls": [
+        "https://fccpc.gov.ng/about-us/contact/"
+      ]
     },
     {
       "name": "SERVICOM",
-      "aliases": ["Servicom", "Service Compact with All Nigerians"],
-      "emails": ["info@servicom.gov.ng"],
-      "addresses": ["Phase 3, Federal Secretariat, Shehu Shagari Way, Abuja, FCT, Nigeria"]
+      "aliases": [
+        "SERVICOM",
+        "Servicom",
+        "Service Compact with All Nigerians"
+      ],
+      "emails": [
+        "info@servicom.gov.ng"
+      ],
+      "phones": [
+        "+2348106419581",
+        "+2348153566084"
+      ],
+      "addresses": [
+        "1st Floor, Phase 3, Federal Secretariat, Shehu Shagari Way, Abuja, FCT, Nigeria"
+      ],
+      "websites": [
+        "https://servicom.gov.ng/",
+        "https://servicom.gov.ng/contact/"
+      ],
+      "email_routing_enabled": true,
+      "routing_scope": "public_service_delivery_matters",
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-29",
+      "source_urls": [
+        "https://servicom.gov.ng/contact/"
+      ]
     }
   ],
   "core_institutions": [
     {
-      "name": "Lagos State Citizens’ Mediation Bureau (CMB) / Citizens Mediation Centre (CMC)",
+      "name": "Citizens' Mediation Bureau (CMB), Lagos State",
       "aliases": [
-        "Citizens Mediation Centre",
         "Citizens Mediation Bureau",
-        "Lagos CMC",
+        "Citizens' Mediation Bureau",
+        "Citizens Mediation Centre",
+        "Citizens' Mediation Centre",
         "Lagos CMB",
+        "Lagos CMC",
         "CMC Ikeja"
       ],
-      "emails": ["cmcikeja01@gmail.com", "info@lagosstatemoj.org"],
-      "addresses": ["CBD, Alausa, Ikeja, Lagos (Lagos State Ministry of Justice)"]
+      "emails": [
+        "cmcikeja01@gmail.com",
+        "info@lagosstatemoj.org"
+      ],
+      "phones": [
+        "08118161620",
+        "+2349167802222"
+      ],
+      "addresses": [
+        "7, LJ Dosunmu Street, Opposite Beehive School, CBD, Alausa, Ikeja, Lagos, Nigeria"
+      ],
+      "websites": [
+        "https://lagosstatemoj.org/cmc/"
+      ],
+      "email_routing_enabled": true,
+      "routing_scope": "lagos_state_civil_mediation",
+      "email_note": "The direct Gmail address is published on the official Lagos State Ministry of Justice website.",
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-29",
+      "source_urls": [
+        "https://lagosstatemoj.org/cmc/",
+        "https://lagosstate.gov.ng/news/all/view/67dd8f1a51182815ea6c0bb7"
+      ]
     },
     {
       "name": "Lagos Multi-Door Courthouse (LMDC)",
-      "aliases": ["LMDC", "Lagos Multi Door Courthouse", "Lagos ADR Courthouse"],
-      "emails": ["info@lagosmultidoor.org.ng"],
-      "addresses": ["Onikan Lagos Island (see LMDC contact page)"]
+      "aliases": [
+        "LMDC",
+        "Lagos Multi Door Courthouse",
+        "Lagos Multi-Door Courthouse",
+        "Lagos ADR Courthouse"
+      ],
+      "emails": [],
+      "phones": [],
+      "addresses": [],
+      "websites": [
+        "https://jis.lagosjudiciary.gov.ng/ViewAboutUS.aspx"
+      ],
+      "complaint_portals": [
+        "https://lagosjudiciary.gov.ng/contact"
+      ],
+      "email_routing_enabled": false,
+      "routing_status": "PORTAL_ONLY_PENDING_DIRECT_CONTACT_VERIFICATION",
+      "verification_status": "INSTITUTION_VERIFIED_DIRECT_EMAIL_UNCONFIRMED",
+      "verified_on": "2026-07-29",
+      "source_urls": [
+        "https://jis.lagosjudiciary.gov.ng/ViewAboutUS.aspx",
+        "https://lagosjudiciary.gov.ng/contact"
+      ]
     }
   ],
   "regulators": [],
   "players": [],
   "routing_notes": [
-    "Use this sector only when no other sector matches.",
-    "Default TO should be PCC for general complaints.",
-    "For private disputes (e.g., landlord-tenant), ADR bodies or state justice channels may be more effective than PCC unless a public institution is involved."
+    "Use this sector only when no specialist sector matches.",
+    "The default primary recipient for general administrative complaints is the Public Complaints Commission.",
+    "NHRC should be copied only where the complaint raises a human-rights issue.",
+    "SERVICOM and FCCPC should be copied only where relevant to public service or consumer service delivery.",
+    "For private civil disputes, use verified ADR or state justice channels where appropriate.",
+    "Never route to an email marked unverified or disabled."
   ]
 }

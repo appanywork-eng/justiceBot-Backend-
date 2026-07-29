@@ -188,18 +188,36 @@ const METRICS = {
    OVERSIGHT EMAILS (ENV)
 ====================================================== */
 const OVERSIGHT_EMAILS = {
-  PCC: String(process.env.PCC_EMAIL || "").trim(),
-  NHRC: String(process.env.NHRC_EMAIL || "").trim(),
-  FCCPC: String(process.env.FCCPC_EMAIL || "").trim(),
-  SERVICOM: String(process.env.SERVICOM_EMAIL || "").trim(),
-  AGF: String(process.env.AGF_EMAIL || "").trim(),
+  PCC: String(
+    process.env.PCC_EMAIL ||
+      "complaint@pcc.gov.ng"
+  ).trim(),
+
+  NHRC: String(
+    process.env.NHRC_EMAIL ||
+      "info@nhrc.gov.ng"
+  ).trim(),
+
+  FCCPC: String(
+    process.env.FCCPC_EMAIL ||
+      "contact@fccpc.gov.ng"
+  ).trim(),
+
+  SERVICOM: String(
+    process.env.SERVICOM_EMAIL ||
+      "info@servicom.gov.ng"
+  ).trim(),
+
+  AGF: String(
+    process.env.AGF_EMAIL || ""
+  ).trim(),
 };
 
-// Optional hard fallback list (UNVERIFIED by default).
-// Best practice: set PCC_EMAIL properly in Render so you don't depend on this.
+// Official PCC contacts verified from pcc.gov.ng.
+// JSON routing remains the preferred source.
 const PCC_FALLBACK_EMAILS = [
-  // "complaints@pcc.gov.ng",
-  // "info@pcc.gov.ng",
+  "complaint@pcc.gov.ng",
+  "info@pcc.gov.ng",
 ];
 
 /* ======================================================
@@ -1643,9 +1661,31 @@ CRITICAL RULES:
     let finalToInstitutions = toItems.map((m) => m.name);
 
     if (sector === "general") {
-      const pcc = OVERSIGHT_EMAILS.PCC && isEmail(OVERSIGHT_EMAILS.PCC) ? [OVERSIGHT_EMAILS.PCC] : PCC_FALLBACK_EMAILS;
-      finalToEmails = pcc.filter(isEmail);
-      finalToInstitutions = ["Public Complaints Commission (PCC)"];
+      const pccItem =
+        matchInstitutionNameToCatalog(
+          "Public Complaints Commission (PCC)",
+          sectorCatalog
+        ) ||
+        matchInstitutionAcrossAllSectors(
+          "Public Complaints Commission (PCC)",
+          sector
+        );
+
+      const verifiedPccEmails =
+        Array.isArray(pccItem?.emails)
+          ? pccItem.emails
+          : [];
+
+      finalToEmails = safeUniq([
+        ...verifiedPccEmails,
+        OVERSIGHT_EMAILS.PCC,
+        ...PCC_FALLBACK_EMAILS,
+      ]).filter(isEmail);
+
+      finalToInstitutions = [
+        pccItem?.name ||
+          "Public Complaints Commission (PCC)",
+      ];
     }
 
     let emailRoutingAvailable = true;
