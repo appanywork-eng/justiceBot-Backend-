@@ -10,6 +10,10 @@ import PDFDocument from "pdfkit";
 import { FirestoreRedisCompat } from "./lib/firestoreRedisCompat.mjs";
 import { SupportStore } from "./lib/supportStore.mjs";
 import { createSupportRouter } from "./lib/supportRoutes.mjs";
+import {
+  extractAddressesDeep,
+  isLikelyAddress,
+} from "./lib/institutionContactUtils.mjs";
 
 dotenv.config();
 
@@ -918,45 +922,9 @@ function extractEmailsDeep(value, out = []) {
   return out;
 }
 
-// Address extraction (JSON-only; never guess)
-function isLikelyAddress(s) {
-  if (typeof s !== "string") return false;
-  const v = s.trim();
-  if (!v) return false;
-  if (v.length < 8) return false;
-  if (v.includes("@")) return false;
-  if (/https?:\/\//i.test(v)) return false;
-  return /(\bplot\b|\bstreet\b|\broad\b|\bavenue\b|\bclose\b|\bdrive\b|\blane\b|\bway\b|\bphase\b|\bkm\b|\bno\.\b|\bhouse\b|\boffice\b|\bcomplex\b|\babuja\b|\blagos\b|\bnigeria\b|\bstate\b|\bfct\b|\bpo box\b|\bp\.o\.\b)/i.test(
-    v
-  );
-}
-
-function extractAddressesDeep(value, out = [], keyHint = "") {
-  if (!value) return out;
-
-  if (typeof value === "string") {
-    const v = value.trim();
-    if (
-      /address|hq|head[_\s-]?office|location|office[_\s-]?address/i.test(String(keyHint || "")) ||
-      isLikelyAddress(v)
-    ) {
-      out.push(v);
-    }
-    return out;
-  }
-
-  if (Array.isArray(value)) {
-    value.forEach((v) => extractAddressesDeep(v, out, keyHint));
-    return out;
-  }
-
-  if (typeof value === "object" && value !== null) {
-    Object.entries(value).forEach(([k, v]) => extractAddressesDeep(v, out, k));
-    return out;
-  }
-
-  return out;
-}
+// Verified address extraction is implemented in
+// lib/institutionContactUtils.mjs.
+// Only explicitly labelled address fields are accepted.
 
 function normalizeName(s = "") {
   return String(s)
