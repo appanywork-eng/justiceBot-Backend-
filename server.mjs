@@ -11,6 +11,13 @@ import { FirestoreRedisCompat } from "./lib/firestoreRedisCompat.mjs";
 import { SupportStore } from "./lib/supportStore.mjs";
 import { createSupportRouter } from "./lib/supportRoutes.mjs";
 import {
+  FirebaseIdentityError,
+  requireVerifiedFirebaseUser,
+} from "./lib/firebaseIdentity.mjs";
+import {
+  FreeEntitlementStore,
+} from "./lib/freeEntitlementStore.mjs";
+import {
   extractAddressesDeep,
   isLikelyAddress,
 } from "./lib/institutionContactUtils.mjs";
@@ -103,6 +110,42 @@ const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || "https://petit
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 const PETITION_TTL_SECONDS = Number(process.env.PETITION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
 
+/*
+ * The feature remains disabled until Firebase
+ * email-link authentication and the matching
+ * frontend flow are configured.
+ */
+const FREE_ACCESS_ENABLED =
+  String(
+    process.env
+      .FREE_ACCESS_ENABLED ||
+    "false"
+  ).toLowerCase() ===
+  "true";
+
+const FREE_PETITION_LIMIT =
+  Math.max(
+    Number(
+      process.env
+        .FREE_PETITION_LIMIT ||
+      2
+    ),
+    0
+  );
+
+const FREE_ENTITLEMENT_COLLECTION =
+  String(
+    process.env
+      .FREE_ENTITLEMENT_COLLECTION ||
+    "petitiondesk_entitlements"
+  )
+    .trim()
+    .replace(
+      /[^a-zA-Z0-9_-]/g,
+      "_"
+    ) ||
+  "petitiondesk_entitlements";
+
 const ADMIN_UNLOCK_KEY = String(process.env.ADMIN_UNLOCK_KEY || "").trim();
 const ADMIN_SESSION_TTL_SECONDS = Number(process.env.ADMIN_SESSION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
 
@@ -184,6 +227,18 @@ const supportStore =
       SUPPORT_TICKET_COLLECTION,
   });
 
+const freeEntitlementStore =
+  new FreeEntitlementStore({
+    enabled:
+      FIRESTORE_ENABLED,
+
+    collection:
+      FREE_ENTITLEMENT_COLLECTION,
+
+    freeLimit:
+      FREE_PETITION_LIMIT,
+  });
+
 /* ======================================================
    FIRESTORE-COMPATIBLE HELPERS
 ====================================================== */
@@ -228,6 +283,7 @@ const METRICS = {
   paymentInitiated: "pd:metrics:payment_initiated",
   paymentSuccess: "pd:metrics:payment_success",
   unlockedPaid: "pd:metrics:unlocked_paid",
+  unlockedFree: "pd:metrics:unlocked_free",
   adminSessions: "pd:metrics:admin_sessions",
   supportSubmitted:
     "pd:metrics:support_submitted",
@@ -320,6 +376,53 @@ function validateTxRef(body) {
   if (!tx_ref || tx_ref.length < 6) return { ok: false, error: "Missing tx_ref" };
   const transaction_id = body?.transaction_id != null ? String(body.transaction_id).trim() : "";
   return { ok: true, tx_ref, transaction_id };
+}
+
+function sendFirebaseIdentityError(
+  response,
+  error
+) {
+  const status =
+    error instanceof
+      FirebaseIdentityError
+      ? error.status
+      : 401;
+
+  return response
+    .status(status)
+    .json({
+      ok: false,
+
+      error:
+        error?.message ||
+        "Email verification is required.",
+
+      code:
+        error?.code ||
+        "firebase_identity_error",
+
+      requiresVerification:
+        true,
+    });
+}
+
+function publicUnlockedPayload(
+  payload
+) {
+  if (
+    !payload ||
+    typeof payload !==
+      "object"
+  ) {
+    return payload;
+  }
+
+  const {
+    _ownerUid,
+    ...publicPayload
+  } = payload;
+
+  return publicPayload;
 }
 
 /* ======================================================
@@ -1689,6 +1792,10 @@ app.get("/admin/stats", async (req, res) => {
       payment_initiated: await redisGetInt(METRICS.paymentInitiated),
       payment_success: await redisGetInt(METRICS.paymentSuccess),
       unlocked_paid: await redisGetInt(METRICS.unlockedPaid),
+      unlocked_free:
+        await redisGetInt(
+          METRICS.unlockedFree
+        ),
       admin_sessions:
         await redisGetInt(
           METRICS.adminSessions
@@ -1785,8 +1892,72 @@ app.post("/track/visit", async (req, res) => {
 });
 
 app.get("/health", (req, res) => {
-  res.json({ ok: true, service: "petitiondesk-backend", time: new Date().toISOString() });
+  res.json({
+    ok: true,
+    service: "petitiondesk-backend",
+    time: new Date().toISOString(),
+    freeAccessEnabled:
+      FREE_ACCESS_ENABLED,
+  });
 });
+
+app.get(
+  "/access/status",
+  async (req, res) => {
+    if (!FREE_ACCESS_ENABLED) {
+      return res.json({
+        ok: true,
+        enabled: false,
+        freeLimit:
+          FREE_PETITION_LIMIT,
+        freeUsed: 0,
+        freeRemaining: 0,
+        requiresPayment: true,
+      });
+    }
+
+    let user;
+
+    try {
+      user =
+        await requireVerifiedFirebaseUser(
+          req
+        );
+    } catch (error) {
+      return sendFirebaseIdentityError(
+        res,
+        error
+      );
+    }
+
+    try {
+      const status =
+        await freeEntitlementStore
+          .getStatus({
+            uid:
+              user.uid,
+          });
+
+      return res.json({
+        ok: true,
+        ...status,
+      });
+    } catch (error) {
+      console.error(
+        "Access status error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          ok: false,
+          error:
+            "Could not read free-petition access.",
+        });
+    }
+  }
+);
 
 app.get(
   "/routing/capabilities",
@@ -1809,6 +1980,30 @@ app.get(
 app.post("/generate-petition", async (req, res) => {
   const v = validateGenerateBody(req.body || {});
   if (!v.ok) return res.status(400).json(v);
+
+  let verifiedUser = null;
+  let accessStatus = null;
+
+  if (FREE_ACCESS_ENABLED) {
+    try {
+      verifiedUser =
+        await requireVerifiedFirebaseUser(
+          req
+        );
+
+      accessStatus =
+        await freeEntitlementStore
+          .getStatus({
+            uid:
+              verifiedUser.uid,
+          });
+    } catch (error) {
+      return sendFirebaseIdentityError(
+        res,
+        error
+      );
+    }
+  }
 
   const {
     complaint = "",
@@ -2185,6 +2380,13 @@ CRITICAL RULES:
       finalToEmails = [];
     }
 
+    const unlockMode =
+      FREE_ACCESS_ENABLED &&
+      accessStatus
+        ?.freeRemaining > 0
+        ? "free"
+        : "paid";
+
     const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 
     await storePetition(tx_ref, {
@@ -2204,6 +2406,15 @@ CRITICAL RULES:
       paymentInitializedAt: null,
       flw_tx_id: "",
       return_to: "",
+
+      ownerUid:
+        verifiedUser?.uid ||
+        "",
+
+      unlockMode,
+
+      accessAtGeneration:
+        accessStatus,
     });
 
     await redisIncr(METRICS.previewed);
@@ -2212,14 +2423,28 @@ CRITICAL RULES:
 
     return res.json({
       ok: true,
-      needsPayment: true,
-      amount: PETITION_PRICE_NGN,
-      currency: "NGN",
+
+      needsPayment:
+        unlockMode ===
+        "paid",
+
+      unlockMode,
+
+      amount:
+        PETITION_PRICE_NGN,
+
+      currency:
+        "NGN",
+
+      access:
+        accessStatus,
+
       tx_ref,
       preview,
       sector,
       caseType,
       emailRoutingAvailable,
+
       routingDecision:
         jurisdictionRouting.matched
           ? jurisdictionRouting
@@ -2230,6 +2455,242 @@ CRITICAL RULES:
     return res.status(500).json({ ok: false, error: "Failed to generate petition" });
   }
 });
+
+/* ======================================================
+   FREE PETITION UNLOCK
+   - Requires a verified Firebase email identity.
+   - Consumes entitlement only after a usable petition exists.
+   - Repeated calls for the same tx_ref are idempotent.
+====================================================== */
+app.post(
+  "/free-unlock",
+  async (req, res) => {
+    if (!FREE_ACCESS_ENABLED) {
+      return res
+        .status(503)
+        .json({
+          ok: false,
+
+          error:
+            "Free petition access is not enabled yet.",
+        });
+    }
+
+    const validation =
+      validateTxRef(
+        req.body || {}
+      );
+
+    if (!validation.ok) {
+      return res
+        .status(400)
+        .json(
+          validation
+        );
+    }
+
+    let user;
+
+    try {
+      user =
+        await requireVerifiedFirebaseUser(
+          req
+        );
+    } catch (error) {
+      return sendFirebaseIdentityError(
+        res,
+        error
+      );
+    }
+
+    const txRef =
+      validation.tx_ref;
+
+    try {
+      const already =
+        await getUnlocked(
+          txRef
+        );
+
+      if (already) {
+        if (
+          already._ownerUid &&
+          already._ownerUid !==
+            user.uid
+        ) {
+          return res
+            .status(403)
+            .json({
+              ok: false,
+              error:
+                "This petition belongs to another verified account.",
+            });
+        }
+
+        return res.json(
+          publicUnlockedPayload(
+            already
+          )
+        );
+      }
+
+      const stored =
+        await getPetition(
+          txRef
+        );
+
+      if (!stored) {
+        return res
+          .status(404)
+          .json({
+            ok: false,
+            error:
+              "Petition expired",
+          });
+      }
+
+      if (
+        stored.ownerUid &&
+        stored.ownerUid !==
+          user.uid
+      ) {
+        return res
+          .status(403)
+          .json({
+            ok: false,
+            error:
+              "This petition belongs to another verified account.",
+          });
+      }
+
+      const claim =
+        await freeEntitlementStore
+          .claimFreeUnlock({
+            uid:
+              user.uid,
+
+            txRef,
+
+            sector:
+              stored.sector,
+          });
+
+      if (!claim.granted) {
+        return res
+          .status(402)
+          .json({
+            ok: false,
+
+            error:
+              "Your two free petitions have been used. Pay ₦1,050 to unlock this petition.",
+
+            needsPayment:
+              true,
+
+            unlockMode:
+              "paid",
+
+            access:
+              claim.status,
+          });
+      }
+
+      const mailto =
+        buildMailto({
+          to:
+            stored.toEmails,
+
+          cc:
+            stored.ccEmails,
+
+          subject:
+            stored.subject,
+
+          body:
+            stored.petition,
+        });
+
+      const payload = {
+        ok: true,
+        unlocked: true,
+
+        unlockMethod:
+          "free",
+
+        needsPayment:
+          false,
+
+        petition:
+          stored.petition,
+
+        sector:
+          stored.sector,
+
+        toInstitutions:
+          stored.toInstitutions,
+
+        ccInstitutions:
+          stored.ccInstitutions,
+
+        to:
+          stored.toEmails,
+
+        cc:
+          stored.ccEmails,
+
+        mailto,
+
+        emailRoutingAvailable:
+          !!stored
+            .emailRoutingAvailable,
+
+        routingDecision:
+          stored.routingDecision ||
+          null,
+
+        access:
+          claim.status,
+      };
+
+      await storeUnlocked(
+        txRef,
+        {
+          ...payload,
+
+          _ownerUid:
+            user.uid,
+        }
+      );
+
+      await deletePetition(
+        txRef
+      );
+
+      await redisIncr(
+        METRICS
+          .unlockedFree
+      );
+
+      return res.json(
+        payload
+      );
+    } catch (error) {
+      console.error(
+        "Free unlock error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          ok: false,
+
+          error:
+            "Free petition unlock failed.",
+        });
+    }
+  }
+);
 
 /* ======================================================
    PAY INITIALIZE (Flutterwave)
@@ -2318,7 +2779,13 @@ app.post("/unlock-petition", async (req, res) => {
     }
 
     const already = await getUnlocked(tx_ref);
-    if (already) return res.json(already);
+    if (already) {
+      return res.json(
+        publicUnlockedPayload(
+          already
+        )
+      );
+    }
 
     const stored = await getPetition(tx_ref);
     if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
@@ -2526,6 +2993,15 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 PetitionDesk backend running on port ${PORT}`);
   console.log(`📁 Data dir: ${DATA_DIR}`);
   console.log("Webhook path: /flw-webhook");
+
+  if (
+    FREE_ACCESS_ENABLED &&
+    !FIRESTORE_ENABLED
+  ) {
+    console.log(
+      "⚠️ FREE_ACCESS_ENABLED is true while Firestore is disabled. Free usage will not survive a server restart."
+    );
+  }
 
   if (!FLW_WEBHOOK_HASH) {
     console.log("⚠️ FLW_WEBHOOK_HASH not set — store the Flutterwave webhook hash in Secret Manager and attach it to Cloud Run.");
