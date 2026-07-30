@@ -1,14 +1,13 @@
 {
   "sector": "international_escalation",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "scope": "Maximum Global Scope",
-  "last_updated": "2026-01-08",
+  "last_updated": "2026-07-30",
   "purpose": [
     "International escalation after all domestic remedies have failed",
     "Peaceful mass petitioning for global diplomatic and legislative attention",
     "Human rights, security failures, financial abuse, and systemic injustice"
   ],
-
   "Nigeria_Domestic_Escalation": {
     "name": "Nigeria Domestic Final Escalation (Before International)",
     "priority_note": "Use these Nigeria domestic escalation contacts BEFORE (or alongside) international escalation, especially for human-rights, rule-of-law, and justice-sector matters.",
@@ -23,7 +22,10 @@
           "Nigerian Ministry of Justice",
           "Federal Ministry of Justice Nigeria"
         ],
-        "emails": ["info@justice.gov.ng", "fmoj.foi@justice.gov.ng"],
+        "emails": [
+          "info@justice.gov.ng",
+          "fmoj.foi@justice.gov.ng"
+        ],
         "address": "Federal Ministry of Justice Headquarters, Maitama, Abuja, FCT, Nigeria",
         "how_to_address_head": {
           "title": "Honourable Attorney-General of the Federation and Minister of Justice",
@@ -46,7 +48,10 @@
           "Office of the Attorney General Nigeria",
           "Federal Attorney General Nigeria"
         ],
-        "emails": ["info@justice.gov.ng", "fmoj.foi@justice.gov.ng"],
+        "emails": [
+          "info@justice.gov.ng",
+          "fmoj.foi@justice.gov.ng"
+        ],
         "address": "Federal Ministry of Justice Headquarters, Maitama, Abuja, FCT, Nigeria",
         "how_to_address_head": {
           "title": "Honourable Attorney-General of the Federation and Minister of Justice",
@@ -65,7 +70,9 @@
           "NHRC Nigeria",
           "Nigeria Human Rights Commission"
         ],
-        "emails": ["info@nhrc.gov.ng"],
+        "emails": [
+          "info@nhrc.gov.ng"
+        ],
         "address": "NHRC Headquarters, Abuja, FCT, Nigeria",
         "how_to_address_head": {
           "title": "Executive Secretary, National Human Rights Commission",
@@ -77,7 +84,6 @@
       }
     ]
   },
-
   "United_States": {
     "name": "U.S. Foreign Policy & Human Rights Legislative Escalation",
     "aliases": [
@@ -94,8 +100,13 @@
       "Tom Lantos Human Rights Commission",
       "TLHRC"
     ],
-    "emails": ["Web_Inquiry@foreign.senate.gov", "TLHRC@mail.house.gov"],
-    "phones": ["+1 202 224 4651"],
+    "emails": [
+      "Web_Inquiry@foreign.senate.gov",
+      "TLHRC@mail.house.gov"
+    ],
+    "phones": [
+      "+1 202 224 4651"
+    ],
     "committee": "Senate Committee on Foreign Relations + Tom Lantos Human Rights Commission",
     "address": "U.S. Senate, Washington DC, USA",
     "how_to_address_head": {
@@ -103,7 +114,6 @@
       "salutation": "Dear Chair"
     }
   },
-
   "United_Kingdom": {
     "name": "UK Parliamentary & Diplomatic Escalation",
     "aliases": [
@@ -120,7 +130,11 @@
       "Foreign, Commonwealth & Development Office",
       "UK Foreign Office"
     ],
-    "emails": ["fac@parliament.uk", "facmedia@parliament.uk", "fcdo.correspondence@fcdo.gov.uk"],
+    "emails": [
+      "fac@parliament.uk",
+      "facmedia@parliament.uk",
+      "fcdo.correspondence@fcdo.gov.uk"
+    ],
     "committee": "UK Parliament Foreign Affairs Committees",
     "address": "London, United Kingdom",
     "how_to_address_head": {
@@ -128,7 +142,6 @@
       "salutation": "Dear Chair"
     }
   },
-
   "European_Union": {
     "name": "EU Parliament & Diplomatic Escalation",
     "aliases": [
@@ -144,7 +157,11 @@
       "EU Delegation to Nigeria",
       "European External Action Service"
     ],
-    "emails": ["droi-secretariat@europarl.europa.eu", "peti-secretariat@europarl.europa.eu", "delegation-nigeria@eeas.europa.eu"],
+    "emails": [
+      "droi-secretariat@europarl.europa.eu",
+      "peti-secretariat@europarl.europa.eu",
+      "delegation-nigeria@eeas.europa.eu"
+    ],
     "bodies": "European Parliament (DROI, PETI) + EEAS Delegation to Nigeria",
     "address": "Brussels, European Union",
     "how_to_address_head": {
@@ -152,7 +169,6 @@
       "salutation": "Dear Chair"
     }
   },
-
   "International_Criminal_Court": {
     "name": "International Criminal Court (ICC)",
     "aliases": [
@@ -163,15 +179,19 @@
       "OTP",
       "The Hague Court"
     ],
-    "emails": ["ICCVisits@icc-cpi.int"],
+    "emails": [],
     "address": "The Hague, Netherlands",
     "mandate": "Rome Statute crimes, preliminary examinations and investigations",
     "how_to_address_head": {
       "title": "Prosecutor, International Criminal Court (Office of the Prosecutor - OTP)",
       "salutation": "Dear Prosecutor"
-    }
+    },
+    "submission_url": "https://otplink.icc-cpi.int/submissions",
+    "notes": [
+      "Article 15 information concerning alleged Rome Statute crimes must use OTPLink or the official postal procedure.",
+      "ICC visitor-services addresses and emails must not be used for crime-information submissions."
+    ]
   },
-
   "Canada": {
     "name": "Canada Parliamentary & Diplomatic Escalation",
     "aliases": [
@@ -185,7 +205,10 @@
       "Global Affairs Canada",
       "GAC"
     ],
-    "emails": ["info@international.gc.ca", "FAAE@parl.gc.ca"],
+    "emails": [
+      "info@international.gc.ca",
+      "FAAE@parl.gc.ca"
+    ],
     "bodies": "FAAE (Foreign Affairs and International Development Committee) + House of Commons",
     "address": "Ottawa, Canada",
     "how_to_address_head": {
@@ -193,7 +216,6 @@
       "salutation": "Dear Chair"
     }
   },
-
   "United_Nations": {
     "name": "UN Human Rights & Global Escalation",
     "aliases": [
@@ -207,21 +229,21 @@
       "Special Procedures",
       "Special Procedures Branch"
     ],
-    "emails": ["ohchr-InfoDesk@un.org", "ohchr-petitions@un.org", "spdinfo@ohchr.org", "urgent-action@ohchr.org"],
+    "emails": [],
     "bodies": "OHCHR + Human Rights Council + Special Procedures Branch",
     "address": "Geneva, Switzerland",
     "how_to_address_head": {
       "title": "High Commissioner for Human Rights",
       "salutation": "Dear High Commissioner"
-    }
+    },
+    "special_procedures_submission_url": "https://spsubmission.ohchr.org/",
+    "complaints_portal": "https://complaints.ohchr.org/"
   },
-
   "routing_rules": {
     "MASS_DEVICE_PROTEST_ENABLED": true,
     "max_email_batch": 10,
     "note": "Use priority-first routing for maximum diplomatic impact. If complaint is Nigeria-based, include Nigeria_Domestic_Escalation in CC or as a prerequisite step before international escalation."
   },
-
   "routing_keywords": [
     "unlawful conviction",
     "illegal arrest",
@@ -246,10 +268,97 @@
     "christian genocide",
     "Muslim genecide"
   ],
-
   "minimum_petition_pack": [
     "Summary cover letter",
     "Chronological statement of facts",
     "Evidence bundle"
-  ]
+  ],
+  "African_Commission_on_Human_and_Peoples_Rights": {
+    "name": "African Commission on Human and Peoples' Rights (ACHPR)",
+    "aliases": [
+      "ACHPR",
+      "African Commission",
+      "African Commission on Human and Peoples Rights"
+    ],
+    "emails": [],
+    "submission_url": "https://achpr.au.int/index.php/en/other-documents/non-state-inter-state-communication-procedure",
+    "admissibility_note": "Available local remedies ordinarily must be exhausted unless unavailable, ineffective or unduly prolonged."
+  },
+  "ECOWAS_Community_Court": {
+    "name": "Community Court of Justice, ECOWAS",
+    "aliases": [
+      "ECOWAS Court",
+      "Community Court of Justice",
+      "ECOWAS Community Court"
+    ],
+    "emails": [],
+    "filing_guidance": "https://courtecowas.org/legal-resources/court-rules/",
+    "filing_note": "Proceedings commence through a written application addressed to the Registry, not an ordinary advocacy email."
+  },
+  "verified_channels": [
+    {
+      "name": "International Criminal Court (ICC) — Office of the Prosecutor",
+      "aliases": [
+        "ICC Office of the Prosecutor",
+        "ICC OTP",
+        "OTPLink"
+      ],
+      "contact": {
+        "emails": [],
+        "website": "https://otplink.icc-cpi.int/submissions"
+      }
+    },
+    {
+      "name": "United Nations Special Procedures of the Human Rights Council",
+      "aliases": [
+        "UN Special Procedures",
+        "OHCHR Special Procedures",
+        "Special Rapporteurs"
+      ],
+      "contact": {
+        "emails": [],
+        "website": "https://spsubmission.ohchr.org/"
+      }
+    },
+    {
+      "name": "OHCHR Treaty Body Individual Communications Portal",
+      "aliases": [
+        "OHCHR Complaints Portal",
+        "UN Treaty Body Portal"
+      ],
+      "contact": {
+        "emails": [],
+        "website": "https://complaints.ohchr.org/"
+      }
+    },
+    {
+      "name": "African Commission on Human and Peoples' Rights (ACHPR)",
+      "aliases": [
+        "ACHPR",
+        "African Commission"
+      ],
+      "contact": {
+        "emails": [],
+        "website": "https://achpr.au.int/index.php/en/other-documents/non-state-inter-state-communication-procedure"
+      }
+    },
+    {
+      "name": "Community Court of Justice, ECOWAS",
+      "aliases": [
+        "ECOWAS Court",
+        "Community Court of Justice"
+      ],
+      "contact": {
+        "emails": [],
+        "website": "https://courtecowas.org/legal-resources/court-rules/"
+      }
+    }
+  ],
+  "routing_safety": {
+    "diplomatic_advocacy_is_not_a_legal_remedy": true,
+    "icc_requires_rome_statute_crime_screening": true,
+    "treaty_body_eligibility_must_be_verified": true,
+    "special_procedures_do_not_require_domestic_exhaustion": true,
+    "no_mass_email_routing": true
+  }
 }

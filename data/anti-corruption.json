@@ -1,15 +1,13 @@
 {
   "sector": "anti_corruption",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "country": "Nigeria",
-  "last_updated": "2026-01-08",
-
+  "last_updated": "2026-07-30",
   "purpose": [
     "Report corruption, bribery, procurement fraud, diversion of public funds, money laundering, and abuse of office",
     "Route petitions to the correct anti-corruption institution(s) and copy relevant watchdogs",
     "Support evidence-based, non-defamatory reporting with clear timelines and documents"
   ],
-
   "oversight": {
     "federal_ministry_of_justice": {
       "name": "Federal Ministry of Justice",
@@ -23,11 +21,12 @@
         "AGF"
       ],
       "contact": {
-        "emails": ["info@justice.gov.ng"]
+        "emails": [
+          "info@justice.gov.ng"
+        ]
       }
     }
   },
-
   "core_anti_corruption_agencies": [
     {
       "name": "Economic and Financial Crimes Commission (EFCC)",
@@ -42,7 +41,12 @@
         "Investigation and prosecution (as applicable)"
       ],
       "contact": {
-        "emails": ["info@efcc.gov.ng"]
+        "emails": [
+          "info@efcc.gov.ng"
+        ],
+        "address": "Plot 301/302, Institution and Research Cadastral District, Jabi, Abuja, Nigeria",
+        "website": "https://efcc.gov.ng/",
+        "complaint_portal": "https://www.eagleeye.efcc.gov.ng/reportForm.html"
       }
     },
     {
@@ -58,7 +62,10 @@
         "Investigation and prosecution (as applicable)"
       ],
       "contact": {
-        "emails": ["info@icpc.gov.ng"]
+        "emails": [
+          "info@icpc.gov.ng"
+        ],
+        "website": "https://icpc.gov.ng/petition/"
       }
     },
     {
@@ -73,11 +80,14 @@
         "Code of Conduct enforcement referrals"
       ],
       "contact": {
-        "emails": ["info@ccb.gov.ng"]
+        "emails": [
+          "info@ccb.gov.ng"
+        ],
+        "address": "5th Floor, Federal Secretariat Complex Annex III, Shehu Shagari Way, Maitama, Abuja, Nigeria",
+        "website": "https://ccb.gov.ng/?page_id=381"
       }
     }
   ],
-
   "procurement_audit_transparency": [
     {
       "name": "Bureau of Public Procurement (BPP)",
@@ -91,11 +101,13 @@
         "Procurement fraud red flags, bid rigging indicators (report with evidence)"
       ],
       "contact": {
-        "emails": ["official@bpp.gov.ng", "ccspsupport@bpp.gov.ng", "info@bpp.gov.ng"]
+        "emails": [
+          "info@bpp.gov.ng"
+        ],
+        "website": "https://www.bpp.gov.ng/petitions/"
       }
     }
   ],
-
   "watchdogs": [
     {
       "name": "Public Complaints Commission (PCC)",
@@ -109,7 +121,10 @@
         "Service failure, extortion in administrative processes, refusal to acknowledge complaints"
       ],
       "contact": {
-        "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"]
+        "emails": [
+          "complaint@pcc.gov.ng",
+          "info@pcc.gov.ng"
+        ]
       }
     },
     {
@@ -122,11 +137,12 @@
         "Where corruption allegations connect to rights violations (unlawful detention, torture to extort, etc.)"
       ],
       "contact": {
-        "emails": ["info@nhrc.gov.ng"]
+        "emails": [
+          "info@nhrc.gov.ng"
+        ]
       }
     }
   ],
-
   "routing_rules": {
     "max_email_batch": 10,
     "priority_logic": [
@@ -136,14 +152,12 @@
       "If it is procurement inflation / contract splitting / bid rigging: BPP first (copy ICPC/EFCC depending on evidence)."
     ]
   },
-
   "complaint_and_escalation_flow": {
     "step_1": "Write a factual petition: who/what/when/where/how; attach evidence; avoid insults/defamation.",
     "step_2": "Send to the primary agency based on allegation type (EFCC/ICPC/CCB/BPP).",
     "step_3": "Copy PCC where there is maladministration (refusal to respond, extortion, abuse of process, cover-up).",
     "step_4": "If threats/retaliation occur, document it and add NHRC to protect rights and safety."
   },
-
   "routing_keywords": [
     "bribe",
     "bribery",
@@ -177,7 +191,6 @@
     "asset declaration",
     "false declaration"
   ],
-
   "evidence_checklist": [
     "Full names and roles of persons involved (or titles if names unknown)",
     "MDA/department/unit involved",
@@ -189,5 +202,15 @@
     "Witness statements (if any)",
     "Any prior complaint and acknowledgment/reference",
     "Risk note (any threats/retaliation details)"
-  ]
+  ],
+  "verification": {
+    "status": "VERIFIED_OFFICIAL_SOURCES",
+    "verified_on": "2026-07-30",
+    "source_urls": [
+      "https://efcc.gov.ng/",
+      "https://icpc.gov.ng/petition/",
+      "https://ccb.gov.ng/?page_id=381",
+      "https://www.bpp.gov.ng/petitions/"
+    ]
+  }
 }

@@ -1,94 +1,165 @@
 {
   "sector": "diaspora_report",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "country": "Nigeria",
-  "last_updated": "2026-01-08",
-
+  "last_updated": "2026-07-30",
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Foreign Affairs",
-      "aliases": ["MFA", "Foreign Affairs"],
+      "aliases": [
+        "MFA",
+        "Foreign Affairs"
+      ],
       "contact": {
-        "emails": ["info@foreignaffairs.gov.ng"]
+        "emails": [
+          "info@foreignaffairs.gov.ng"
+        ],
+        "address": "Tafewa Balewa House, Central Business District, Abuja, Nigeria",
+        "website": "https://foreignaffairs.gov.ng/",
+        "mission_directory": "https://foreignaffairs.gov.ng/diplomatic-missions/"
       }
     }
   },
-
   "core_institutions": [
     {
       "name": "Nigerians in Diaspora Commission (NiDCOM)",
-      "aliases": ["NiDCOM", "NIDCOM"],
+      "aliases": [
+        "NiDCOM",
+        "NIDCOM"
+      ],
       "contact": {
-        "emails": ["admin@nidcom.gov.ng"]
+        "emails": [
+          "admin@nidcom.gov.ng"
+        ],
+        "address": "Federal Secretariat Complex, Phase 1, Annex 3, 2nd Floor, Abuja, Nigeria",
+        "website": "https://nidcom.gov.ng/contact-nidcom/"
       }
     }
   ],
-
   "regulators": [
     {
       "name": "Nigeria Immigration Service (NIS)",
-      "aliases": ["NIS", "Nigeria Immigration Service", "Immigration"],
+      "aliases": [
+        "NIS",
+        "Nigeria Immigration Service",
+        "Immigration"
+      ],
       "contact": {
         "emails": [
-          "servicom@immigration.gov.ng",
-          "support@immigration.gov.ng",
-          "nis.servicom@nigeriaimmigration.gov.ng"
-        ]
+          "nis.servicom@nigeriaimmigration.gov.ng",
+          "support@immigration.gov.ng"
+        ],
+        "address": "Nigeria Immigration Service Headquarters, Umar Musa Yar'Adua Express Way, Airport Road, Sauka, Abuja, Nigeria",
+        "website": "https://immigration.gov.ng/contact-us/"
       }
     }
   ],
-
   "watchdogs": [
     {
       "name": "National Agency for the Prohibition of Trafficking in Persons (NAPTIP)",
-      "aliases": ["NAPTIP", "Human Trafficking Agency"],
+      "aliases": [
+        "NAPTIP",
+        "Human Trafficking Agency"
+      ],
       "contact": {
-        "emails": ["info@naptip.gov.ng"]
+        "emails": [
+          "info@naptip.gov.ng"
+        ],
+        "phones": [
+          "+2347030000203",
+          "08002255627847"
+        ],
+        "address": "No. 2028, Dalaba Street, Wuse Zone 5, Abuja, Nigeria",
+        "website": "https://nsod.naptip.gov.ng/"
       }
     },
     {
       "name": "Public Complaints Commission (PCC)",
-      "aliases": ["PCC"],
+      "aliases": [
+        "PCC"
+      ],
       "contact": {
-        "emails": ["info@pcc.gov.ng"]
+        "emails": [
+          "info@pcc.gov.ng"
+        ]
       }
     },
     {
       "name": "Office of the Secretary to the Government of the Federation (OSGF)",
-      "aliases": ["OSGF", "Secretary to the Government of the Federation", "SGF Office"],
+      "aliases": [
+        "OSGF",
+        "Secretary to the Government of the Federation",
+        "SGF Office"
+      ],
       "contact": {
-        "emails": ["info@osgf.gov.ng"]
+        "emails": [
+          "info@osgf.gov.ng"
+        ]
       }
     },
     {
       "name": "Office of the Attorney-General of the Federation and Minister of Justice (AGF)",
-      "aliases": ["AGF", "Attorney-General of the Federation", "Federal Ministry of Justice"],
+      "aliases": [
+        "AGF",
+        "Attorney-General of the Federation",
+        "Federal Ministry of Justice"
+      ],
       "contact": {
-        "emails": ["info@justice.gov.ng"]
+        "emails": [
+          "info@justice.gov.ng"
+        ]
       }
     },
     {
       "name": "Office of the Chief of Staff to the President",
-      "aliases": ["Chief of Staff to the President", "CoS to the President", "State House"],
+      "aliases": [
+        "Chief of Staff to the President",
+        "CoS to the President",
+        "State House"
+      ],
       "contact": {
-        "emails": ["info@statehouse.gov.ng"]
+        "emails": [
+          "info@statehouse.gov.ng"
+        ]
       }
     },
     {
       "name": "The Nigerian Senate",
-      "aliases": ["Senate", "National Assembly Senate", "NASS Senate"],
+      "aliases": [
+        "Senate",
+        "National Assembly Senate",
+        "NASS Senate"
+      ],
       "contact": {
-        "emails": ["info@nass.gov.ng"]
+        "emails": [
+          "info@nass.gov.ng"
+        ]
       }
     },
     {
       "name": "The House of Representatives, Federal Republic of Nigeria",
-      "aliases": ["House of Representatives", "House of Reps", "NASS House", "Green Chamber"],
+      "aliases": [
+        "House of Representatives",
+        "House of Reps",
+        "NASS House",
+        "Green Chamber"
+      ],
       "contact": {
-        "emails": ["info@nass.gov.ng"]
+        "emails": [
+          "info@nass.gov.ng"
+        ]
       }
     }
   ],
-
-  "players": []
+  "players": [],
+  "verification": {
+    "status": "VERIFIED_OFFICIAL_SOURCES",
+    "verified_on": "2026-07-30",
+    "source_urls": [
+      "https://foreignaffairs.gov.ng/diplomatic-missions/",
+      "https://nidcom.gov.ng/contact-nidcom/",
+      "https://immigration.gov.ng/contact-us/",
+      "https://nsod.naptip.gov.ng/"
+    ]
+  }
 }

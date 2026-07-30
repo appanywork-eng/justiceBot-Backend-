@@ -1,9 +1,9 @@
 {
   "sector": "general",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "country": "Nigeria",
   "description": "Fallback sector for complaints that do not match a specialist sector. General administrative complaints route primarily to the Public Complaints Commission.",
-  "last_verified": "2026-07-29",
+  "last_verified": "2026-07-30",
   "verification_policy": {
     "official_sources_only": true,
     "no_invented_contacts": true,
