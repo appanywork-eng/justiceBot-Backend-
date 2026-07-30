@@ -1,9 +1,8 @@
 {
   "sector": "judiciary",
   "country": "Nigeria",
-  "version": "1.0.1",
-  "last_updated": "2026-01-08",
-
+  "version": "1.1.0",
+  "last_updated": "2026-07-30",
   "notes": {
     "constitutional_independence": "Judiciary has constitutional independence; complaints are routed mainly through judicial oversight bodies (NJC/FJSC), court administration, and rights watchdogs. Avoid contempt of court: focus on administrative misconduct, delay, corruption, registry failure, or rights violations.",
     "to_vs_cc_rule_for_petitiondesk": [
@@ -11,7 +10,6 @@
       "CC = oversight/watchdogs (PCC for maladministration, NHRC for rights issues, etc.)."
     ]
   },
-
   "oversight": {
     "federal_ministry_of_justice": {
       "name": "Federal Ministry of Justice",
@@ -28,7 +26,6 @@
       }
     }
   },
-
   "core_judicial_oversight_and_service_bodies": [
     {
       "name": "National Judicial Council (NJC)",
@@ -37,7 +34,17 @@
         "National Judicial Council"
       ],
       "type": "Judicial oversight (discipline/complaints as applicable)",
-      "contact": { "emails": ["info@njc.gov.ng"] }
+      "contact": {
+        "emails": [
+          "info@njc.gov.ng"
+        ],
+        "website": "https://www.njc.gov.ng/index.php/judicial-discipline-regulation"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-30",
+        "source": "https://www.njc.gov.ng/index.php/judicial-discipline-regulation"
+      }
     },
     {
       "name": "Federal Judicial Service Commission (FJSC)",
@@ -46,7 +53,11 @@
         "Federal Judicial Service Commission"
       ],
       "type": "Judicial service body (federal judicial appointments/admin matters as applicable)",
-      "contact": { "emails": ["info@fjsc.gov.ng"] }
+      "contact": {
+        "emails": [
+          "info@fjsc.gov.ng"
+        ]
+      }
     },
     {
       "name": "Body of Benchers (BOB)",
@@ -55,10 +66,13 @@
         "Body of Benchers"
       ],
       "type": "Legal profession governance (where applicable)",
-      "contact": { "emails": ["info@bob.gov.ng"] }
+      "contact": {
+        "emails": [
+          "info@bob.gov.ng"
+        ]
+      }
     }
   ],
-
   "courts_and_registry_targets": [
     {
       "name": "Supreme Court of Nigeria",
@@ -67,7 +81,11 @@
         "Supreme Court of the Federal Republic of Nigeria"
       ],
       "type": "Court (Apex)",
-      "contact": { "emails": ["info@supremecourt.gov.ng"] }
+      "contact": {
+        "emails": [
+          "info@supremecourt.gov.ng"
+        ]
+      }
     },
     {
       "name": "Court of Appeal of Nigeria",
@@ -77,7 +95,11 @@
         "Nigeria Court of Appeal"
       ],
       "type": "Court",
-      "contact": { "emails": ["hq@courtofappeal.gov.ng"] }
+      "contact": {
+        "emails": [
+          "hq@courtofappeal.gov.ng"
+        ]
+      }
     },
     {
       "name": "Federal High Court of Nigeria",
@@ -86,7 +108,11 @@
         "FHC"
       ],
       "type": "Court",
-      "contact": { "emails": ["info@fhc.gov.ng"] }
+      "contact": {
+        "emails": [
+          "info@fhc.gov.ng"
+        ]
+      }
     },
     {
       "name": "High Court (State) / Chief Judge (State)",
@@ -97,11 +123,12 @@
         "State Judiciary"
       ],
       "type": "Court (State)",
-      "contact": { "emails": [] },
+      "contact": {
+        "emails": []
+      },
       "notes": "State judiciaries differ by state. Keep a separate state_judiciary.json later (Abuja/FCT, Lagos, Kano, etc.)."
     }
   ],
-
   "watchdogs": [
     {
       "name": "Public Complaints Commission (PCC)",
@@ -110,7 +137,12 @@
         "Public Complaints Commission"
       ],
       "role": "Maladministration, refusal to act, delay in administrative duties, poor service delivery in public institutions (including court registry/administration complaints).",
-      "contact": { "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"] }
+      "contact": {
+        "emails": [
+          "complaint@pcc.gov.ng",
+          "info@pcc.gov.ng"
+        ]
+      }
     },
     {
       "name": "National Human Rights Commission (NHRC)",
@@ -119,10 +151,13 @@
         "National Human Rights Commission"
       ],
       "role": "Human rights violations (unlawful detention, torture, denial of bail, fair-hearing concerns, abuse by justice-chain actors).",
-      "contact": { "emails": ["info@nhrc.gov.ng"] }
+      "contact": {
+        "emails": [
+          "info@nhrc.gov.ng"
+        ]
+      }
     }
   ],
-
   "how_to_address_and_route": {
     "default_salutation": "Dear Sir/Madam",
     "judicial_titles_guidance": [
@@ -134,21 +169,29 @@
       {
         "when": "Registry delay / missing case file / refusal to compile record / CTC delay",
         "to": "The Chief Registrar / Registrar of the Court (relevant court)",
-        "cc": ["NJC (if systemic or severe)", "PCC (maladministration)"]
+        "cc": [
+          "NJC (if systemic or severe)",
+          "PCC (maladministration)"
+        ]
       },
       {
         "when": "Judicial misconduct / bribery / abuse of office / bias (disciplinary complaint)",
         "to": "The Chairman, National Judicial Council (NJC)",
-        "cc": ["PCC (maladministration angle where applicable)", "NHRC (if rights impacted)"]
+        "cc": [
+          "PCC (maladministration angle where applicable)",
+          "NHRC (if rights impacted)"
+        ]
       },
       {
         "when": "Unlawful detention / denial of bail / torture / police disobedience of court order",
         "to": "NHRC (rights complaint) OR relevant justice-chain authority",
-        "cc": ["PCC", "NJC (if judicial admin issue is involved)"]
+        "cc": [
+          "PCC",
+          "NJC (if judicial admin issue is involved)"
+        ]
       }
     ]
   },
-
   "routing_keywords": {
     "delay_and_backlog": [
       "delayed justice",
@@ -234,7 +277,6 @@
       "prison remand abuse"
     ]
   },
-
   "evidence_checklist": [
     "Case title and suit number",
     "Court division/location",

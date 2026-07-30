@@ -1,9 +1,8 @@
 {
   "sector": "health",
   "country": "Nigeria",
-  "last_updated": "2026-01-09",
-  "version": "1.0.1",
-
+  "last_updated": "2026-07-30",
+  "version": "1.1.0",
   "keywords": [
     "hospital negligence",
     "treatment refusal",
@@ -26,13 +25,18 @@
     "withheld medical report",
     "illegal medical fees"
   ],
-
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Health & Social Welfare",
-      "aliases": ["Federal Ministry of Health", "FMOH", "Ministry of Health"],
+      "aliases": [
+        "Federal Ministry of Health",
+        "FMOH",
+        "Ministry of Health"
+      ],
       "contact": {
-        "emails": ["info@health.gov.ng"],
+        "emails": [
+          "info@health.gov.ng"
+        ],
         "address": "Federal Secretariat Complex, Phase III, Abuja, Nigeria"
       },
       "how_to_address_head": {
@@ -42,170 +46,289 @@
       }
     }
   },
-
   "regulators_and_core_agencies": [
     {
       "name": "National Health Insurance Authority (NHIA)",
-      "aliases": ["NHIA", "NHIS", "National Health Insurance"],
+      "aliases": [
+        "NHIA",
+        "NHIS",
+        "National Health Insurance"
+      ],
       "type": "Regulator",
-      "mandate": ["HMO and hospital insurance oversight", "Consumer protection for health insurance"],
+      "mandate": [
+        "HMO and hospital insurance oversight",
+        "Consumer protection for health insurance"
+      ],
       "contact": {
-        "emails": ["info@nhia.gov.ng"],
-        "address": "Plot 297, Mafemi Crescent, Utako, Abuja"
+        "emails": [
+          "info@nhia.gov.ng"
+        ],
+        "address": "297 Shehu Yar'adua Way, Utako District, Abuja, Nigeria",
+        "website": "https://www.nhia.gov.ng/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-30",
+        "source": "https://www.nhia.gov.ng/contact-us/"
       }
     },
     {
       "name": "Nigeria Centre for Disease Control and Prevention (NCDC)",
-      "aliases": ["NCDC", "Nigeria CDC", "Disease Control Nigeria"],
+      "aliases": [
+        "NCDC",
+        "Nigeria CDC",
+        "Disease Control Nigeria"
+      ],
       "type": "Public Health Agency",
-      "mandate": ["Health emergency oversight", "Public health protection"],
+      "mandate": [
+        "Health emergency oversight",
+        "Public health protection"
+      ],
       "contact": {
-        "emails": ["info@ncdc.gov.ng"],
+        "emails": [
+          "info@ncdc.gov.ng"
+        ],
         "address": "Plot 801, Ebitu Ukiwe Street, Jabi, Abuja"
       }
     },
     {
       "name": "National Agency for the Control of AIDS (NACA)",
-      "aliases": ["NACA", "AIDS Control Nigeria"],
+      "aliases": [
+        "NACA",
+        "AIDS Control Nigeria"
+      ],
       "type": "Public Health Agency",
-      "mandate": ["Health policy and emergency programme oversight"],
+      "mandate": [
+        "Health policy and emergency programme oversight"
+      ],
       "contact": {
-        "emails": ["info@naca.gov.ng"],
+        "emails": [
+          "info@naca.gov.ng"
+        ],
         "address": "Ralph Shodeinde Street, CBD, Abuja"
       }
     },
     {
       "name": "National Primary Health Care Development Agency (NPHCDA)",
-      "aliases": ["NPHCDA", "Primary Health Nigeria"],
+      "aliases": [
+        "NPHCDA",
+        "Primary Health Nigeria"
+      ],
       "type": "Public Agency",
-      "mandate": ["Primary health institutions oversight"],
+      "mandate": [
+        "Primary health institutions oversight"
+      ],
       "contact": {
-        "emails": ["info@nphcda.gov.ng"],
+        "emails": [
+          "info@nphcda.gov.ng"
+        ],
         "address": "Port Harcourt Crescent, Garki Area 11, Abuja"
       }
     },
     {
       "name": "Medical and Dental Council of Nigeria (MDCN)",
-      "aliases": ["MDCN", "Doctors Licensing Nigeria"],
+      "aliases": [
+        "MDCN",
+        "Doctors Licensing Nigeria"
+      ],
       "type": "Professional Regulator",
-      "mandate": ["Medical license regulation", "Hospital professional compliance"],
+      "mandate": [
+        "Medical license regulation",
+        "Hospital professional compliance"
+      ],
       "contact": {
-        "emails": ["registrar@mdcn.gov.ng", "info@mdcn.gov.ng"],
-        "address": "Maitama District, Abuja"
+        "emails": [
+          "registrar@mdcn.gov.ng",
+          "info@mdcn.gov.ng"
+        ],
+        "address": "Plot 1102, Cadastral Zone B11, Off Oladipo Diya Road, Behind Prince and Princess Estate, Kaura District, Abuja, Nigeria",
+        "website": "https://mdcn.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-30",
+        "source": "https://mdcn.gov.ng/contact-us"
       }
     },
     {
       "name": "Nursing and Midwifery Council of Nigeria (NMCN)",
-      "aliases": ["NMCN", "Nurses Licensing Nigeria"],
+      "aliases": [
+        "NMCN",
+        "Nurses Licensing Nigeria"
+      ],
       "type": "Professional Regulator",
-      "mandate": ["Nursing license regulation"],
+      "mandate": [
+        "Nursing license regulation"
+      ],
       "contact": {
-        "emails": ["info@nmcn.gov.ng"],
+        "emails": [
+          "info@nmcn.gov.ng"
+        ],
         "address": "Maitama, Abuja"
       }
     },
     {
       "name": "Pharmacy Council of Nigeria (PCN)",
-      "aliases": ["PCN", "Pharmacists Licensing Nigeria"],
+      "aliases": [
+        "PCN",
+        "Pharmacists Licensing Nigeria"
+      ],
       "type": "Professional Regulator",
-      "mandate": ["Pharmacy practice regulation"],
+      "mandate": [
+        "Pharmacy practice regulation"
+      ],
       "contact": {
-        "emails": ["info@pcn.gov.ng"],
+        "emails": [
+          "info@pcn.gov.ng"
+        ],
         "address": "Abuja"
       }
     },
     {
       "name": "Medical Laboratory Science Council of Nigeria (MLSCN)",
-      "aliases": ["MLSCN", "Lab Licensing Nigeria"],
+      "aliases": [
+        "MLSCN",
+        "Lab Licensing Nigeria"
+      ],
       "type": "Professional Regulator",
-      "mandate": ["Medical lab practice regulation"],
+      "mandate": [
+        "Medical lab practice regulation"
+      ],
       "contact": {
-        "emails": ["info@mlscn.gov.ng"],
+        "emails": [
+          "info@mlscn.gov.ng"
+        ],
         "address": "Abuja"
       }
     }
   ],
-
   "watchdogs": [
     {
       "name": "Public Complaints Commission (PCC)",
-      "aliases": ["PCC", "Public Complaints Commission"],
+      "aliases": [
+        "PCC",
+        "Public Complaints Commission"
+      ],
       "type": "Watchdog",
-      "mandate": ["Maladministration and consumer rights abuse in health sector"],
+      "mandate": [
+        "Maladministration and consumer rights abuse in health sector"
+      ],
       "contact": {
-        "emails": ["research.unit@pcc.gov.ng", "info@pcc.gov.ng"],
+        "emails": [
+          "research.unit@pcc.gov.ng",
+          "info@pcc.gov.ng"
+        ],
         "address": "25 Aguiyi Ironsi Street, Maitama, Abuja"
       }
     },
     {
       "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
-      "aliases": ["FCCPC", "Consumer Protection Nigeria"],
+      "aliases": [
+        "FCCPC",
+        "Consumer Protection Nigeria"
+      ],
       "type": "Watchdog",
-      "mandate": ["Consumer rights enforcement for health service abuses"],
+      "mandate": [
+        "Consumer rights enforcement for health service abuses"
+      ],
       "contact": {
-        "emails": ["contact@fccpc.gov.ng"],
+        "emails": [
+          "contact@fccpc.gov.ng"
+        ],
         "address": "FCCPC Headquarters, Abuja, Nigeria"
       }
     },
     {
       "name": "National Human Rights Commission (NHRC)",
-      "aliases": ["NHRC", "Human Rights Nigeria"],
+      "aliases": [
+        "NHRC",
+        "Human Rights Nigeria"
+      ],
       "type": "Watchdog",
-      "mandate": ["Human rights violations involving health abuses"],
+      "mandate": [
+        "Human rights violations involving health abuses"
+      ],
       "contact": {
-        "emails": ["info@nhrc.gov.ng"],
+        "emails": [
+          "info@nhrc.gov.ng"
+        ],
         "address": "NHRC Headquarters, Abuja, Nigeria"
       }
     }
   ],
-
   "players": [
     {
       "name": "Daughters of Charity Hospital, Kubwa (Abuja)",
-      "aliases": ["Daughters of Charity Hospital", "Kubwa Hospital", "DOC Hospital"],
+      "aliases": [
+        "Daughters of Charity Hospital",
+        "Kubwa Hospital",
+        "DOC Hospital"
+      ],
       "type": "Private Hospital",
-      "mandate": ["Health service delivery"],
+      "mandate": [
+        "Health service delivery"
+      ],
       "contact": {
-        "emails": ["admin@doc-kubwa.org.ng"],
+        "emails": [
+          "admin@doc-kubwa.org.ng"
+        ],
         "address": "Kubwa, Abuja"
       }
     },
     {
       "name": "Nizamiye Hospital, Abuja",
-      "aliases": ["Nizamiye", "Nizamiye Hospital"],
+      "aliases": [
+        "Nizamiye",
+        "Nizamiye Hospital"
+      ],
       "type": "Private Hospital",
-      "mandate": ["Health service delivery"],
+      "mandate": [
+        "Health service delivery"
+      ],
       "contact": {
-        "emails": ["info@nizamiyehospital.com.ng"],
+        "emails": [
+          "info@nizamiyehospital.com.ng"
+        ],
         "address": "Abuja"
       }
     },
     {
       "name": "Cedarcrest Hospital, Abuja",
-      "aliases": ["Cedarcrest"],
+      "aliases": [
+        "Cedarcrest"
+      ],
       "type": "Private Hospital",
-      "mandate": ["Health service delivery"],
+      "mandate": [
+        "Health service delivery"
+      ],
       "contact": {
-        "emails": ["contact@cedarcresthospitals.com"],
+        "emails": [
+          "contact@cedarcresthospitals.com"
+        ],
         "address": "Gudu, Abuja"
       }
     },
     {
       "name": "Zankli Medical Centre, Abuja",
-      "aliases": ["Zankli", "Zankli Hospital"],
+      "aliases": [
+        "Zankli",
+        "Zankli Hospital"
+      ],
       "type": "Private Hospital",
-      "mandate": ["Health service delivery"],
+      "mandate": [
+        "Health service delivery"
+      ],
       "contact": {
-        "emails": ["info@zankli.com"],
+        "emails": [
+          "info@zankli.com"
+        ],
         "address": "Mabushi, Abuja"
       }
     }
   ],
-
   "complaint_escalation_flow": {
     "note": "All complaints must first go to the hospital/operator mentioned. If unresolved, escalate to NHIA and copy PCC, FCCPC, or FCCPC depending on case."
   },
-
   "evidence_keywords": [
     "msisdn",
     "sim number",
@@ -224,7 +347,6 @@
     "illegal fees",
     "lab misconduct"
   ],
-
   "security_rules": {
     "prevent_double_unlock": true,
     "ttl_storage_seconds": 7200,

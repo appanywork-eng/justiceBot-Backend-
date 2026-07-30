@@ -1900,6 +1900,27 @@ app.post("/generate-petition", async (req, res) => {
           country,
         });
 
+  /*
+   * Some matters must not be converted into
+   * an ordinary petition. Examples include an
+   * active emergency or an attempt to replace
+   * a court appeal with a disciplinary petition.
+   */
+  if (
+    jurisdictionRouting.matched &&
+    jurisdictionRouting.blockGeneration ===
+      true
+  ) {
+    return res.status(422).json({
+      ok: false,
+      error:
+        jurisdictionRouting.userMessage ||
+        "This matter requires a different legal or emergency process.",
+      routingDecision:
+        jurisdictionRouting,
+    });
+  }
+
   if (DEBUG_SECTOR) {
     console.log("🧠 SECTOR DEBUG:", {
       heuristic,

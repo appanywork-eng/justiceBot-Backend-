@@ -1,28 +1,50 @@
 {
   "sector": "education",
   "country": "Nigeria",
-  "last_updated": "2026-01-08",
-
+  "last_updated": "2026-07-30",
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Education",
-      "aliases": ["FME", "Ministry of Education", "Federal Ministry of Education Nigeria"],
+      "aliases": [
+        "FME",
+        "Ministry of Education",
+        "Federal Ministry of Education Nigeria"
+      ],
       "contact": {
-        "emails": ["info@education.gov.ng"]
+        "emails": [
+          "info@education.gov.ng"
+        ]
       }
     }
   },
-
   "regulators": [
     {
       "name": "National Universities Commission (NUC)",
-      "aliases": ["NUC", "National Universities Commission"],
-      "contact": { "emails": ["info@nuc.edu.ng"] }
+      "aliases": [
+        "NUC",
+        "National Universities Commission"
+      ],
+      "contact": {
+        "emails": [
+          "info@nuc.edu.ng"
+        ],
+        "address": "Aja Nwachukwu House, Plot 430, Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://www.nuc.edu.ng/servicom/"
+      }
     },
     {
       "name": "National Board for Technical Education (NBTE)",
-      "aliases": ["NBTE", "National Board for Technical Education"],
-      "contact": { "emails": ["enquiries@nbte.gov.ng"] }
+      "aliases": [
+        "NBTE",
+        "National Board for Technical Education"
+      ],
+      "contact": {
+        "emails": [
+          "enquiries@nbte.gov.ng"
+        ],
+        "address": "Plot B, Bida Road, Kaduna, Nigeria",
+        "website": "https://www.nbte.gov.ng/nbte/inspectorate"
+      }
     },
     {
       "name": "National Commission for Colleges of Education (NCCE)",
@@ -31,39 +53,81 @@
         "National Commission for Colleges of Education",
         "NCCE Nigeria"
       ],
-      "contact": { "emails": ["info@ncce.edu.ng", "info@ncceonline.edu.ng"] }
-    },
-    {
-      "name": "Universal Basic Education Commission (UBEC)",
-      "aliases": ["UBEC", "Universal Basic Education Commission"],
-      "contact": { "emails": ["info@ubec.gov.ng"] }
-    },
-    {
-      "name": "Tertiary Education Trust Fund (TETFund)",
-      "aliases": ["TETFund", "TETFUND", "Tertiary Education Trust Fund"],
-      "contact": { "emails": ["info@tetfund.gov.ng"] }
-    }
-  ],
-
-  "exam_bodies": [
-    {
-      "name": "Joint Admissions and Matriculation Board (JAMB)",
-      "aliases": ["JAMB", "Joint Admissions and Matriculation Board"],
       "contact": {
-        "emails": ["info@jamb.gov.ng", "complaint@jamb.gov.ng", "support@jamb.gov.ng"],
-        "notes": [
-          "JAMB also routes many complaints via its official support portal; email availability can vary by issue type."
+        "emails": [
+          "info@ncce.edu.ng",
+          "info@ncceonline.edu.ng"
         ]
       }
     },
     {
+      "name": "Universal Basic Education Commission (UBEC)",
+      "aliases": [
+        "UBEC",
+        "Universal Basic Education Commission"
+      ],
+      "contact": {
+        "emails": [
+          "info@ubec.gov.ng"
+        ]
+      }
+    },
+    {
+      "name": "Tertiary Education Trust Fund (TETFund)",
+      "aliases": [
+        "TETFund",
+        "TETFUND",
+        "Tertiary Education Trust Fund"
+      ],
+      "contact": {
+        "emails": [
+          "info@tetfund.gov.ng"
+        ]
+      }
+    }
+  ],
+  "exam_bodies": [
+    {
+      "name": "Joint Admissions and Matriculation Board (JAMB)",
+      "aliases": [
+        "JAMB",
+        "Joint Admissions and Matriculation Board"
+      ],
+      "contact": {
+        "emails": [
+          "info@jamb.gov.ng",
+          "complaint@jamb.gov.ng",
+          "support@jamb.gov.ng"
+        ],
+        "notes": [
+          "JAMB also routes many complaints via its official support portal; email availability can vary by issue type."
+        ],
+        "website": "https://support.jamb.gov.ng/"
+      }
+    },
+    {
       "name": "National Examinations Council (NECO)",
-      "aliases": ["NECO", "National Examinations Council"],
-      "contact": { "emails": ["info@neco.gov.ng", "admin@neco.gov.ng", "support@neco.gov.ng"] }
+      "aliases": [
+        "NECO",
+        "National Examinations Council"
+      ],
+      "contact": {
+        "emails": [
+          "info@neco.gov.ng",
+          "admin@neco.gov.ng",
+          "support@neco.gov.ng"
+        ],
+        "website": "https://complaints.neco.gov.ng/"
+      }
     },
     {
       "name": "West African Examinations Council (WAEC) Nigeria",
-      "aliases": ["WAEC", "WAEC Nigeria", "West African Examinations Council", "WAEC National Office"],
+      "aliases": [
+        "WAEC",
+        "WAEC Nigeria",
+        "West African Examinations Council",
+        "WAEC National Office"
+      ],
       "contact": {
         "emails": [
           "hnowaeclagos@waecnigeria.org",
@@ -72,32 +136,55 @@
         ],
         "notes": [
           "WAEC publishes different emails by office/unit; these are publicly listed channels used for support/verification in Nigeria."
+        ],
+        "address": "21 Hussey Street, Yaba, Lagos State, Nigeria",
+        "website": "https://www.waecnigeria.org/"
+      }
+    }
+  ],
+  "watchdogs": [
+    {
+      "name": "Public Complaints Commission (PCC)",
+      "aliases": [
+        "PCC",
+        "Public Complaints Commission"
+      ],
+      "contact": {
+        "emails": [
+          "complaint@pcc.gov.ng",
+          "info@pcc.gov.ng"
+        ]
+      }
+    },
+    {
+      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
+      "aliases": [
+        "FCCPC",
+        "Federal Competition and Consumer Protection Commission"
+      ],
+      "contact": {
+        "emails": [
+          "contact@fccpc.gov.ng",
+          "info@fccpc.gov.ng"
+        ]
+      }
+    },
+    {
+      "name": "SERVICOM (Service Compact with All Nigerians)",
+      "aliases": [
+        "SERVICOM",
+        "Service Compact with All Nigerians"
+      ],
+      "contact": {
+        "emails": [
+          "servicom@servicecharters.gov.ng"
+        ],
+        "notes": [
+          "SERVICOM contacts can also exist at MDA level; this is the central portal email."
         ]
       }
     }
   ],
-
-  "watchdogs": [
-    {
-      "name": "Public Complaints Commission (PCC)",
-      "aliases": ["PCC", "Public Complaints Commission"],
-      "contact": { "emails": ["complaint@pcc.gov.ng", "info@pcc.gov.ng"] }
-    },
-    {
-      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
-      "aliases": ["FCCPC", "Federal Competition and Consumer Protection Commission"],
-      "contact": { "emails": ["contact@fccpc.gov.ng", "info@fccpc.gov.ng"] }
-    },
-    {
-      "name": "SERVICOM (Service Compact with All Nigerians)",
-      "aliases": ["SERVICOM", "Service Compact with All Nigerians"],
-      "contact": {
-        "emails": ["servicom@servicecharters.gov.ng"],
-        "notes": ["SERVICOM contacts can also exist at MDA level; this is the central portal email."]
-      }
-    }
-  ],
-
   "routing_keywords": [
     "school fees dispute",
     "illegal levy",
@@ -117,7 +204,6 @@
     "lecturer harassment",
     "school extortion"
   ],
-
   "evidence_checklist": [
     "Full name and phone number",
     "Student/registration number (JAMB/WAEC/NECO/School ID)",
@@ -127,5 +213,6 @@
     "Letters/emails exchanged",
     "Timeline of events",
     "Any reference/ticket number issued"
-  ]
+  ],
+  "version": "1.1.0"
 }
