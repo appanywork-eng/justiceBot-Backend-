@@ -6,6 +6,10 @@ import {
 } from "../lib/sectorDetectionContext.mjs";
 
 import {
+  NIGERIAN_POWER_DETECTION_KEYWORDS,
+} from "../lib/nigeriaPowerRegistry.mjs";
+
+import {
   resolvePowerRouting,
 } from "../lib/regulatedSectorJurisdiction.mjs";
 
@@ -179,12 +183,21 @@ assert.match(
 
 assert.match(
   server,
-  /"electricity token"/
+  /NIGERIAN_POWER_DETECTION_KEYWORDS/
 );
 
-assert.match(
-  server,
-  /"prepaid token"/
+assert.ok(
+  NIGERIAN_POWER_DETECTION_KEYWORDS
+    .includes(
+      "electricity token"
+    )
+);
+
+assert.ok(
+  NIGERIAN_POWER_DETECTION_KEYWORDS
+    .includes(
+      "prepaid token"
+    )
 );
 
 console.log(
