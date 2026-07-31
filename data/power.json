@@ -392,11 +392,12 @@
       "name": "Abuja Electricity Distribution Plc (AEDC)",
       "aliases": [
         "AEDC",
-        "Abuja Electricity",
-        "Abuja Electricity Distribution Company",
-        "Abuja DisCo",
         "AFEDC",
-        "Abuja Electricity Distribution Plc"
+        "Abuja Electricity",
+        "Abuja Electric",
+        "Abuja Electricity Distribution Company",
+        "Abuja Electricity Distribution Plc",
+        "Abuja DisCo"
       ],
       "contact": {
         "emails": [
@@ -424,13 +425,31 @@
       "name": "Eko Electricity Distribution Company (EKEDC)",
       "aliases": [
         "EKEDC",
-        "Eko DisCo",
+        "EKEDP",
         "Eko Electricity",
-        "Eko Electric"
+        "Eko Electric",
+        "Eko Electricity Distribution Company",
+        "Eko Electricity Distribution Plc",
+        "Eko DisCo"
       ],
       "contact": {
         "emails": [
           "customercare@ekedp.com"
+        ],
+        "phones": [
+          "07080671170",
+          "07001235666"
+        ],
+        "address": "24/25 Marina Road, Lagos Island, Lagos State, Nigeria",
+        "website": "https://www.ekedp.com/",
+        "complaint_portal": "https://www.ekedp.com/make-complaint"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://www.ekedp.com/",
+          "https://www.ekedp.com/make-complaint"
         ]
       }
     },
@@ -438,41 +457,99 @@
       "name": "Ikeja Electric Plc (IE)",
       "aliases": [
         "Ikeja Electric",
-        "IE",
-        "Ikeja DisCo"
+        "Ikeja Electricity",
+        "Ikeja Electricity Distribution Company",
+        "Ikeja Electricity Distribution Plc",
+        "IKEDC",
+        "Ikeja DisCo",
+        "IE"
       ],
       "contact": {
         "emails": [
-          "customercare@ikejaelectric.com",
-          "info@ikejaelectric.com"
+          "customercare@ikejaelectric.com"
+        ],
+        "phones": [
+          "02017000250",
+          "02012272940"
+        ],
+        "address": "3 Obafemi Awolowo Way, Alausa, Ikeja, Lagos State, Nigeria",
+        "website": "https://www.ikejaelectric.com/contact/",
+        "complaint_portal": "https://www.ikejaelectric.com/customer-complaint-form/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://www.ikejaelectric.com/contact/",
+          "https://www.ikejaelectric.com/customer-complaint-form/"
         ]
       }
     },
     {
-      "name": "Benin Electricity Distribution Plc (BEDC)",
+      "name": "BEDC Electricity Plc (BEDC)",
       "aliases": [
         "BEDC",
+        "BEDC Electricity",
+        "Benin Electricity",
         "Benin Electric",
+        "Benin Electricity Distribution Company",
+        "Benin Electricity Distribution Plc",
+        "Edo Electricity",
+        "Edo Electricity Distribution Company",
+        "Edo DisCo",
         "Benin DisCo"
       ],
       "contact": {
         "emails": [
-          "customercomplaints@beninelectric.com",
-          "servicedesk@beninelectric.com"
+          "customercomplaints@beninelectric.com"
+        ],
+        "phones": [
+          "07000002332"
+        ],
+        "address": "5 Akpakpava Street, Benin City, Edo State, Nigeria",
+        "website": "https://beninelectric.com/contact/",
+        "complaint_portal": "https://crm.beninelectric.com/complaints"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://beninelectric.com/contact/",
+          "https://policies.beninelectric.com/BEDCPolicyCCU001-2024_POLICY%20ON%20CUSTOMER%20COMPLAINTS%20MANAGEMENT.pdf"
         ]
       }
     },
     {
-      "name": "Ibadan Electricity Distribution Company (IBEDC)",
+      "name": "Ibadan Electricity Distribution Company Plc (IBEDC)",
       "aliases": [
         "IBEDC",
-        "Ibadan DisCo",
-        "Ibadan Electric"
+        "Ibadan Electricity",
+        "Ibadan Electric",
+        "Ibadan Electricity Distribution Company",
+        "Ibadan Electricity Distribution Company Plc",
+        "Ibadan DisCo"
       ],
       "contact": {
         "emails": [
-          "customerservice@ibedc.com",
-          "whistleblower@ibedc.com"
+          "customercare@ibedc.com"
+        ],
+        "phones": [
+          "07001239999",
+          "09155009999",
+          "08055009999",
+          "09062029009",
+          "09062039009"
+        ],
+        "address": "Capital Building, 115 MKO Abiola Way, Ibadan, Oyo State, Nigeria",
+        "website": "https://ibedc.com/customer-service",
+        "complaint_portal": "https://ibedc.com/make-complaints"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://ibedc.com/customer-service",
+          "https://ibedc.com/make-complaints"
         ]
       }
     },
@@ -480,13 +557,33 @@
       "name": "Jos Electricity Distribution Plc (JED Plc)",
       "aliases": [
         "JED",
+        "JEDC",
         "JED Plc",
-        "Jos DisCo",
-        "Jos Electricity"
+        "Jos Electricity",
+        "Jos Electric",
+        "Jos Electricity Distribution Company",
+        "Jos Electricity Distribution Plc",
+        "Jos DisCo"
       ],
       "contact": {
         "emails": [
           "customercare@jedplc.com"
+        ],
+        "phones": [
+          "07069403531",
+          "08111793291",
+          "019125187"
+        ],
+        "address": "9 Ahmadu Bello Way, Jos, Plateau State, Nigeria",
+        "website": "https://www.jedplc.com/",
+        "complaint_portal": "https://www.jedplc.com/contact-us.php"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://www.jedplc.com/",
+          "https://www.jedplc.com/contact-us.php"
         ]
       }
     },
@@ -494,13 +591,32 @@
       "name": "Kaduna Electric",
       "aliases": [
         "Kaduna Electric",
-        "Kaduna DisCo",
-        "KAEDCO"
+        "Kaduna Electricity",
+        "Kaduna Electricity Distribution Company",
+        "Kaduna Electricity Distribution Plc",
+        "KAEDCO",
+        "KDE",
+        "Kaduna DisCo"
       ],
       "contact": {
         "emails": [
-          "info@kadunaelectric.com",
           "customercare@kadunaelectric.com"
+        ],
+        "phones": [
+          "07002255533",
+          "08174035711",
+          "08189884459"
+        ],
+        "address": "1-2 Ahmadu Bello Way, Kaduna, Kaduna State, Nigeria",
+        "website": "https://kadunaelectric.com/contact/",
+        "complaint_portal": "https://kadunaelectric.com/complaints/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://kadunaelectric.com/contact/",
+          "https://kadunaelectric.com/complaints/"
         ]
       }
     },
@@ -508,12 +624,27 @@
       "name": "Kano Electricity Distribution Company (KEDCO)",
       "aliases": [
         "KEDCO",
-        "Kano DisCo",
-        "Kano Electricity"
+        "Kano Electricity",
+        "Kano Electric",
+        "Kano Electricity Distribution Company",
+        "Kano Electricity Distribution Plc",
+        "Kano DisCo"
       ],
       "contact": {
         "emails": [
           "customercare@kedco.ng"
+        ],
+        "phones": [
+          "070055551111"
+        ],
+        "website": "https://kedco.ng/public/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://kedco.ng/public/contact/",
+          "https://kedco.ng/public/"
         ]
       }
     },
@@ -521,45 +652,225 @@
       "name": "Yola Electricity Distribution Company (YEDC)",
       "aliases": [
         "YEDC",
-        "Yola DisCo",
-        "Yola Electricity"
+        "Yola Electricity",
+        "Yola Electric",
+        "Yola Electricity Distribution Company",
+        "Yola DisCo"
       ],
       "contact": {
         "emails": [
-          "info@yedc.com.ng",
-          "complaints@yedc.com.ng"
+          "info@yedc.com.ng"
+        ],
+        "phones": [
+          "07000422559",
+          "09038853326",
+          "09038853342"
+        ],
+        "address": "2 Atiku Abubakar Road, Jimeta-Yola, Adamawa State, Nigeria",
+        "website": "https://www.yedc.com.ng/",
+        "complaint_portal": "https://www.yedc.com.ng/pages/complaint"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://www.yedc.com.ng/",
+          "https://www.yedc.com.ng/pages/complaint"
         ]
       }
     },
     {
-      "name": "Enugu Electricity Distribution Company (EEDC)",
+      "name": "Enugu Electricity Distribution Company Plc (EEDC)",
       "aliases": [
         "EEDC",
-        "Enugu DisCo",
-        "Enugu Electricity"
+        "Enugu Electricity",
+        "Enugu Electric",
+        "Enugu Electricity Distribution Company",
+        "Enugu Electricity Distribution Company Plc",
+        "Enugu DisCo"
       ],
       "contact": {
         "emails": [
           "customerservice@enugudisco.com"
+        ],
+        "phones": [
+          "084700100",
+          "08150826060",
+          "08150826061"
+        ],
+        "address": "62 Okpara Avenue, Enugu, Enugu State, Nigeria",
+        "website": "https://www.enugudisco.com/",
+        "complaint_portal": "https://complaint.myeedc.com"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://www.enugudisco.com/",
+          "https://www.enugudisco.com/index.php/contact-us/faq-kd",
+          "https://complaint.myeedc.com"
         ]
       }
     },
     {
-      "name": "Port Harcourt Electricity Distribution Plc (PHED)",
+      "name": "Port Harcourt Electricity Distribution Company (PHED)",
       "aliases": [
         "PHED",
         "PHEDC",
-        "Port Harcourt DisCo",
-        "Port Harcourt Electricity"
+        "Port Harcourt Electricity",
+        "Port Harcourt Electric",
+        "Port Harcourt Electricity Distribution Company",
+        "Port Harcourt Electricity Distribution Plc",
+        "Port Harcourt DisCo"
       ],
       "contact": {
         "emails": [
-          "info@phed.com.ng",
-          "customercare@phed.com.ng",
-          "enquiries@phedc.com"
+          "info@phed.com.ng"
+        ],
+        "phones": [
+          "070022557433",
+          "09087838800",
+          "09087838801"
+        ],
+        "address": "1 Moscow Road, Port Harcourt, Rivers State, Nigeria",
+        "website": "https://phed.com.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://phed.com.ng/"
         ]
       }
     }
   ],
-  "version": "2.1.0"
+  "version": "3.0.0",
+  "verification_policy": {
+    "official_sources_only": true,
+    "no_invented_contacts": true,
+    "unverified_email_routing_disabled": true,
+    "nationwide_coverage": true,
+    "verified_on": "2026-07-31"
+  },
+  "routing_keywords": [
+    "electricity",
+    "electric power",
+    "power supply",
+    "nepa",
+    "disco",
+    "distribution company",
+    "meter",
+    "metre",
+    "meter number",
+    "metre number",
+    "prepaid meter",
+    "postpaid meter",
+    "electricity token",
+    "prepaid token",
+    "meter token",
+    "token unit",
+    "token vending",
+    "meter vending",
+    "failed token",
+    "missing token",
+    "estimated billing",
+    "overbilling",
+    "transformer",
+    "electricity bill",
+    "power outage",
+    "nerc",
+    "tcn",
+    "Abuja Electricity Distribution Plc (AEDC)",
+    "AEDC",
+    "AFEDC",
+    "Abuja Electricity",
+    "Abuja Electric",
+    "Abuja Electricity Distribution Company",
+    "Abuja Electricity Distribution Plc",
+    "Abuja DisCo",
+    "Eko Electricity Distribution Company (EKEDC)",
+    "EKEDC",
+    "EKEDP",
+    "Eko Electricity",
+    "Eko Electric",
+    "Eko Electricity Distribution Company",
+    "Eko Electricity Distribution Plc",
+    "Eko DisCo",
+    "Ikeja Electric Plc (IE)",
+    "Ikeja Electric",
+    "Ikeja Electricity",
+    "Ikeja Electricity Distribution Company",
+    "Ikeja Electricity Distribution Plc",
+    "IKEDC",
+    "Ikeja DisCo",
+    "IE",
+    "BEDC Electricity Plc (BEDC)",
+    "BEDC",
+    "BEDC Electricity",
+    "Benin Electricity",
+    "Benin Electric",
+    "Benin Electricity Distribution Company",
+    "Benin Electricity Distribution Plc",
+    "Edo Electricity",
+    "Edo Electricity Distribution Company",
+    "Edo DisCo",
+    "Benin DisCo",
+    "Ibadan Electricity Distribution Company Plc (IBEDC)",
+    "IBEDC",
+    "Ibadan Electricity",
+    "Ibadan Electric",
+    "Ibadan Electricity Distribution Company",
+    "Ibadan Electricity Distribution Company Plc",
+    "Ibadan DisCo",
+    "Jos Electricity Distribution Plc (JED Plc)",
+    "JED",
+    "JEDC",
+    "JED Plc",
+    "Jos Electricity",
+    "Jos Electric",
+    "Jos Electricity Distribution Company",
+    "Jos Electricity Distribution Plc",
+    "Jos DisCo",
+    "Kaduna Electric",
+    "Kaduna Electricity",
+    "Kaduna Electricity Distribution Company",
+    "Kaduna Electricity Distribution Plc",
+    "KAEDCO",
+    "KDE",
+    "Kaduna DisCo",
+    "Kano Electricity Distribution Company (KEDCO)",
+    "KEDCO",
+    "Kano Electricity",
+    "Kano Electric",
+    "Kano Electricity Distribution Company",
+    "Kano Electricity Distribution Plc",
+    "Kano DisCo",
+    "Yola Electricity Distribution Company (YEDC)",
+    "YEDC",
+    "Yola Electricity",
+    "Yola Electric",
+    "Yola Electricity Distribution Company",
+    "Yola DisCo",
+    "Enugu Electricity Distribution Company Plc (EEDC)",
+    "EEDC",
+    "Enugu Electricity",
+    "Enugu Electric",
+    "Enugu Electricity Distribution Company",
+    "Enugu Electricity Distribution Company Plc",
+    "Enugu DisCo",
+    "Port Harcourt Electricity Distribution Company (PHED)",
+    "PHED",
+    "PHEDC",
+    "Port Harcourt Electricity",
+    "Port Harcourt Electric",
+    "Port Harcourt Electricity Distribution Company",
+    "Port Harcourt Electricity Distribution Plc",
+    "Port Harcourt DisCo"
+  ],
+  "nationwide_routing_notes": [
+    "The first written complaint should be sent to the responsible electricity distribution company's Customer Complaints Unit.",
+    "An unresolved complaint should be escalated to the applicable State Electricity Regulator where the state has completed transition.",
+    "For states that have not transitioned, use the applicable NERC Consumer Forum or official NERC complaint channel.",
+    "Institution aliases and common spelling variations must never change the applicable national or state jurisdiction."
+  ]
 }

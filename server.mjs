@@ -8,6 +8,9 @@ import {
 import {
   buildSectorDetectionText,
 } from "./lib/sectorDetectionContext.mjs";
+import {
+  NIGERIAN_POWER_DETECTION_KEYWORDS,
+} from "./lib/nigeriaPowerRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -747,25 +750,8 @@ let SECTOR_KEYWORDS_INDEX = buildSectorKeywordsIndex();
 
 function builtInKeywordMap() {
   return {
-    power: [
-      "electricity",
-      "nepa",
-      "aedc",
-      "power",
-      "disco",
-      "tcn",
-      "nerc",
-      "meter",
-      "meter number",
-      "prepaid meter",
-      "electricity token",
-      "prepaid token",
-      "meter token",
-      "token vending",
-      "meter vending",
-      "estimated billing",
-      "transformer",
-    ],
+    power:
+      NIGERIAN_POWER_DETECTION_KEYWORDS,
     aviation: [
       "flight",
       "airport",

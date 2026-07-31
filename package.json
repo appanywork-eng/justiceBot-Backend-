@@ -87,7 +87,8 @@
     "check": "node --check server.mjs",
     "test:safety": "node scripts/test-backend-safety.mjs",
     "test:legal-safety": "node scripts/test-legal-draft-safety.mjs",
-    "test:power-routing": "node scripts/test-power-routing.mjs"
+    "test:power-routing": "node scripts/test-power-routing.mjs",
+    "test:power-nationwide": "node scripts/test-power-nationwide.mjs"
   },
   "repository": {
     "type": "git",
