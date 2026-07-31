@@ -1,7 +1,7 @@
 {
   "sector": "power",
   "country": "Nigeria",
-  "last_updated": "2026-07-29",
+  "last_updated": "2026-07-31",
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Power",
@@ -394,12 +394,29 @@
         "AEDC",
         "Abuja Electricity",
         "Abuja Electricity Distribution Company",
-        "Abuja DisCo"
+        "Abuja DisCo",
+        "AFEDC",
+        "Abuja Electricity Distribution Plc"
       ],
       "contact": {
         "emails": [
-          "customercare@abujaelectricity.com",
-          "webmaster@abujaelectricity.com"
+          "customercare@abujaelectricity.com"
+        ],
+        "phones": [
+          "08039070070",
+          "08152141414",
+          "08152151515"
+        ],
+        "address": "No. 1 Ziguinchor Street, Off IBB Way, Wuse Zone 4, Abuja, FCT, Nigeria",
+        "website": "https://www.abujaelectricity.com/contact-us/",
+        "complaint_portal": "https://aedc-selfcare.convergenceondemand.net"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-07-31",
+        "source_urls": [
+          "https://www.abujaelectricity.com/contact-us/",
+          "https://www.abujaelectricity.com/making-your-voice-heard-using-the-aedc-self-care-complaint-portal/"
         ]
       }
     },
@@ -544,5 +561,5 @@
       }
     }
   ],
-  "version": "2.0.0"
+  "version": "2.1.0"
 }

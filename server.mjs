@@ -5,6 +5,9 @@ import { generateGeminiText } from "./lib/geminiClient.mjs";
 import {
   sanitizeLegalDraft,
 } from "./lib/legalDraftSafety.mjs";
+import {
+  buildSectorDetectionText,
+} from "./lib/sectorDetectionContext.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -744,7 +747,25 @@ let SECTOR_KEYWORDS_INDEX = buildSectorKeywordsIndex();
 
 function builtInKeywordMap() {
   return {
-    power: ["electricity", "nepa", "aedc", "power", "disco", "tcn", "nerc", "meter", "estimated billing", "transformer"],
+    power: [
+      "electricity",
+      "nepa",
+      "aedc",
+      "power",
+      "disco",
+      "tcn",
+      "nerc",
+      "meter",
+      "meter number",
+      "prepaid meter",
+      "electricity token",
+      "prepaid token",
+      "meter token",
+      "token vending",
+      "meter vending",
+      "estimated billing",
+      "transformer",
+    ],
     aviation: [
       "flight",
       "airport",
@@ -2165,6 +2186,14 @@ app.post("/generate-petition", async (req, res) => {
       country,
     });
 
+  const sectorDetectionText =
+    buildSectorDetectionText({
+      complaint,
+      institutionName,
+      issueLocation:
+        resolvedIssueLocation,
+    });
+
   const heuristic =
     preSectorRouting.matched
       ? {
@@ -2176,7 +2205,7 @@ app.post("/generate-petition", async (req, res) => {
             "jurisdiction_override",
         }
       : detectSectorHeuristic(
-          complaint
+          sectorDetectionText
         );
 
   let sector =
@@ -2186,7 +2215,7 @@ app.post("/generate-petition", async (req, res) => {
           "civil_disputes"
         )
       : await detectSectorSmart(
-          complaint
+          sectorDetectionText
         );
 
   if (
