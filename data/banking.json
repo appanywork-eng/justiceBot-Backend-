@@ -1,257 +1,540 @@
 {
   "sector": "banking",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "country": "Nigeria",
-  "last_updated": "2026-01-07",
-
+  "last_updated": "2026-07-31",
   "regulators": [
     {
       "name": "Central Bank of Nigeria (CBN)",
-      "aliases": ["CBN", "Consumer Protection Department", "CPD"],
+      "aliases": [
+        "CBN",
+        "Central Bank of Nigeria",
+        "Consumer Protection Department",
+        "Consumer Protection Department of the CBN",
+        "CPD"
+      ],
       "contact": {
-        "emails": ["contactcbn@cbn.gov.ng", "cpd@cbn.gov.ng"],
-        "address": "Central Business District, Abuja, Nigeria",
-        "website_hint": "cbn.gov.ng"
-      }
+        "emails": [
+          "cpd@cbn.gov.ng"
+        ],
+        "address": "Central Bank of Nigeria, Plot 33, Abubakar Tafawa Balewa Way, Central Business District, Cadastral Zone, Abuja, Federal Capital Territory, Nigeria",
+        "website": "https://www.cbn.gov.ng/supervision/cpdcomgt.html"
+      },
+      "routing_scope": "Unresolved complaints against financial institutions regulated by the CBN",
+      "routing_requirements": [
+        "The customer should first lodge the complaint with the financial institution.",
+        "Evidence of the earlier complaint and its reference should accompany escalation."
+      ],
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-31",
+      "source_urls": [
+        "https://www.cbn.gov.ng/supervision/cpdcomgt.html",
+        "https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html",
+        "https://www.cbn.gov.ng/contacts/"
+      ]
     },
     {
       "name": "Nigeria Deposit Insurance Corporation (NDIC)",
-      "aliases": ["NDIC"],
+      "aliases": [
+        "NDIC"
+      ],
       "contact": {
-        "emails": ["info@ndic.gov.ng", "helpdesk@ndic.gov.ng"],
+        "emails": [
+          "info@ndic.gov.ng",
+          "helpdesk@ndic.gov.ng"
+        ],
         "address": "Plot 447/448 Constitution Avenue, Central Business District, Abuja, Nigeria",
         "website_hint": "ndic.gov.ng"
       }
     },
     {
       "name": "Securities and Exchange Commission (SEC) Nigeria",
-      "aliases": ["SEC Nigeria", "SEC"],
+      "aliases": [
+        "SEC Nigeria",
+        "SEC"
+      ],
       "contact": {
-        "emails": ["sec@sec.gov.ng"],
+        "emails": [
+          "sec@sec.gov.ng"
+        ],
         "website_hint": "sec.gov.ng"
       }
     },
     {
       "name": "Economic and Financial Crimes Commission (EFCC)",
-      "aliases": ["EFCC"],
+      "aliases": [
+        "EFCC"
+      ],
       "contact": {
-        "emails": ["info@efcc.gov.ng", "info@efccnigeria.org"],
+        "emails": [
+          "info@efcc.gov.ng",
+          "info@efccnigeria.org"
+        ],
         "website_hint": "efcc.gov.ng"
       }
     },
     {
       "name": "Nigeria Police Force (NPF)",
-      "aliases": ["NPF", "Nigeria Police"],
+      "aliases": [
+        "NPF",
+        "Nigeria Police"
+      ],
       "contact": {
-        "emails": ["pressforabuja@police.gov.ng"],
+        "emails": [
+          "pressforabuja@police.gov.ng"
+        ],
         "website_hint": "police.gov.ng"
       }
     }
   ],
-
   "watchdogs": [
     {
       "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
-      "aliases": ["FCCPC", "Consumer Protection"],
+      "aliases": [
+        "FCCPC",
+        "Consumer Protection"
+      ],
       "contact": {
-        "emails": ["contact@fccpc.gov.ng"],
+        "emails": [
+          "contact@fccpc.gov.ng"
+        ],
         "website_hint": "fccpc.gov.ng"
       }
     },
     {
       "name": "SERVICOM",
-      "aliases": ["SERVICOM Office", "Service Compact"],
+      "aliases": [
+        "SERVICOM Office",
+        "Service Compact"
+      ],
       "contact": {
-        "emails": ["info@servicom.gov.ng"],
+        "emails": [
+          "info@servicom.gov.ng"
+        ],
         "website_hint": "servicom.gov.ng"
       }
     },
     {
       "name": "National Human Rights Commission (NHRC)",
-      "aliases": ["NHRC"],
+      "aliases": [
+        "NHRC"
+      ],
       "contact": {
-        "emails": ["info@nhrc.gov.ng", "complaints@nhrc.gov.ng"],
+        "emails": [
+          "info@nhrc.gov.ng",
+          "complaints@nhrc.gov.ng"
+        ],
         "website_hint": "nhrc.gov.ng"
       }
     }
   ],
-
   "players": [
     {
       "name": "Access Bank PLC",
-      "aliases": ["Access Bank"],
-      "contact": { "emails": ["contactcentre@accessbankplc.com"] }
+      "aliases": [
+        "Access Bank"
+      ],
+      "contact": {
+        "emails": [
+          "contactcentre@accessbankplc.com"
+        ]
+      }
     },
     {
       "name": "Citibank Nigeria Limited",
-      "aliases": ["Citibank", "Citi Nigeria", "Citi"],
-      "contact": { "emails": ["complaints.nigeria@citi.com"] }
+      "aliases": [
+        "Citibank",
+        "Citi Nigeria",
+        "Citi"
+      ],
+      "contact": {
+        "emails": [
+          "complaints.nigeria@citi.com"
+        ]
+      }
     },
     {
       "name": "Ecobank Nigeria",
-      "aliases": ["Ecobank"],
-      "contact": { "emails": ["ecobankcustomercare@ecobank.com"] }
+      "aliases": [
+        "Ecobank"
+      ],
+      "contact": {
+        "emails": [
+          "ecobankcustomercare@ecobank.com"
+        ]
+      }
     },
     {
       "name": "Fidelity Bank PLC",
-      "aliases": ["Fidelity Bank"],
-      "contact": { "emails": ["fidelitydirect@fidelitybank.ng"] }
+      "aliases": [
+        "Fidelity Bank"
+      ],
+      "contact": {
+        "emails": [
+          "fidelitydirect@fidelitybank.ng"
+        ]
+      }
     },
     {
       "name": "First Bank of Nigeria Limited",
-      "aliases": ["FirstBank", "First Bank"],
-      "contact": { "emails": ["firstcontact@firstbanknigeria.com"] }
+      "aliases": [
+        "FirstBank",
+        "First Bank"
+      ],
+      "contact": {
+        "emails": [
+          "firstcontact@firstbanknigeria.com"
+        ]
+      }
     },
     {
       "name": "First City Monument Bank PLC",
-      "aliases": ["FCMB"],
-      "contact": { "emails": ["customerservice@fcmb.com"] }
+      "aliases": [
+        "FCMB"
+      ],
+      "contact": {
+        "emails": [
+          "customerservice@fcmb.com"
+        ]
+      }
     },
     {
       "name": "Globus Bank Limited",
-      "aliases": ["Globus Bank"],
-      "contact": { "emails": ["customercare@globusbank.com"] }
+      "aliases": [
+        "Globus Bank"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@globusbank.com"
+        ]
+      }
     },
     {
-      "name": "Guaranty Trust Bank PLC",
-      "aliases": ["GTBank", "GTB", "Guaranty Trust Bank"],
-      "contact": { "emails": ["complaints@gtbank.com"] }
+      "name": "Guaranty Trust Bank Limited",
+      "aliases": [
+        "GTBank",
+        "GTB",
+        "Guaranty Trust Bank",
+        "Guaranty Trust Bank PLC",
+        "Guaranty Trust Bank Limited"
+      ],
+      "contact": {
+        "emails": [
+          "gtbankmailsupport@gtbank.com"
+        ],
+        "website": "https://www.gtbank.com/help-centre/complaints-enquiries",
+        "complaint_portal": "https://www.gtbank.com/help-centre"
+      },
+      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
+      "verified_on": "2026-07-31",
+      "source_urls": [
+        "https://www.gtbank.com/help-centre/complaints-enquiries",
+        "https://www.gtbank.com/complaints-handling-policy"
+      ]
     },
     {
       "name": "Jaiz Bank PLC",
-      "aliases": ["Jaiz", "Jaiz Bank"],
-      "contact": { "emails": ["info@jaizbankplc.com"] }
+      "aliases": [
+        "Jaiz",
+        "Jaiz Bank"
+      ],
+      "contact": {
+        "emails": [
+          "info@jaizbankplc.com"
+        ]
+      }
     },
     {
       "name": "Keystone Bank Limited",
-      "aliases": ["Keystone Bank"],
-      "contact": { "emails": ["contactcentre@keystonebankng.com"] }
+      "aliases": [
+        "Keystone Bank"
+      ],
+      "contact": {
+        "emails": [
+          "contactcentre@keystonebankng.com"
+        ]
+      }
     },
     {
       "name": "Nova Merchant Bank Limited",
-      "aliases": ["Nova Bank", "Nova Merchant Bank"],
-      "contact": { "emails": ["cs@novabank.ng"] }
+      "aliases": [
+        "Nova Bank",
+        "Nova Merchant Bank"
+      ],
+      "contact": {
+        "emails": [
+          "cs@novabank.ng"
+        ]
+      }
     },
     {
       "name": "Optimus Bank Limited",
-      "aliases": ["Optimus Bank"],
-      "contact": { "emails": ["customercare@optimusbank.com"] }
+      "aliases": [
+        "Optimus Bank"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@optimusbank.com"
+        ]
+      }
     },
     {
       "name": "Parallex Bank Limited",
-      "aliases": ["Parallex Bank", "Parallex"],
-      "contact": { "emails": ["customercare@parallexbank.com"] }
+      "aliases": [
+        "Parallex Bank",
+        "Parallex"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@parallexbank.com"
+        ]
+      }
     },
     {
       "name": "Polaris Bank Limited",
-      "aliases": ["Polaris Bank"],
-      "contact": { "emails": ["yescenter@polarisbanklimited.com"] }
+      "aliases": [
+        "Polaris Bank"
+      ],
+      "contact": {
+        "emails": [
+          "yescenter@polarisbanklimited.com"
+        ]
+      }
     },
     {
       "name": "PremiumTrust Bank Limited",
-      "aliases": ["Premium Trust Bank", "PremiumTrust"],
-      "contact": { "emails": ["contactpremium@premiumtrustbank.com"] }
+      "aliases": [
+        "Premium Trust Bank",
+        "PremiumTrust"
+      ],
+      "contact": {
+        "emails": [
+          "contactpremium@premiumtrustbank.com"
+        ]
+      }
     },
     {
       "name": "Providus Bank Limited",
-      "aliases": ["Providus Bank"],
-      "contact": { "emails": ["contactcentre@providusbank.com"] }
+      "aliases": [
+        "Providus Bank"
+      ],
+      "contact": {
+        "emails": [
+          "contactcentre@providusbank.com"
+        ]
+      }
     },
     {
       "name": "Stanbic IBTC Bank PLC",
-      "aliases": ["Stanbic IBTC", "Stanbic"],
-      "contact": { "emails": ["customercare@stanbicibtc.com"] }
+      "aliases": [
+        "Stanbic IBTC",
+        "Stanbic"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@stanbicibtc.com"
+        ]
+      }
     },
     {
       "name": "Standard Chartered Bank Nigeria Limited",
-      "aliases": ["Standard Chartered", "SCB"],
-      "contact": { "emails": ["nigeria.contactus@sc.com"] }
+      "aliases": [
+        "Standard Chartered",
+        "SCB"
+      ],
+      "contact": {
+        "emails": [
+          "nigeria.contactus@sc.com"
+        ]
+      }
     },
     {
       "name": "Sterling Bank PLC",
-      "aliases": ["Sterling Bank"],
-      "contact": { "emails": ["customercare@sterling.ng"] }
+      "aliases": [
+        "Sterling Bank"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@sterling.ng"
+        ]
+      }
     },
     {
       "name": "SunTrust Bank Nigeria Limited",
-      "aliases": ["SunTrust Bank"],
-      "contact": { "emails": ["enquiries@suntrustng.com"] }
+      "aliases": [
+        "SunTrust Bank"
+      ],
+      "contact": {
+        "emails": [
+          "enquiries@suntrustng.com"
+        ]
+      }
     },
     {
       "name": "TAJBank Limited",
-      "aliases": ["TAJBank", "TAJ Bank"],
-      "contact": { "emails": ["contactcentre@tajbank.com", "tajconnect@tajbank.com"] }
+      "aliases": [
+        "TAJBank",
+        "TAJ Bank"
+      ],
+      "contact": {
+        "emails": [
+          "contactcentre@tajbank.com",
+          "tajconnect@tajbank.com"
+        ]
+      }
     },
     {
       "name": "Titan Trust Bank Limited",
-      "aliases": ["Titan Trust Bank", "Titan"],
-      "contact": { "emails": ["info@titantrustbank.com"] }
+      "aliases": [
+        "Titan Trust Bank",
+        "Titan"
+      ],
+      "contact": {
+        "emails": [
+          "info@titantrustbank.com"
+        ]
+      }
     },
     {
       "name": "Union Bank of Nigeria PLC",
-      "aliases": ["Union Bank"],
-      "contact": { "emails": ["contactcentre@unionbankng.com"] }
+      "aliases": [
+        "Union Bank"
+      ],
+      "contact": {
+        "emails": [
+          "contactcentre@unionbankng.com"
+        ]
+      }
     },
     {
       "name": "Unity Bank PLC",
-      "aliases": ["Unity Bank"],
-      "contact": { "emails": ["contactcentre@unitybankng.com"] }
+      "aliases": [
+        "Unity Bank"
+      ],
+      "contact": {
+        "emails": [
+          "contactcentre@unitybankng.com"
+        ]
+      }
     },
     {
       "name": "United Bank for Africa PLC",
-      "aliases": ["UBA"],
-      "contact": { "emails": ["cfc@ubagroup.com"] }
+      "aliases": [
+        "UBA"
+      ],
+      "contact": {
+        "emails": [
+          "cfc@ubagroup.com"
+        ]
+      }
     },
     {
       "name": "Wema Bank PLC",
-      "aliases": ["Wema Bank"],
-      "contact": { "emails": ["purpleconnect@wemabank.com"] }
+      "aliases": [
+        "Wema Bank"
+      ],
+      "contact": {
+        "emails": [
+          "purpleconnect@wemabank.com"
+        ]
+      }
     },
     {
       "name": "Zenith Bank PLC",
-      "aliases": ["Zenith Bank"],
-      "contact": { "emails": ["zenithdirect@zenithbank.com"] }
+      "aliases": [
+        "Zenith Bank"
+      ],
+      "contact": {
+        "emails": [
+          "zenithdirect@zenithbank.com"
+        ]
+      }
     },
-
     {
       "name": "9 Payment Service Bank (9PSB)",
-      "aliases": ["9PSB", "9 Payment Service Bank"],
-      "contact": { "emails": ["hello@9psb.com.ng"] }
+      "aliases": [
+        "9PSB",
+        "9 Payment Service Bank"
+      ],
+      "contact": {
+        "emails": [
+          "hello@9psb.com.ng"
+        ]
+      }
     },
     {
       "name": "Hope Payment Service Bank (Hope PSB)",
-      "aliases": ["Hope PSB", "Hopepsbank"],
-      "contact": { "emails": ["info@hopepsbank.com"] }
+      "aliases": [
+        "Hope PSB",
+        "Hopepsbank"
+      ],
+      "contact": {
+        "emails": [
+          "info@hopepsbank.com"
+        ]
+      }
     },
     {
       "name": "SmartCash Payment Service Bank (SmartCash PSB)",
-      "aliases": ["SmartCash PSB", "SmartCash"],
-      "contact": { "emails": ["customerservice@smartcashpsb.ng"] }
+      "aliases": [
+        "SmartCash PSB",
+        "SmartCash"
+      ],
+      "contact": {
+        "emails": [
+          "customerservice@smartcashpsb.ng"
+        ]
+      }
     },
-
     {
       "name": "PalmPay",
-      "aliases": ["Palm Pay", "PalmPay Nigeria"],
-      "contact": { "emails": ["support@palmpay.co"] }
+      "aliases": [
+        "Palm Pay",
+        "PalmPay Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "support@palmpay.co"
+        ]
+      }
     },
     {
       "name": "Paga",
-      "aliases": ["mypaga", "Paga Nigeria"],
-      "contact": { "emails": ["service@mypaga.com"] }
+      "aliases": [
+        "mypaga",
+        "Paga Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "service@mypaga.com"
+        ]
+      }
     },
-
     {
       "name": "Lotus Bank",
-      "aliases": ["Lotus", "Lotus Bank Limited"],
-      "contact": { "emails": ["support@lotusbank.com"] }
+      "aliases": [
+        "Lotus",
+        "Lotus Bank Limited"
+      ],
+      "contact": {
+        "emails": [
+          "support@lotusbank.com"
+        ]
+      }
     },
     {
       "name": "The Alternative Bank",
-      "aliases": ["AltBank", "Alternative Bank"],
-      "contact": { "emails": ["help@altbank.ng"] }
+      "aliases": [
+        "AltBank",
+        "Alternative Bank"
+      ],
+      "contact": {
+        "emails": [
+          "help@altbank.ng"
+        ]
+      }
     }
   ],
-
   "routing_keywords": [
     "unlawful debit",
     "unauthorized transaction",
@@ -270,5 +553,10 @@
     "phishing",
     "SIM swap banking fraud",
     "merchant dispute"
-  ]
+  ],
+  "verification_policy": {
+    "official_sources_only": true,
+    "no_invented_contacts": true,
+    "verified_on": "2026-07-31"
+  }
 }
