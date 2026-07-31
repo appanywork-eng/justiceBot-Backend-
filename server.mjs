@@ -2,6 +2,9 @@
 import express from "express";
 import cors from "cors";
 import { generateGeminiText } from "./lib/geminiClient.mjs";
+import {
+  sanitizeLegalDraft,
+} from "./lib/legalDraftSafety.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -2370,6 +2373,10 @@ CRITICAL RULES:
 - Present disputed matters as the petitioner's allegations and request mediation or lawful resolution.
 - DO NOT invent institution addresses. The system will insert verified addresses automatically from JSON if present.
 - Keep it professional, firm, evidence-led, and hard to ignore.
+- Do not state a fixed regulatory fee, tariff, monetary cap, deadline or statutory rate unless that exact information is supplied in verified legal context.
+- For banking complaints, do not invent current CBN charge amounts. Ask the CBN to determine whether the disputed charge complied with the applicable rule.
+- Regulatory penalties are discretionary. Request appropriate regulatory action; never describe a sanction as mandatory.
+- Do not state that a bank owes a fiduciary duty unless an identified and applicable authority clearly establishes it.
 - Do not invent facts, dates, evidence, laws, court decisions, institutions, addresses, or allegations.
 - Clearly distinguish the petitioner's allegations from established facts.
 - Under 950 words.`,
@@ -2379,6 +2386,12 @@ CRITICAL RULES:
 
         maxOutputTokens: 4096,
       });
+
+    petitionText =
+      sanitizeLegalDraft(
+        petitionText,
+        sector
+      );
 
     if (deterministicRouting) {
       petitionText =
