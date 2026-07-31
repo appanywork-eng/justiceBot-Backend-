@@ -84,7 +84,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.mjs",
-    "check": "node --check server.mjs"
+    "check": "node --check server.mjs",
+    "test:safety": "node scripts/test-backend-safety.mjs"
   },
   "repository": {
     "type": "git",

@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
 import { FirestoreRedisCompat } from "./lib/firestoreRedisCompat.mjs";
 import { SupportStore } from "./lib/supportStore.mjs";
+import { SupportNotifier } from "./lib/supportNotifier.mjs";
 import { createSupportRouter } from "./lib/supportRoutes.mjs";
 import {
   FirebaseIdentityError,
@@ -106,6 +107,47 @@ const FLW_WEBHOOK_HASH = String(process.env.FLW_WEBHOOK_HASH || "").trim();
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || "https://petitiondesk.com")
   .trim()
   .replace(/\/+$/, "");
+
+const SUPPORT_ALERT_ENABLED =
+  String(
+    process.env
+      .SUPPORT_ALERT_ENABLED ||
+    "false"
+  ).toLowerCase() ===
+  "true";
+
+const SUPPORT_ALERT_TO =
+  String(
+    process.env
+      .SUPPORT_ALERT_TO ||
+    ""
+  ).trim();
+
+const SUPPORT_ALERT_FROM =
+  String(
+    process.env
+      .SUPPORT_ALERT_FROM ||
+    ""
+  ).trim();
+
+const RESEND_API_KEY =
+  String(
+    process.env
+      .RESEND_API_KEY ||
+    ""
+  ).trim();
+
+const SUPPORT_ADMIN_URL =
+  String(
+    process.env
+      .SUPPORT_ADMIN_URL ||
+    `${FRONTEND_BASE_URL}/admin/support`
+  )
+    .trim()
+    .replace(
+      /\/+$/,
+      ""
+    );
 
 const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
 const PETITION_TTL_SECONDS = Number(process.env.PETITION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
@@ -225,6 +267,24 @@ const supportStore =
     enabled: FIRESTORE_ENABLED,
     collection:
       SUPPORT_TICKET_COLLECTION,
+  });
+
+const supportNotifier =
+  new SupportNotifier({
+    enabled:
+      SUPPORT_ALERT_ENABLED,
+
+    apiKey:
+      RESEND_API_KEY,
+
+    to:
+      SUPPORT_ALERT_TO,
+
+    from:
+      SUPPORT_ALERT_FROM,
+
+    adminUrl:
+      SUPPORT_ADMIN_URL,
   });
 
 const freeEntitlementStore =
@@ -404,6 +464,51 @@ function sendFirebaseIdentityError(
       requiresVerification:
         true,
     });
+}
+
+async function requireMatchingPetitionOwner(
+  request,
+  ownerUid
+) {
+  const cleanOwnerUid =
+    String(
+      ownerUid ||
+      ""
+    ).trim();
+
+  if (!cleanOwnerUid) {
+    throw new FirebaseIdentityError(
+      "This petition is not linked to a verified account. Generate it again.",
+      {
+        status: 403,
+
+        code:
+          "petition_owner_missing",
+      }
+    );
+  }
+
+  const user =
+    await requireVerifiedFirebaseUser(
+      request
+    );
+
+  if (
+    user.uid !==
+    cleanOwnerUid
+  ) {
+    throw new FirebaseIdentityError(
+      "This petition belongs to another verified account.",
+      {
+        status: 403,
+
+        code:
+          "petition_owner_mismatch",
+      }
+    );
+  }
+
+  return user;
 }
 
 function publicUnlockedPayload(
@@ -1754,6 +1859,16 @@ app.use(
           METRICS.supportSubmitted
         );
       },
+
+    notifySupportTicket:
+      async (
+        ticket
+      ) =>
+        supportNotifier
+          .notifyNewTicket(
+            ticket
+          ),
+
     rateLimitMax:
       SUPPORT_RATE_LIMIT_MAX,
     rateLimitWindowMs:
@@ -2459,8 +2574,9 @@ CRITICAL RULES:
 /* ======================================================
    FREE PETITION UNLOCK
    - Requires a verified Firebase email identity.
-   - Consumes entitlement only after a usable petition exists.
-   - Repeated calls for the same tx_ref are idempotent.
+   - Entitlement count and completed payload are stored
+     atomically by FreeEntitlementStore.
+   - Repeated requests recover the original full payload.
 ====================================================== */
 app.post(
   "/free-unlock",
@@ -2478,7 +2594,8 @@ app.post(
 
     const validation =
       validateTxRef(
-        req.body || {}
+        req.body ||
+        {}
       );
 
     if (!validation.ok) {
@@ -2507,21 +2624,41 @@ app.post(
       validation.tx_ref;
 
     try {
-      const already =
+      const claimedUnlock =
+        await freeEntitlementStore
+          .getClaimedUnlock({
+            uid:
+              user.uid,
+
+            txRef,
+          });
+
+      if (claimedUnlock) {
+        return res.json(
+          publicUnlockedPayload(
+            claimedUnlock
+          )
+        );
+      }
+
+      const cachedUnlock =
         await getUnlocked(
           txRef
         );
 
-      if (already) {
+      if (cachedUnlock) {
         if (
-          already._ownerUid &&
-          already._ownerUid !==
+          !cachedUnlock
+            ._ownerUid ||
+          cachedUnlock
+            ._ownerUid !==
             user.uid
         ) {
           return res
             .status(403)
             .json({
               ok: false,
+
               error:
                 "This petition belongs to another verified account.",
             });
@@ -2529,7 +2666,7 @@ app.post(
 
         return res.json(
           publicUnlockedPayload(
-            already
+            cachedUnlock
           )
         );
       }
@@ -2544,13 +2681,14 @@ app.post(
           .status(404)
           .json({
             ok: false,
+
             error:
               "Petition expired",
           });
       }
 
       if (
-        stored.ownerUid &&
+        !stored.ownerUid ||
         stored.ownerUid !==
           user.uid
       ) {
@@ -2558,40 +2696,9 @@ app.post(
           .status(403)
           .json({
             ok: false,
+
             error:
               "This petition belongs to another verified account.",
-          });
-      }
-
-      const claim =
-        await freeEntitlementStore
-          .claimFreeUnlock({
-            uid:
-              user.uid,
-
-            txRef,
-
-            sector:
-              stored.sector,
-          });
-
-      if (!claim.granted) {
-        return res
-          .status(402)
-          .json({
-            ok: false,
-
-            error:
-              "Your two free petitions have been used. Pay ₦1,050 to unlock this petition.",
-
-            needsPayment:
-              true,
-
-            unlockMode:
-              "paid",
-
-            access:
-              claim.status,
           });
       }
 
@@ -2610,7 +2717,7 @@ app.post(
             stored.petition,
         });
 
-      const payload = {
+      const basePayload = {
         ok: true,
         unlocked: true,
 
@@ -2647,32 +2754,77 @@ app.post(
         routingDecision:
           stored.routingDecision ||
           null,
-
-        access:
-          claim.status,
       };
 
+      const claim =
+        await freeEntitlementStore
+          .claimFreeUnlock({
+            uid:
+              user.uid,
+
+            txRef,
+
+            sector:
+              stored.sector,
+
+            payload:
+              basePayload,
+          });
+
+      if (!claim.granted) {
+        return res
+          .status(402)
+          .json({
+            ok: false,
+
+            error:
+              "Your two free petitions have been used. Pay ₦1,050 to unlock this petition.",
+
+            needsPayment:
+              true,
+
+            unlockMode:
+              "paid",
+
+            access:
+              claim.status,
+          });
+      }
+
+      if (!claim.payload) {
+        throw new Error(
+          "Completed free-unlock payload is missing"
+        );
+      }
+
+      /*
+       * Secondary cache only. The complete
+       * payload is already durable inside
+       * the atomic entitlement claim.
+       */
       await storeUnlocked(
         txRef,
-        {
-          ...payload,
-
-          _ownerUid:
-            user.uid,
-        }
+        claim.payload
       );
 
       await deletePetition(
         txRef
       );
 
-      await redisIncr(
-        METRICS
-          .unlockedFree
-      );
+      if (
+        !claim
+          .alreadyClaimed
+      ) {
+        await redisIncr(
+          METRICS
+            .unlockedFree
+        );
+      }
 
       return res.json(
-        payload
+        publicUnlockedPayload(
+          claim.payload
+        )
       );
     } catch (error) {
       console.error(
@@ -2698,66 +2850,244 @@ app.post(
 ====================================================== */
 app.post("/pay/initialize", async (req, res) => {
   try {
-    const tx_ref = String(req.body?.tx_ref || "").trim();
-    if (!tx_ref) return res.status(400).json({ ok: false, error: "Missing tx_ref" });
+    const tx_ref =
+      String(
+        req.body
+          ?.tx_ref ||
+        ""
+      ).trim();
 
-    if (!FLW_SECRET_KEY) return res.status(500).json({ ok: false, error: "FLW_SECRET_KEY not configured" });
+    if (!tx_ref) {
+      return res
+        .status(400)
+        .json({
+          ok: false,
+          error:
+            "Missing tx_ref",
+        });
+    }
 
-    const stored = await getPetition(tx_ref);
-    if (!stored) return res.status(404).json({ ok: false, error: "Unknown tx_ref. Generate petition again." });
+    if (!FLW_SECRET_KEY) {
+      return res
+        .status(500)
+        .json({
+          ok: false,
+          error:
+            "FLW_SECRET_KEY not configured",
+        });
+    }
 
-    stored.paymentInitializedAt = Date.now();
+    const stored =
+      await getPetition(
+        tx_ref
+      );
 
-    const return_to = String(req.body?.return_to || "").trim();
-    if (return_to && return_to.startsWith("/")) stored.return_to = return_to;
+    if (!stored) {
+      return res
+        .status(404)
+        .json({
+          ok: false,
 
-    await storePetition(tx_ref, stored);
+          error:
+            "Unknown tx_ref. Generate petition again.",
+        });
+    }
 
-    await redisIncr(METRICS.paymentInitiated);
-    await redisSAdd(METRICS.uniquePayInit, tx_ref);
+    let paymentOwner =
+      null;
+
+    if (
+      stored.ownerUid ||
+      FREE_ACCESS_ENABLED
+    ) {
+      try {
+        paymentOwner =
+          await requireMatchingPetitionOwner(
+            req,
+            stored.ownerUid
+          );
+      } catch (error) {
+        return sendFirebaseIdentityError(
+          res,
+          error
+        );
+      }
+    }
+
+    stored.paymentInitializedAt =
+      Date.now();
+
+    const return_to =
+      String(
+        req.body
+          ?.return_to ||
+        ""
+      ).trim();
+
+    if (
+      return_to &&
+      return_to.startsWith(
+        "/"
+      )
+    ) {
+      stored.return_to =
+        return_to;
+    }
+
+    await storePetition(
+      tx_ref,
+      stored
+    );
+
+    await redisIncr(
+      METRICS
+        .paymentInitiated
+    );
+
+    await redisSAdd(
+      METRICS
+        .uniquePayInit,
+      tx_ref
+    );
 
     const redirect_url =
-      stored.return_to && stored.return_to.startsWith("/")
-        ? buildFrontendRedirectUrlWithReturn(tx_ref, stored.return_to)
-        : buildFrontendRedirectUrl(tx_ref);
+      stored.return_to &&
+      stored.return_to
+        .startsWith(
+          "/"
+        )
+        ? buildFrontendRedirectUrlWithReturn(
+            tx_ref,
+            stored.return_to
+          )
+        : buildFrontendRedirectUrl(
+            tx_ref
+          );
 
-    const email = String(req.body?.email || "").trim() || "user@petitiondesk.com";
-    const name = String(req.body?.name || "").trim() || "User";
-    const phone = String(req.body?.phone || "").trim() || "";
+    const email =
+      paymentOwner?.email ||
+      String(
+        req.body
+          ?.email ||
+        ""
+      ).trim() ||
+      "user@petitiondesk.com";
+
+    const name =
+      paymentOwner
+        ?.displayName ||
+      String(
+        req.body
+          ?.name ||
+        ""
+      ).trim() ||
+      "User";
+
+    const phone =
+      String(
+        req.body
+          ?.phone ||
+        ""
+      ).trim();
 
     const payload = {
       tx_ref,
-      amount: PETITION_PRICE_NGN,
-      currency: "NGN",
+
+      amount:
+        PETITION_PRICE_NGN,
+
+      currency:
+        "NGN",
+
       redirect_url,
-      customer: { email, name, phonenumber: phone },
-      customizations: { title: "PetitionDesk", description: "Unlock full petition" },
+
+      customer: {
+        email,
+        name,
+        phonenumber:
+          phone,
+      },
+
+      customizations: {
+        title:
+          "PetitionDesk",
+
+        description:
+          "Unlock full petition",
+      },
     };
 
-    const resp = await flwFetch("https://api.flutterwave.com/v3/payments", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+    const response =
+      await flwFetch(
+        "https://api.flutterwave.com/v3/payments",
+        {
+          method:
+            "POST",
 
-    const ok = resp.ok;
-    const data = resp.data || {};
+          body:
+            JSON.stringify(
+              payload
+            ),
+        }
+      );
 
-    if (!ok || !data?.data?.link) {
-      const msg = data?.message || data?.data?.message || data?.error || "Flutterwave payment init failed";
-      console.error("FLW init failed:", {
-        tx_ref,
-        httpStatus: resp.status,
-        flwStatus: data?.status,
-        message: msg,
-      });
-      // return exact reason so your frontend can show the REAL error
-      return res.status(400).json({ ok: false, error: msg });
+    const data =
+      response.data ||
+      {};
+
+    if (
+      !response.ok ||
+      !data?.data?.link
+    ) {
+      const message =
+        data?.message ||
+        data?.data?.message ||
+        data?.error ||
+        "Flutterwave payment init failed";
+
+      console.error(
+        "FLW init failed:",
+        {
+          tx_ref,
+
+          httpStatus:
+            response.status,
+
+          flwStatus:
+            data?.status,
+
+          message,
+        }
+      );
+
+      return res
+        .status(400)
+        .json({
+          ok: false,
+          error:
+            message,
+        });
     }
 
-    return res.json({ ok: true, tx_ref, link: data.data.link });
-  } catch (err) {
-    console.error("pay/initialize error:", err);
-    return res.status(500).json({ ok: false, error: "Payment error" });
+    return res.json({
+      ok: true,
+      tx_ref,
+      link:
+        data.data.link,
+    });
+  } catch (error) {
+    console.error(
+      "pay/initialize error:",
+      error
+    );
+
+    return res
+      .status(500)
+      .json({
+        ok: false,
+        error:
+          "Payment error",
+      });
   }
 });
 
@@ -2768,18 +3098,62 @@ app.post("/pay/initialize", async (req, res) => {
 ====================================================== */
 app.post("/unlock-petition", async (req, res) => {
   try {
-    const v = validateTxRef(req.body || {});
-    if (!v.ok) return res.status(400).json(v);
+    const validation =
+      validateTxRef(
+        req.body ||
+        {}
+      );
 
-    const tx_ref = v.tx_ref;
-
-    // ✅ VERY IMPORTANT: persist transaction_id if provided
-    if (v.transaction_id) {
-      await storeTxId(tx_ref, v.transaction_id);
+    if (!validation.ok) {
+      return res
+        .status(400)
+        .json(
+          validation
+        );
     }
 
-    const already = await getUnlocked(tx_ref);
+    const tx_ref =
+      validation.tx_ref;
+
+    const adminToken =
+      String(
+        req.headers[
+          "x-admin-token"
+        ] ||
+        ""
+      ).trim();
+
+    const adminOk =
+      await isAdminTokenValid(
+        adminToken
+      );
+
+    const already =
+      await getUnlocked(
+        tx_ref
+      );
+
     if (already) {
+      if (
+        !adminOk &&
+        (
+          already._ownerUid ||
+          FREE_ACCESS_ENABLED
+        )
+      ) {
+        try {
+          await requireMatchingPetitionOwner(
+            req,
+            already._ownerUid
+          );
+        } catch (error) {
+          return sendFirebaseIdentityError(
+            res,
+            error
+          );
+        }
+      }
+
       return res.json(
         publicUnlockedPayload(
           already
@@ -2787,174 +3161,500 @@ app.post("/unlock-petition", async (req, res) => {
       );
     }
 
-    const stored = await getPetition(tx_ref);
-    if (!stored) return res.status(404).json({ ok: false, error: "Petition expired" });
+    const stored =
+      await getPetition(
+        tx_ref
+      );
 
-    const mailto = buildMailto({
-      to: stored.toEmails,
-      cc: stored.ccEmails,
-      subject: stored.subject,
-      body: stored.petition,
-    });
+    if (!stored) {
+      return res
+        .status(404)
+        .json({
+          ok: false,
+          error:
+            "Petition expired",
+        });
+    }
 
-    // ✅ Admin override
-    const adminToken = String(req.headers["x-admin-token"] || "").trim();
-    const adminOk = await isAdminTokenValid(adminToken);
+    if (
+      !adminOk &&
+      (
+        stored.ownerUid ||
+        FREE_ACCESS_ENABLED
+      )
+    ) {
+      try {
+        await requireMatchingPetitionOwner(
+          req,
+          stored.ownerUid
+        );
+      } catch (error) {
+        return sendFirebaseIdentityError(
+          res,
+          error
+        );
+      }
+    }
+
+    /*
+     * Persist the transaction ID only
+     * after ownership has been verified.
+     */
+    if (
+      validation
+        .transaction_id
+    ) {
+      await storeTxId(
+        tx_ref,
+        validation
+          .transaction_id
+      );
+    }
+
+    const mailto =
+      buildMailto({
+        to:
+          stored.toEmails,
+
+        cc:
+          stored.ccEmails,
+
+        subject:
+          stored.subject,
+
+        body:
+          stored.petition,
+      });
 
     if (adminOk) {
       const payload = {
         ok: true,
         unlocked: true,
         admin: true,
-        petition: stored.petition,
-        sector: stored.sector,
-        toInstitutions: stored.toInstitutions,
-        ccInstitutions: stored.ccInstitutions,
-        to: stored.toEmails,
-        cc: stored.ccEmails,
+
+        _ownerUid:
+          stored.ownerUid ||
+          "",
+
+        petition:
+          stored.petition,
+
+        sector:
+          stored.sector,
+
+        toInstitutions:
+          stored.toInstitutions,
+
+        ccInstitutions:
+          stored.ccInstitutions,
+
+        to:
+          stored.toEmails,
+
+        cc:
+          stored.ccEmails,
+
         mailto,
-        emailRoutingAvailable: !!stored.emailRoutingAvailable,
+
+        emailRoutingAvailable:
+          !!stored
+            .emailRoutingAvailable,
+
         routingDecision:
           stored.routingDecision ||
           null,
       };
-      await storeUnlocked(tx_ref, payload);
-      return res.json(payload);
+
+      await storeUnlocked(
+        tx_ref,
+        payload
+      );
+
+      return res.json(
+        publicUnlockedPayload(
+          payload
+        )
+      );
     }
 
-    // ✅ Webhook-confirmed (or Firestore-paid flag)
-    if (await isTxPaid(tx_ref)) {
+    if (
+      await isTxPaid(
+        tx_ref
+      )
+    ) {
       const payload = {
         ok: true,
         unlocked: true,
-        petition: stored.petition,
-        sector: stored.sector,
-        toInstitutions: stored.toInstitutions,
-        ccInstitutions: stored.ccInstitutions,
-        to: stored.toEmails,
-        cc: stored.ccEmails,
+
+        _ownerUid:
+          stored.ownerUid ||
+          "",
+
+        petition:
+          stored.petition,
+
+        sector:
+          stored.sector,
+
+        toInstitutions:
+          stored.toInstitutions,
+
+        ccInstitutions:
+          stored.ccInstitutions,
+
+        to:
+          stored.toEmails,
+
+        cc:
+          stored.ccEmails,
+
         mailto,
-        emailRoutingAvailable: !!stored.emailRoutingAvailable,
+
+        emailRoutingAvailable:
+          !!stored
+            .emailRoutingAvailable,
+
         routingDecision:
           stored.routingDecision ||
           null,
       };
 
-      await storeUnlocked(tx_ref, payload);
-      await deletePetition(tx_ref);
-      await redisIncr(METRICS.unlockedPaid);
-      return res.json(payload);
+      await storeUnlocked(
+        tx_ref,
+        payload
+      );
+
+      await deletePetition(
+        tx_ref
+      );
+
+      await redisIncr(
+        METRICS
+          .unlockedPaid
+      );
+
+      return res.json(
+        publicUnlockedPayload(
+          payload
+        )
+      );
     }
 
-    if (!FLW_SECRET_KEY) return res.status(402).json({ ok: false, error: "Payment not verified" });
+    if (!FLW_SECRET_KEY) {
+      return res
+        .status(402)
+        .json({
+          ok: false,
+          error:
+            "Payment not verified",
+        });
+    }
 
-    const initAt = Number(stored.paymentInitializedAt || 0);
-    const recentlyInitialized = initAt && Date.now() - initAt < VERIFY_PENDING_WINDOW_MS;
+    const initializedAt =
+      Number(
+        stored
+          .paymentInitializedAt ||
+        0
+      );
 
-    const bodyTxId = String(v.transaction_id || "").trim();
-    const storedTxId = await getTxId(tx_ref);
-    const txIdToUse = bodyTxId || storedTxId;
+    const recentlyInitialized =
+      initializedAt &&
+      Date.now() -
+        initializedAt <
+        VERIFY_PENDING_WINDOW_MS;
 
-    // 1) Try verify by transaction id if we have it
-    let verifyResponse = null;
-    if (txIdToUse) {
+    const bodyTransactionId =
+      String(
+        validation
+          .transaction_id ||
+        ""
+      ).trim();
+
+    const storedTransactionId =
+      await getTxId(
+        tx_ref
+      );
+
+    const transactionId =
+      bodyTransactionId ||
+      storedTransactionId;
+
+    let verifyResponse =
+      null;
+
+    if (transactionId) {
       try {
-        verifyResponse = await flwFetch(
-          `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(txIdToUse)}/verify`
-        );
+        verifyResponse =
+          await flwFetch(
+            `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transactionId)}/verify`
+          );
       } catch {
-        verifyResponse = null;
+        verifyResponse =
+          null;
       }
     }
 
-    // 2) If tx_id verify failed, fallback to verify_by_reference
-    if (!verifyResponse || !verifyResponse.ok) {
+    if (
+      !verifyResponse ||
+      !verifyResponse.ok
+    ) {
       try {
-        verifyResponse = await flwFetch(
-          `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`
-        );
+        verifyResponse =
+          await flwFetch(
+            `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`
+          );
       } catch {
-        verifyResponse = { ok: false, status: 0, data: {} };
+        verifyResponse = {
+          ok: false,
+          status: 0,
+          data: {},
+        };
       }
     }
 
     if (!verifyResponse.ok) {
-      if (recentlyInitialized) {
-        return res.status(202).json({
-          ok: false,
-          pending: true,
-          error: "Payment processing. Please wait a moment and try again.",
-        });
+      if (
+        recentlyInitialized
+      ) {
+        return res
+          .status(202)
+          .json({
+            ok: false,
+            pending: true,
+
+            error:
+              "Payment processing. Please wait a moment and try again.",
+          });
       }
-      // return actual FLW message if any
-      const msg = verifyResponse?.data?.message || "Payment not verified";
-      return res.status(402).json({ ok: false, error: msg });
-    }
 
-    const data = verifyResponse.data || {};
-    let d = data?.data || {};
-    if (Array.isArray(d)) d = d[0] || {};
+      const message =
+        verifyResponse
+          ?.data
+          ?.message ||
+        "Payment not verified";
 
-    const status = String(d?.status || "").toLowerCase();
-    const amount = Number(d?.charged_amount || d?.amount || 0);
-    const currency = String(d?.currency || "").toUpperCase();
-    const returnedTxRef = String(d?.tx_ref || "").trim();
-    const returnedTxId = d?.id != null ? String(d.id).trim() : "";
-
-    if (returnedTxId) await storeTxId(tx_ref, returnedTxId);
-
-    if (returnedTxRef && returnedTxRef !== tx_ref) {
-      return res.status(402).json({ ok: false, error: "Payment not verified" });
-    }
-
-    if (isPendingStatus(status)) {
-      if (recentlyInitialized) {
-        return res.status(202).json({
+      return res
+        .status(402)
+        .json({
           ok: false,
-          pending: true,
-          error: "Payment is still processing. Please try again shortly.",
+          error:
+            message,
         });
-      }
-      return res.status(402).json({ ok: false, error: "Payment not verified" });
     }
 
-    const verified = isSuccessStatus(status) && currency === "NGN" && amount >= PETITION_PRICE_NGN;
+    const responseData =
+      verifyResponse.data ||
+      {};
+
+    let transactionData =
+      responseData?.data ||
+      {};
+
+    if (
+      Array.isArray(
+        transactionData
+      )
+    ) {
+      transactionData =
+        transactionData[0] ||
+        {};
+    }
+
+    const paymentStatus =
+      String(
+        transactionData
+          ?.status ||
+        ""
+      ).toLowerCase();
+
+    const amount =
+      Number(
+        transactionData
+          ?.charged_amount ||
+        transactionData
+          ?.amount ||
+        0
+      );
+
+    const currency =
+      String(
+        transactionData
+          ?.currency ||
+        ""
+      ).toUpperCase();
+
+    const returnedTxRef =
+      String(
+        transactionData
+          ?.tx_ref ||
+        ""
+      ).trim();
+
+    const returnedTxId =
+      transactionData?.id !=
+      null
+        ? String(
+            transactionData.id
+          ).trim()
+        : "";
+
+    if (returnedTxId) {
+      await storeTxId(
+        tx_ref,
+        returnedTxId
+      );
+    }
+
+    if (
+      returnedTxRef &&
+      returnedTxRef !==
+        tx_ref
+    ) {
+      return res
+        .status(402)
+        .json({
+          ok: false,
+          error:
+            "Payment not verified",
+        });
+    }
+
+    if (
+      isPendingStatus(
+        paymentStatus
+      )
+    ) {
+      if (
+        recentlyInitialized
+      ) {
+        return res
+          .status(202)
+          .json({
+            ok: false,
+            pending: true,
+
+            error:
+              "Payment is still processing. Please try again shortly.",
+          });
+      }
+
+      return res
+        .status(402)
+        .json({
+          ok: false,
+          error:
+            "Payment not verified",
+        });
+    }
+
+    const verified =
+      isSuccessStatus(
+        paymentStatus
+      ) &&
+      currency ===
+        "NGN" &&
+      amount >=
+        PETITION_PRICE_NGN;
+
     if (!verified) {
-      const msg = data?.message || "Payment not verified";
-      return res.status(402).json({ ok: false, error: msg });
+      const message =
+        responseData
+          ?.message ||
+        "Payment not verified";
+
+      return res
+        .status(402)
+        .json({
+          ok: false,
+          error:
+            message,
+        });
     }
 
-    await markTxPaid(tx_ref);
-    await redisIncr(METRICS.paymentSuccess);
-    await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
+    await markTxPaid(
+      tx_ref
+    );
+
+    await redisIncr(
+      METRICS
+        .paymentSuccess
+    );
+
+    await redisSAdd(
+      METRICS
+        .uniquePaySuccess,
+      tx_ref
+    );
 
     const payload = {
       ok: true,
       unlocked: true,
-      petition: stored.petition,
-      sector: stored.sector,
+
+      _ownerUid:
+        stored.ownerUid ||
+        "",
+
+      petition:
+        stored.petition,
+
+      sector:
+        stored.sector,
+
       toInstitutions:
         stored.toInstitutions,
+
       ccInstitutions:
         stored.ccInstitutions,
-      to: stored.toEmails,
-      cc: stored.ccEmails,
+
+      to:
+        stored.toEmails,
+
+      cc:
+        stored.ccEmails,
+
       mailto,
+
       emailRoutingAvailable:
-        !!stored.emailRoutingAvailable,
+        !!stored
+          .emailRoutingAvailable,
+
       routingDecision:
         stored.routingDecision ||
         null,
     };
 
-    await storeUnlocked(tx_ref, payload);
-    await deletePetition(tx_ref);
-    await redisIncr(METRICS.unlockedPaid);
+    await storeUnlocked(
+      tx_ref,
+      payload
+    );
 
-    return res.json(payload);
-  } catch (err) {
-    console.error("unlock error:", err);
-    return res.status(500).json({ ok: false, error: "Unlock failed" });
+    await deletePetition(
+      tx_ref
+    );
+
+    await redisIncr(
+      METRICS
+        .unlockedPaid
+    );
+
+    return res.json(
+      publicUnlockedPayload(
+        payload
+      )
+    );
+  } catch (error) {
+    console.error(
+      "unlock error:",
+      error
+    );
+
+    return res
+      .status(500)
+      .json({
+        ok: false,
+        error:
+          "Unlock failed",
+      });
   }
 });
 
@@ -3000,6 +3700,21 @@ app.listen(PORT, "0.0.0.0", () => {
   ) {
     console.log(
       "⚠️ FREE_ACCESS_ENABLED is true while Firestore is disabled. Free usage will not survive a server restart."
+    );
+  }
+
+  if (
+    supportNotifier
+      .isConfigured()
+  ) {
+    console.log(
+      "✅ Support email alerts enabled"
+    );
+  } else if (
+    SUPPORT_ALERT_ENABLED
+  ) {
+    console.log(
+      "⚠️ SUPPORT_ALERT_ENABLED is true but the email-provider configuration is incomplete."
     );
   }
 
