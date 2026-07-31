@@ -88,7 +88,8 @@
     "test:safety": "node scripts/test-backend-safety.mjs",
     "test:legal-safety": "node scripts/test-legal-draft-safety.mjs",
     "test:power-routing": "node scripts/test-power-routing.mjs",
-    "test:power-nationwide": "node scripts/test-power-nationwide.mjs"
+    "test:power-nationwide": "node scripts/test-power-nationwide.mjs",
+    "test:complaint-stage": "node scripts/test-complaint-stage-consistency.mjs"
   },
   "repository": {
     "type": "git",

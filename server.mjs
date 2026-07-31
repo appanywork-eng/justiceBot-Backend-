@@ -9,6 +9,9 @@ import {
   buildSectorDetectionText,
 } from "./lib/sectorDetectionContext.mjs";
 import {
+  evaluateComplaintStageConsistency,
+} from "./lib/complaintStageConsistency.mjs";
+import {
   NIGERIAN_POWER_DETECTION_KEYWORDS,
 } from "./lib/nigeriaPowerRegistry.mjs";
 import dotenv from "dotenv";
@@ -2153,6 +2156,76 @@ app.post("/generate-petition", async (req, res) => {
       disputeLocation ||
       ""
     ).trim();
+
+  const complaintStageCheck =
+    evaluateComplaintStageConsistency({
+      complaint,
+      escalationStage,
+      priorComplaintReference,
+    });
+
+  if (
+    complaintStageCheck.ok !==
+    true
+  ) {
+    const complainedAgainst =
+      String(
+        institutionName ||
+        "the organisation complained against"
+      ).trim();
+
+    return res
+      .status(400)
+      .json({
+        ok: false,
+
+        error:
+          complaintStageCheck.message,
+
+        code:
+          complaintStageCheck.code,
+
+        routingDecision: {
+          matched: true,
+
+          blockGeneration:
+            true,
+
+          sector:
+            "input_validation",
+
+          caseType:
+            "complaint_process",
+
+          jurisdiction:
+            "user_input",
+
+          routeKey:
+            "complaint_stage_conflict",
+
+          primaryInstitution:
+            complainedAgainst,
+
+          ccInstitutions:
+            [],
+
+          deliveryMethod:
+            "correct_form_information",
+
+          emailRoutingExpected:
+            false,
+
+          documentPurpose:
+            "Confirm whether this is a first complaint or an unresolved escalation",
+
+          userMessage:
+            complaintStageCheck.message,
+
+          routingNote:
+            complaintStageCheck.guidance,
+        },
+      });
+  }
 
   await redisIncr(
     METRICS.generated
