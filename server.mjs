@@ -17,6 +17,9 @@ import {
 import {
   NIGERIAN_POWER_DETECTION_KEYWORDS,
 } from "./lib/nigeriaPowerRegistry.mjs";
+import {
+  NIGERIAN_TELECOM_DETECTION_KEYWORDS,
+} from "./lib/nigeriaTelecomRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -777,7 +780,8 @@ function builtInKeywordMap() {
       "air ticket",
     ],
     banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit", "cbn", "failed transfer", "reversal", "ussd", "mobile banking"],
-    telecoms: ["airtime", "data", "network", "sim", "telecom", "ncc", "mtn", "airtel", "glo", "9mobile"],
+    telecoms:
+      NIGERIAN_TELECOM_DETECTION_KEYWORDS,
     education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund", "transcript"],
     health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
     security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration", "dss", "kidnap", "detention"],
