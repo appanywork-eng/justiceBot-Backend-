@@ -12,6 +12,9 @@ import {
   evaluateComplaintStageConsistency,
 } from "./lib/complaintStageConsistency.mjs";
 import {
+  assessInstitutionContactVerification,
+} from "./lib/nationalSectorPolicy.mjs";
+import {
   NIGERIAN_POWER_DETECTION_KEYWORDS,
 } from "./lib/nigeriaPowerRegistry.mjs";
 import dotenv from "dotenv";
@@ -1313,9 +1316,56 @@ function buildInstitutionCatalog(sectorJson) {
   function addItem(name, obj, extraAliases = []) {
     if (!name) return;
 
-    const emails = safeUniq(extractEmailsDeep(obj)).filter(isEmail);
-    const addresses = safeUniq(extractAddressesDeep(obj)).filter(isLikelyAddress);
-    const primaryAddress = addresses[0] || "";
+    const contactVerification =
+      assessInstitutionContactVerification({
+        institution:
+          obj || {},
+
+        sectorData:
+          sectorJson || {},
+      });
+
+    const discoveredEmails =
+      safeUniq(
+        extractEmailsDeep(
+          obj
+        )
+      ).filter(
+        isEmail
+      );
+
+    const discoveredAddresses =
+      safeUniq(
+        extractAddressesDeep(
+          obj
+        )
+      ).filter(
+        isLikelyAddress
+      );
+
+    /*
+     * Names and aliases remain available
+     * for correct jurisdiction matching.
+     *
+     * Direct email and physical-address
+     * delivery details are exposed only
+     * where the record contains verified
+     * official-source metadata.
+     */
+    const emails =
+      contactVerification
+        .directContactAllowed
+        ? discoveredEmails
+        : [];
+
+    const addresses =
+      contactVerification
+        .directContactAllowed
+        ? discoveredAddresses
+        : [];
+
+    const primaryAddress =
+      addresses[0] || "";
 
     const aliases = safeUniq([
       ...(Array.isArray(obj?.aliases) ? obj.aliases : []),
@@ -1345,6 +1395,22 @@ function buildInstitutionCatalog(sectorJson) {
       emails,
       addresses,
       primaryAddress,
+
+      contactVerified:
+        contactVerification
+          .directContactAllowed,
+
+      contactVerificationStatus:
+        contactVerification
+          .status,
+
+      contactVerificationReason:
+        contactVerification
+          .reason,
+
+      officialContactSources:
+        contactVerification
+          .officialSources,
     });
   }
 

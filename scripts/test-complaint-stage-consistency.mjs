@@ -3,13 +3,12 @@ import assert from "node:assert/strict";
 import {
   evaluateComplaintStageConsistency,
 } from "../lib/complaintStageConsistency.mjs";
+import {
+  NATIONAL_SECTOR_KEYS,
+} from "../lib/nationalSectorPolicy.mjs";
 
-const regulatedSectors = [
-  "power",
-  "banking",
-  "telecoms",
-  "aviation",
-];
+const regulatedSectors =
+  NATIONAL_SECTOR_KEYS;
 
 for (
   const sector
