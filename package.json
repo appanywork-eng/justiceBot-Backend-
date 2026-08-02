@@ -82,7 +82,7 @@
     "vary": "^1.1.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:all",
     "start": "node server.mjs",
     "check": "node --check server.mjs",
     "test:safety": "node scripts/test-backend-safety.mjs",
@@ -93,7 +93,8 @@
     "test:national-sectors": "node scripts/test-national-sector-framework.mjs",
     "test:telecoms-nationwide": "node scripts/test-telecoms-nationwide.mjs",
     "test:aviation-nationwide": "node scripts/test-aviation-nationwide.mjs",
-    "test:banking-nationwide": "node scripts/test-banking-nationwide.mjs"
+    "test:banking-nationwide": "node scripts/test-banking-nationwide.mjs",
+    "test:all": "npm run check && npm run test:national-sectors && npm run test:complaint-stage && npm run test:power-nationwide && npm run test:power-routing && npm run test:telecoms-nationwide && npm run test:aviation-nationwide && npm run test:banking-nationwide && npm run test:legal-safety && npm run test:safety"
   },
   "repository": {
     "type": "git",
