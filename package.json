@@ -94,11 +94,12 @@
     "test:telecoms-nationwide": "node scripts/test-telecoms-nationwide.mjs",
     "test:aviation-nationwide": "node scripts/test-aviation-nationwide.mjs",
     "test:banking-nationwide": "node scripts/test-banking-nationwide.mjs",
-    "test:all": "npm run check && npm run test:national-sectors && npm run test:complaint-stage && npm run test:power-nationwide && npm run test:power-routing && npm run test:telecoms-nationwide && npm run test:aviation-nationwide && npm run test:banking-nationwide && npm run test:health-nationwide && npm run test:education-nationwide && npm run test:anti-corruption-nationwide && npm run test:diaspora-nationwide && npm run test:legal-safety && npm run test:safety",
+    "test:all": "npm run check && npm run test:national-sectors && npm run test:complaint-stage && npm run test:power-nationwide && npm run test:power-routing && npm run test:telecoms-nationwide && npm run test:aviation-nationwide && npm run test:banking-nationwide && npm run test:health-nationwide && npm run test:education-nationwide && npm run test:anti-corruption-nationwide && npm run test:diaspora-nationwide && npm run test:security-nationwide && npm run test:legal-safety && npm run test:safety",
     "test:health-nationwide": "node scripts/test-health-nationwide.mjs",
     "test:education-nationwide": "node scripts/test-education-nationwide.mjs",
     "test:anti-corruption-nationwide": "node scripts/test-anti-corruption-nationwide.mjs",
-    "test:diaspora-nationwide": "node scripts/test-diaspora-nationwide.mjs"
+    "test:diaspora-nationwide": "node scripts/test-diaspora-nationwide.mjs",
+    "test:security-nationwide": "node scripts/test-security-nationwide.mjs"
   },
   "repository": {
     "type": "git",

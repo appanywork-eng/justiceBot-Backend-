@@ -1,233 +1,542 @@
 {
   "sector": "security",
-  "version": "1.1.0",
   "country": "Nigeria",
-  "last_updated": "2026-07-30",
-  "oversight_ministry": {
-    "police_affairs": {
-      "name": "Federal Ministry of Police Affairs",
-      "emails": [
-        "info@policeaffairs.gov.ng",
-        "contact@policeaffairs.gov.ng"
-      ],
-      "phones": [
-        "+2347056419241",
-        "+2348033254923"
-      ],
-      "address": "10th & 11th Floors, Federal Secretariat Complex, Phase 3, Shehu Shagari Way, Maitama, Abuja"
-    },
-    "interior": {
-      "name": "Federal Ministry of Interior",
-      "emails": [
-        "info@interior.gov.ng"
-      ],
-      "phones": [
-        "+23492341935"
-      ],
-      "address": "Old Federal Secretariat, Area 1, Garki, Abuja"
-    },
-    "defence": {
-      "name": "Federal Ministry of Defence",
-      "emails": [
-        "contact@defence.gov.ng"
-      ],
-      "phones": [
-        "+234092340532",
-        "+234092340533"
-      ],
-      "address": "Ship House, Area 10, Airport Road, Abuja"
-    }
+  "version": "2.0.0",
+  "last_updated": "2026-08-02",
+  "purpose": [
+    "Route security and law-enforcement complaints to the responsible Nigerian authority",
+    "Separate active emergencies from ordinary petition drafting",
+    "Route serious rights violations to NHRC",
+    "Route police disciplinary complaints to the Police Service Commission",
+    "Prevent guessed police, military or security-agency email addresses"
+  ],
+  "verification_policy": {
+    "official_sources_only": true,
+    "block_unverified_direct_contacts": true,
+    "direct_contact_requires_verification": true,
+    "portal_only_routes_are_permitted": true,
+    "press_and_recruitment_emails_prohibited": true,
+    "guessed_command_emails_prohibited": true
   },
-  "regulators": [
+  "authorities": [
     {
-      "name": "Inspector-General of Police (Nigeria Police Force)",
-      "emails": [
-        "igp@police.gov.ng",
-        "press@police.gov.ng"
+      "key": "npf_national_and_state_commands",
+      "name": "Nigeria Police Force and the Relevant State Police Command",
+      "aliases": [
+        "Nigeria Police Force and the Relevant State Police Command",
+        "Nigeria Police Force",
+        "Nigeria Police",
+        "Nigerian Police",
+        "NPF",
+        "Police",
+        "State Police Command",
+        "Police Command",
+        "Police Station",
+        "Nearest Police Station",
+        "Inspector-General of Police",
+        "IGP",
+        "Police Complaint Response Unit",
+        "Police CRU"
       ],
-      "phones": [
-        "+2348033166622"
-      ],
-      "address": "Louis Edet House, Force Headquarters, Area 11, Garki, Abuja"
+      "portal_only": true,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "Louis Edet House, Force Headquarters, Garki, Abuja, Nigeria",
+        "website": "https://police.gov.ng/",
+        "services_directory": "https://police.gov.ng/index.php/all/services",
+        "command_directory": "https://police.gov.ng/contact/display"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://police.gov.ng/",
+          "https://police.gov.ng/index.php/all/services",
+          "https://police.gov.ng/contact/display"
+        ]
+      }
     },
     {
+      "key": "psc_police_discipline",
       "name": "Police Service Commission (PSC)",
-      "emails": [
-        "info@psc.gov.ng"
+      "aliases": [
+        "Police Service Commission (PSC)",
+        "PSC",
+        "Police Service Commission",
+        "Police Discipline Department",
+        "PSC Police Discipline"
       ],
-      "phones": [
-        "+2347034072676",
-        "+2347034072677"
-      ],
-      "address": "Police Service Commission, Corporate Headquarters, Plot 64, Cadastral Zone B16, Sector Centre B, Jabi, Abuja, Nigeria",
-      "website": "https://www.psc.gov.ng/police-discipline/",
+      "portal_only": false,
+      "contact": {
+        "emails": [
+          "info@psc.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2347034072676",
+          "+2347034072677"
+        ],
+        "address": "Plot 64, Cadastral Zone B16, Sector Centre B, Jabi, Abuja, Nigeria",
+        "website": "https://psc.gov.ng/",
+        "police_discipline": "https://www.psc.gov.ng/police-discipline/"
+      },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-30",
-        "source": "https://www.psc.gov.ng/police-discipline/"
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://psc.gov.ng/",
+          "https://www.psc.gov.ng/police-discipline/"
+        ]
       }
     },
     {
-      "name": "Nigerian Correctional Service (NCoS)",
-      "emails": [
-        "info@corrections.gov.ng",
-        "complaints@corrections.gov.ng"
-      ],
-      "phones": [
-        "+2347087086005",
-        "+2349060004598"
-      ],
-      "address": "National Headquarters, Bill Clinton Drive, Airport Road, Abuja"
-    },
-    {
-      "name": "Nigeria Security and Civil Defence Corps (NSCDC)",
-      "emails": [
-        "info@nscdc.gov.ng",
-        "nscdchq@gmail.com"
-      ],
-      "phones": [
-        "+2348036565059"
-      ],
-      "address": "NSCDC National Headquarters, Plot V921, Cadastral Zone A2, Wuse Zone 5, Abuja"
-    },
-    {
-      "name": "Nigeria Immigration Service (NIS)",
-      "emails": [
-        "nis.servicom@immigration.gov.ng",
-        "oa@immigration.gov.ng",
-        "cis-evisa@immigration.gov.ng"
-      ],
-      "phones": [
-        "+2349121477092",
-        "+2348170000154"
-      ],
-      "address": "NIS Headquarters, Airport Road, Sauka, Abuja"
-    },
-    {
-      "name": "Nigerian Army (NA)",
-      "emails": [
-        "info@army.mil.ng",
-        "recruitment@army.mil.ng"
-      ],
-      "phones": [
-        "+2347039983117"
-      ],
-      "address": "Army Headquarters, Muhammadu Buhari Way, Area 7, Garki, Abuja"
-    },
-    {
-      "name": "Nigerian Navy (NN)",
-      "emails": [
-        "info@navy.mil.ng",
-        "nn.helpdesk@navy.mil.ng"
-      ],
-      "phones": [
-        "+2348056779668"
-      ],
-      "address": "Naval Headquarters, Garki, Abuja"
-    },
-    {
-      "name": "Nigerian Air Force (NAF)",
-      "emails": [
-        "info@airforce.mil.ng",
-        "careers@airforce.mil.ng"
-      ],
-      "phones": [
-        "+2347052683575"
-      ],
-      "address": "Air Force Headquarters, Ministry of Defence Annex, Area 10, Abuja"
-    },
-    {
-      "name": "Nigeria Police Commands (36 States + FCT)",
-      "emails": [
-        "info@police.gov.ng"
-      ],
-      "phones": [
-        "112",
-        "08031234567"
-      ],
-      "address": "State Police Command Headquarters (varies by state, Nigeria)"
-    }
-  ],
-  "watchdogs": [
-    {
-      "name": "Public Complaints Commission (PCC)",
-      "role": "Ombudsman for maladministration, rights abuse petitions (domestic legal protest support)",
-      "emails": [
-        "complaint@pcc.gov.ng",
-        "info@pcc.gov.ng"
-      ],
-      "phones": [
-        "+2348055600208"
-      ],
-      "address": "PCC Headquarters, Aguiyi Ironsi Street, Maitama, Abuja"
-    },
-    {
+      "key": "nhrc_security_rights_complaints",
       "name": "National Human Rights Commission (NHRC)",
-      "role": "Human rights monitoring, investigations, enforcement, urgent interventions",
-      "emails": [
-        "info@nhrc.gov.ng"
+      "aliases": [
+        "National Human Rights Commission (NHRC)",
+        "NHRC",
+        "National Human Rights Commission",
+        "Nigeria Human Rights Commission",
+        "Human Rights Commission"
       ],
-      "phones": [
-        "+2348099931800"
-      ],
-      "address": "No. 19 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
-      "website": "https://www.nigeriarights.gov.ng/index.php/complaint-form",
+      "portal_only": false,
+      "contact": {
+        "emails": [
+          "info@nhrc.gov.ng"
+        ],
+        "phone_numbers": [
+          "08006472428",
+          "6472"
+        ],
+        "address": "No. 19 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://www.nigeriarights.gov.ng/",
+        "complaint_form": "https://www.nigeriarights.gov.ng/index.php/complaint-form",
+        "complaint_guidance": "https://www.nigeriarights.gov.ng/about/nhrc-mandate.html"
+      },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-30",
-        "source": "https://www.nigeriarights.gov.ng/index.php/complaint-form"
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.nigeriarights.gov.ng/index.php/complaint-form",
+          "https://www.nigeriarights.gov.ng/about/nhrc-mandate.html",
+          "https://www.nigeriarights.gov.ng/contact-us.html"
+        ]
+      }
+    },
+    {
+      "key": "ncos_complaint_response",
+      "name": "Nigerian Correctional Service (NCoS)",
+      "aliases": [
+        "Nigerian Correctional Service (NCoS)",
+        "NCoS",
+        "Nigerian Correctional Service",
+        "Nigeria Correctional Service",
+        "Correctional Service",
+        "Prison Service",
+        "Prison",
+        "Custodial Centre",
+        "Correctional Centre"
+      ],
+      "portal_only": false,
+      "contact": {
+        "emails": [
+          "complaintresponsedesk@corrections.gov.ng",
+          "info@corrections.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2347087086005",
+          "+2349060004598",
+          "+2348075050006"
+        ],
+        "address": "National Headquarters, Bill Clinton Drive, Airport Road, Abuja, Nigeria",
+        "website": "https://corrections.gov.ng/",
+        "contact_page": "https://corrections.gov.ng/contact"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://corrections.gov.ng/contact",
+          "https://corrections.gov.ng/news/disclaimer-%E2%80%BC%EF%B8%8F?news_id=241"
+        ]
+      }
+    },
+    {
+      "key": "nscdc_incident_reporting",
+      "name": "Nigeria Security and Civil Defence Corps (NSCDC)",
+      "aliases": [
+        "Nigeria Security and Civil Defence Corps (NSCDC)",
+        "NSCDC",
+        "Nigeria Security and Civil Defence Corps",
+        "Nigerian Security and Civil Defence Corps",
+        "Civil Defence",
+        "Civil Defence Corps"
+      ],
+      "portal_only": false,
+      "contact": {
+        "emails": [
+          "defenders@nscdc.gov.ng"
+        ],
+        "phone_numbers": [
+          "199",
+          "+23492914164"
+        ],
+        "address": "Airport Road, Sauka, Abuja, FCT, Nigeria",
+        "website": "https://nscdc.gov.ng/",
+        "contact_page": "https://nscdc.gov.ng/contact-address/",
+        "incident_reporting": "https://nscdc.gov.ng/report-a-crime-online/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://nscdc.gov.ng/",
+          "https://nscdc.gov.ng/contact-address/",
+          "https://nscdc.gov.ng/report-a-crime-online/"
+        ]
+      }
+    },
+    {
+      "key": "nis_servicom_complaints",
+      "name": "Nigeria Immigration Service (NIS)",
+      "aliases": [
+        "Nigeria Immigration Service (NIS)",
+        "NIS",
+        "Nigeria Immigration Service",
+        "Nigerian Immigration Service",
+        "Immigration Service",
+        "Immigration",
+        "Border Control",
+        "Passport Office"
+      ],
+      "portal_only": false,
+      "contact": {
+        "emails": [
+          "nis.servicom@nigeriaimmigration.gov.ng",
+          "nis.reformchampion@immigration.gov.ng",
+          "support@immigration.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2349121900655",
+          "+2349121556359",
+          "+2349121477092"
+        ],
+        "address": "Umar Musa Yar'Adua Expressway, Airport Road, Sauka, Abuja, Nigeria",
+        "website": "https://immigration.gov.ng/",
+        "contact_page": "https://immigration.gov.ng/contact/",
+        "service_complaints": "https://immigration.gov.ng/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://immigration.gov.ng/contact/",
+          "https://immigration.gov.ng/contact-us/"
+        ]
+      }
+    },
+    {
+      "key": "nigerian_army_call_centre",
+      "name": "Nigerian Army (NA)",
+      "aliases": [
+        "Nigerian Army (NA)",
+        "Nigerian Army",
+        "Nigeria Army",
+        "Army",
+        "NA",
+        "Army Headquarters",
+        "Army Call Centre"
+      ],
+      "portal_only": false,
+      "contact": {
+        "emails": [
+          "na.callcentre@army.mil.ng"
+        ],
+        "phone_numbers": [
+          "193",
+          "070812711985",
+          "07041467033"
+        ],
+        "address": "Plot 1092 Muhammadu Buhari Way, Area 7, Garki, Abuja, Nigeria",
+        "website": "https://army.mil.ng/",
+        "contact_page": "https://army.mil.ng/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://army.mil.ng/",
+          "https://army.mil.ng/contact/"
+        ]
+      }
+    },
+    {
+      "key": "nigerian_navy_contact",
+      "name": "Nigerian Navy (NN)",
+      "aliases": [
+        "Nigerian Navy (NN)",
+        "Nigerian Navy",
+        "Nigeria Navy",
+        "Navy",
+        "NN",
+        "Naval Headquarters"
+      ],
+      "portal_only": false,
+      "contact": {
+        "emails": [
+          "navy@navy.mil.ng"
+        ],
+        "phone_numbers": [],
+        "address": "Armed Forces Complex, Plot 1092 Muhammadu Buhari Way, Area 7, Garki, Abuja, Nigeria",
+        "website": "https://navy.mil.ng/",
+        "contact_page": "https://navy.mil.ng/Contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://navy.mil.ng/",
+          "https://navy.mil.ng/Contact/"
+        ]
+      }
+    },
+    {
+      "key": "nigerian_air_force_ombudsman",
+      "name": "Nigerian Air Force (NAF)",
+      "aliases": [
+        "Nigerian Air Force (NAF)",
+        "Nigerian Air Force",
+        "Nigeria Air Force",
+        "Air Force",
+        "NAF",
+        "Air Force Headquarters",
+        "NAF Ombudsman",
+        "Office of the NAF Ombudsman"
+      ],
+      "portal_only": true,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "Nigerian Air Force Headquarters, Ministry of Defence, Area 7, Garki, Abuja, Nigeria",
+        "website": "https://airforce.mil.ng/",
+        "contact_form": "https://airforce.mil.ng/index.php/contact",
+        "ombudsman_information": "https://airforce.mil.ng/news/naf-establishes-office-of-ombudsman522922171"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://airforce.mil.ng/index.php/contact",
+          "https://airforce.mil.ng/news/naf-establishes-office-of-ombudsman522922171"
+        ]
       }
     }
   ],
-  "players": [
-    {
-      "name": "State Police Commands (All 36 States + FCT)",
-      "emails": [
-        "info@police.gov.ng"
-      ],
-      "phones": [
-        "112"
-      ],
-      "address": "Nationwide Commands"
-    }
-  ],
-  "routing_rules": {
-    "PCC_CC_MANDATORY_FOR_DOMESTIC": true,
-    "MAX_MAILTO_RECIPIENTS": 10,
-    "NOTE": "Only the first 10 emails will open in Gmail. Others remain visible for manual copy."
+  "routing_policy": {
+    "active_emergency": "An ongoing attack, kidnapping or immediate threat must route to the nearest police station or appropriate emergency security agency. Ordinary petition generation must be blocked.",
+    "crime_report": "Kidnapping, armed robbery, missing-person and other crime reports must first be made to the relevant State Police Command or nearest police station.",
+    "serious_rights_violation": "Unlawful detention, torture, forced confession, extrajudicial killing and other serious security-related rights abuses must route to the National Human Rights Commission.",
+    "police_discipline": "Police extortion, bribery, harassment, illegal checkpoints and disciplinary complaints must route to the Police Service Commission.",
+    "correctional_complaint": "Inmate welfare, custodial-centre conditions and correctional-officer complaints must route to the Nigerian Correctional Service.",
+    "civil_defence_complaint": "NSCDC service, officer-conduct and incident complaints must route through the Corps' verified official channels.",
+    "immigration_complaint": "Immigration, border-control and unresolved passport-service complaints must route through the Nigeria Immigration Service's verified complaint channels.",
+    "military_complaint": "Army, Navy and Air Force complaints must route only through their verified headquarters, call-centre, contact-form or ombudsman channels.",
+    "agency_first": "Ordinary service complaints should first be submitted to the responsible security agency or command.",
+    "internal_escalation": "Unresolved complaints with an earlier reference should be escalated to the agency headquarters, inspectorate, SERVICOM or complaint authority.",
+    "contact_safety": "Police-command and military email addresses must not be guessed. Official directories or portal-only channels must be used where no verified complaint email exists."
   },
   "routing_keywords": [
-    "unlawful detention",
-    "illegal arrest",
-    "extortion",
+    "security complaint",
+    "law enforcement complaint",
+    "security agency complaint",
+    "police complaint",
+    "police misconduct",
     "police brutality",
-    "army abuse",
-    "navy abuse",
-    "air force abuse",
+    "police extortion",
+    "police harassment",
     "illegal checkpoint",
-    "assault",
-    "torture allegation",
-    "missing person",
+    "officer demanded money",
+    "bail money",
+    "unlawful detention",
+    "illegal detention",
+    "detained without charge",
+    "detained without trial",
+    "detained beyond lawful period",
+    "illegal arrest",
+    "unlawful arrest",
+    "denial of bail",
+    "access to lawyer denied",
+    "forced confession",
+    "torture",
+    "inhuman treatment",
+    "extrajudicial killing",
     "forced disappearance",
-    "bail refusal",
-    "border harassment",
-    "passport delay",
-    "visa extortion",
+    "assault by officer",
+    "property seized without authority",
+    "illegal search",
+    "missing person",
+    "kidnapping",
+    "armed robbery",
+    "terror threat",
+    "death threat",
+    "criminal attack",
+    "burglary",
+    "crime report",
+    "incident report",
+    "protection request",
+    "witness protection",
+    "correctional complaint",
     "prison conditions",
     "inmate welfare",
-    "property seizure",
-    "illegal search",
-    "kidnapping",
-    "terror threat",
-    "critical asset protection failure"
+    "custodial centre",
+    "awaiting trial inmate",
+    "correctional officer misconduct",
+    "civil defence complaint",
+    "critical asset vandalism",
+    "pipeline vandalism",
+    "illegal mining",
+    "private security company",
+    "immigration complaint",
+    "border harassment",
+    "passport seizure",
+    "visa extortion",
+    "deportation complaint",
+    "army complaint",
+    "army abuse",
+    "military abuse",
+    "soldier misconduct",
+    "navy complaint",
+    "navy abuse",
+    "naval officer misconduct",
+    "air force complaint",
+    "air force abuse",
+    "airman misconduct",
+    "security emergency",
+    "currently under attack",
+    "immediate danger",
+    "kidnapping is ongoing",
+    "active shooter",
+    "Nigeria Police Force and the Relevant State Police Command",
+    "Nigeria Police Force",
+    "Nigeria Police",
+    "Nigerian Police",
+    "NPF",
+    "Police",
+    "State Police Command",
+    "Police Command",
+    "Police Station",
+    "Nearest Police Station",
+    "Inspector-General of Police",
+    "IGP",
+    "Police Complaint Response Unit",
+    "Police CRU",
+    "Police Service Commission (PSC)",
+    "PSC",
+    "Police Service Commission",
+    "Police Discipline Department",
+    "PSC Police Discipline",
+    "National Human Rights Commission (NHRC)",
+    "NHRC",
+    "National Human Rights Commission",
+    "Nigeria Human Rights Commission",
+    "Human Rights Commission",
+    "Nigerian Correctional Service (NCoS)",
+    "NCoS",
+    "Nigerian Correctional Service",
+    "Nigeria Correctional Service",
+    "Correctional Service",
+    "Prison Service",
+    "Prison",
+    "Custodial Centre",
+    "Correctional Centre",
+    "Nigeria Security and Civil Defence Corps (NSCDC)",
+    "NSCDC",
+    "Nigeria Security and Civil Defence Corps",
+    "Nigerian Security and Civil Defence Corps",
+    "Civil Defence",
+    "Civil Defence Corps",
+    "Nigeria Immigration Service (NIS)",
+    "NIS",
+    "Nigeria Immigration Service",
+    "Nigerian Immigration Service",
+    "Immigration Service",
+    "Immigration",
+    "Border Control",
+    "Passport Office",
+    "Nigerian Army (NA)",
+    "Nigerian Army",
+    "Nigeria Army",
+    "Army",
+    "NA",
+    "Army Headquarters",
+    "Army Call Centre",
+    "Nigerian Navy (NN)",
+    "Nigerian Navy",
+    "Nigeria Navy",
+    "Navy",
+    "NN",
+    "Naval Headquarters",
+    "Nigerian Air Force (NAF)",
+    "Nigerian Air Force",
+    "Nigeria Air Force",
+    "Air Force",
+    "NAF",
+    "Air Force Headquarters",
+    "NAF Ombudsman",
+    "Office of the NAF Ombudsman"
   ],
   "evidence_checklist": [
-    "Incident date/time/location",
-    "ID of petitioner",
-    "Agency reference/ticket (if issued)",
-    "Photos/videos",
-    "Medical reports (if injury)",
-    "Witness statements",
-    "Written correspondence"
-  ]
+    "Incident date, time and exact location",
+    "Name of the responsible security agency",
+    "Names, ranks, service numbers or descriptions of officers where known",
+    "Police station, command, formation, unit or custodial centre involved",
+    "Arrest, detention, bail or incident-reference details",
+    "Previous complaint acknowledgement or reference number",
+    "Photographs, videos, recordings or documents obtained lawfully",
+    "Medical reports where injury or torture is alleged",
+    "Names and safe contact details of witnesses",
+    "Details of property seized, damaged or withheld",
+    "Court, police, immigration or correctional documents",
+    "Immediate safety risks to the complainant, victim or witnesses"
+  ],
+  "drafting_safety": {
+    "active_emergency_blocks_ordinary_generation": true,
+    "do_not_delay_crime_reporting": true,
+    "preserve_evidence_only_when_safe": true,
+    "alleged_officer_misconduct_not_stated_as_proven_fact": true,
+    "suspected_offender_not_automatically_copied": true,
+    "victim_location_not_disclosed_unnecessarily": true,
+    "witness_identity_not_disclosed_unnecessarily": true,
+    "operational_security_information_prohibited": true,
+    "passwords_and_one_time_codes_prohibited": true,
+    "full_identity_document_numbers_prohibited": true,
+    "guessed_security_contacts_prohibited": true
+  },
+  "security_rules": {
+    "official_sources_only": true,
+    "seven_verified_direct_contact_routes": true,
+    "two_safe_portal_only_routes": true,
+    "unverified_contacts_gated": true,
+    "emergency_services_take_priority": true,
+    "press_emails_excluded": true,
+    "recruitment_emails_excluded": true
+  }
 }

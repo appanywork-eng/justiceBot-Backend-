@@ -38,6 +38,9 @@ import {
 import {
   NIGERIAN_DIASPORA_DETECTION_KEYWORDS,
 } from "./lib/nigeriaDiasporaRegistry.mjs";
+import {
+  NIGERIAN_SECURITY_DETECTION_KEYWORDS,
+} from "./lib/nigeriaSecurityRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -789,7 +792,8 @@ function builtInKeywordMap() {
       NIGERIAN_EDUCATION_DETECTION_KEYWORDS,
     health:
       NIGERIAN_HEALTH_DETECTION_KEYWORDS,
-    security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration", "dss", "kidnap", "detention"],
+    security:
+      NIGERIAN_SECURITY_DETECTION_KEYWORDS,
     judiciary: ["court", "judge", "justice", "supreme", "magistrate", "bail", "delayed judgement", "njc"],
     international_escalation: [
       "un",
