@@ -32,6 +32,9 @@ import {
 import {
   NIGERIAN_EDUCATION_DETECTION_KEYWORDS,
 } from "./lib/nigeriaEducationRegistry.mjs";
+import {
+  NIGERIAN_ANTI_CORRUPTION_DETECTION_KEYWORDS,
+} from "./lib/nigeriaAntiCorruptionRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -805,27 +808,8 @@ function builtInKeywordMap() {
       "european parliament",
       "ohchr",
     ],
-    anti_corruption: [
-      "anti corruption",
-      "anti-corruption",
-      "corruption",
-      "bribe",
-      "bribery",
-      "kickback",
-      "procurement",
-      "inflated contract",
-      "contract inflation",
-      "money laundering",
-      "embezzlement",
-      "ghost worker",
-      "efcc",
-      "icpc",
-      "bpp",
-      "bureau of public procurement",
-      "ccb",
-      "cct",
-      "fraud",
-    ],
+    anti_corruption:
+      NIGERIAN_ANTI_CORRUPTION_DETECTION_KEYWORDS,
     diaspora_report: [
       "diaspora",
       "nidcom",
