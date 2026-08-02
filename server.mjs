@@ -15,6 +15,9 @@ import {
   assessInstitutionContactVerification,
 } from "./lib/nationalSectorPolicy.mjs";
 import {
+  NIGERIAN_BANKING_DETECTION_KEYWORDS,
+} from "./lib/nigeriaBankingRegistry.mjs";
+import {
   NIGERIAN_POWER_DETECTION_KEYWORDS,
 } from "./lib/nigeriaPowerRegistry.mjs";
 import {
@@ -766,7 +769,8 @@ function builtInKeywordMap() {
       NIGERIAN_POWER_DETECTION_KEYWORDS,
     aviation:
       NIGERIAN_AVIATION_DETECTION_KEYWORDS,
-    banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit", "cbn", "failed transfer", "reversal", "ussd", "mobile banking"],
+    banking:
+      NIGERIAN_BANKING_DETECTION_KEYWORDS,
     telecoms:
       NIGERIAN_TELECOM_DETECTION_KEYWORDS,
     education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund", "transcript"],

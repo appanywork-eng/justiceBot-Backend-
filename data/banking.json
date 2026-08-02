@@ -1,15 +1,28 @@
 {
   "sector": "banking",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "country": "Nigeria",
-  "last_updated": "2026-07-31",
+  "last_updated": "2026-08-02",
+  "purpose": "Nationwide routing of complaints against Nigerian banks, microfinance institutions, payment-service banks, mobile-money operators and payment-service providers",
+  "verification_policy": {
+    "official_sources_only": true,
+    "no_invented_contacts": true,
+    "unverified_email_routing_disabled": true,
+    "provider_first": true,
+    "regulator_after_unresolved_provider_complaint": true,
+    "nationwide_coverage": true,
+    "safe_unlisted_provider_fallback": true,
+    "verified_on": "2026-08-02"
+  },
   "regulators": [
     {
+      "key": "cbn_consumer_protection",
       "name": "Central Bank of Nigeria (CBN)",
       "aliases": [
         "CBN",
         "Central Bank of Nigeria",
         "Consumer Protection Department",
+        "CBN Consumer Protection Department",
         "Consumer Protection Department of the CBN",
         "CPD"
       ],
@@ -18,206 +31,188 @@
           "cpd@cbn.gov.ng"
         ],
         "address": "Central Bank of Nigeria, Plot 33, Abubakar Tafawa Balewa Way, Central Business District, Cadastral Zone, Abuja, Federal Capital Territory, Nigeria",
-        "website": "https://www.cbn.gov.ng/supervision/cpdcomgt.html"
+        "website": "https://www.cbn.gov.ng/supervision/cpdcomgt.html",
+        "complaint_guide": "https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html",
+        "complaint_portal": "https://complaintsportal.cbn.gov.ng/"
       },
-      "routing_scope": "Unresolved complaints against financial institutions regulated by the CBN",
-      "routing_requirements": [
-        "The customer should first lodge the complaint with the financial institution.",
-        "Evidence of the earlier complaint and its reference should accompany escalation."
-      ],
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-31",
-      "source_urls": [
-        "https://www.cbn.gov.ng/supervision/cpdcomgt.html",
-        "https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html",
-        "https://www.cbn.gov.ng/contacts/"
-      ]
-    },
-    {
-      "name": "Nigeria Deposit Insurance Corporation (NDIC)",
-      "aliases": [
-        "NDIC"
-      ],
-      "contact": {
-        "emails": [
-          "info@ndic.gov.ng",
-          "helpdesk@ndic.gov.ng"
-        ],
-        "address": "Plot 447/448 Constitution Avenue, Central Business District, Abuja, Nigeria",
-        "website_hint": "ndic.gov.ng"
-      }
-    },
-    {
-      "name": "Securities and Exchange Commission (SEC) Nigeria",
-      "aliases": [
-        "SEC Nigeria",
-        "SEC"
-      ],
-      "contact": {
-        "emails": [
-          "sec@sec.gov.ng"
-        ],
-        "website_hint": "sec.gov.ng"
-      }
-    },
-    {
-      "name": "Economic and Financial Crimes Commission (EFCC)",
-      "aliases": [
-        "EFCC"
-      ],
-      "contact": {
-        "emails": [
-          "info@efcc.gov.ng",
-          "info@efccnigeria.org"
-        ],
-        "website_hint": "efcc.gov.ng"
-      }
-    },
-    {
-      "name": "Nigeria Police Force (NPF)",
-      "aliases": [
-        "NPF",
-        "Nigeria Police"
-      ],
-      "contact": {
-        "emails": [
-          "pressforabuja@police.gov.ng"
-        ],
-        "website_hint": "police.gov.ng"
-      }
-    }
-  ],
-  "watchdogs": [
-    {
-      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
-      "aliases": [
-        "FCCPC",
-        "Consumer Protection"
-      ],
-      "contact": {
-        "emails": [
-          "contact@fccpc.gov.ng"
-        ],
-        "website_hint": "fccpc.gov.ng"
-      }
-    },
-    {
-      "name": "SERVICOM",
-      "aliases": [
-        "SERVICOM Office",
-        "Service Compact"
-      ],
-      "contact": {
-        "emails": [
-          "info@servicom.gov.ng"
-        ],
-        "website_hint": "servicom.gov.ng"
-      }
-    },
-    {
-      "name": "National Human Rights Commission (NHRC)",
-      "aliases": [
-        "NHRC"
-      ],
-      "contact": {
-        "emails": [
-          "info@nhrc.gov.ng",
-          "complaints@nhrc.gov.ng"
-        ],
-        "website_hint": "nhrc.gov.ng"
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "source_urls": [
+          "https://www.cbn.gov.ng/supervision/cpdcomgt.html",
+          "https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html",
+          "https://www.cbn.gov.ng/Contacts/"
+        ]
       }
     }
   ],
   "players": [
     {
+      "key": "access",
       "name": "Access Bank PLC",
       "aliases": [
+        "Access Bank PLC",
         "Access Bank"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "contactcentre@accessbankplc.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "citibank",
       "name": "Citibank Nigeria Limited",
       "aliases": [
+        "Citibank Nigeria Limited",
         "Citibank",
         "Citi Nigeria",
         "Citi"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "complaints.nigeria@citi.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
-      "name": "Ecobank Nigeria",
+      "key": "ecobank",
+      "name": "Ecobank Nigeria Limited",
       "aliases": [
-        "Ecobank"
+        "Ecobank Nigeria Limited",
+        "Ecobank",
+        "Ecobank Nigeria"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "ecobankcustomercare@ecobank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "fidelity",
       "name": "Fidelity Bank PLC",
       "aliases": [
+        "Fidelity Bank PLC",
         "Fidelity Bank"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "fidelitydirect@fidelitybank.ng"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "firstbank",
       "name": "First Bank of Nigeria Limited",
       "aliases": [
+        "First Bank of Nigeria Limited",
         "FirstBank",
-        "First Bank"
+        "First Bank",
+        "FBN"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "firstcontact@firstbanknigeria.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
-      "name": "First City Monument Bank PLC",
+      "key": "fcmb",
+      "name": "First City Monument Bank Limited",
       "aliases": [
-        "FCMB"
+        "First City Monument Bank Limited",
+        "FCMB",
+        "First City Monument Bank",
+        "First City Monument Bank PLC"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "customerservice@fcmb.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "globus",
       "name": "Globus Bank Limited",
       "aliases": [
+        "Globus Bank Limited",
         "Globus Bank"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "customercare@globusbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "gtbank",
       "name": "Guaranty Trust Bank Limited",
       "aliases": [
+        "Guaranty Trust Bank Limited",
         "GTBank",
         "GTB",
         "Guaranty Trust Bank",
-        "Guaranty Trust Bank PLC",
-        "Guaranty Trust Bank Limited"
+        "Guaranty Trust Bank PLC"
       ],
+      "category": "deposit_money_bank",
       "contact": {
         "emails": [
           "gtbankmailsupport@gtbank.com"
@@ -225,338 +220,1046 @@
         "website": "https://www.gtbank.com/help-centre/complaints-enquiries",
         "complaint_portal": "https://www.gtbank.com/help-centre"
       },
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-31",
-      "source_urls": [
-        "https://www.gtbank.com/help-centre/complaints-enquiries",
-        "https://www.gtbank.com/complaints-handling-policy"
-      ]
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.gtbank.com/help-centre/complaints-enquiries",
+          "https://www.gtbank.com/complaints-handling-policy"
+        ]
+      }
     },
     {
+      "key": "jaiz",
       "name": "Jaiz Bank PLC",
       "aliases": [
+        "Jaiz Bank PLC",
         "Jaiz",
         "Jaiz Bank"
       ],
+      "category": "non_interest_bank",
       "contact": {
-        "emails": [
-          "info@jaizbankplc.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "keystone",
       "name": "Keystone Bank Limited",
       "aliases": [
+        "Keystone Bank Limited",
         "Keystone Bank"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "contactcentre@keystonebankng.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
-      "name": "Nova Merchant Bank Limited",
+      "key": "lotus",
+      "name": "Lotus Bank Limited",
       "aliases": [
-        "Nova Bank",
-        "Nova Merchant Bank"
+        "Lotus Bank Limited",
+        "Lotus",
+        "Lotus Bank"
       ],
+      "category": "non_interest_bank",
       "contact": {
-        "emails": [
-          "cs@novabank.ng"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "nova",
+      "name": "NOVA Bank Limited",
+      "aliases": [
+        "NOVA Bank Limited",
+        "NOVA Bank",
+        "Nova Bank",
+        "Nova Merchant Bank",
+        "Nova Merchant Bank Limited"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
+        ]
+      }
+    },
+    {
+      "key": "optimus",
       "name": "Optimus Bank Limited",
       "aliases": [
+        "Optimus Bank Limited",
         "Optimus Bank"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "customercare@optimusbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "parallex",
       "name": "Parallex Bank Limited",
       "aliases": [
+        "Parallex Bank Limited",
         "Parallex Bank",
         "Parallex"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "customercare@parallexbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "polaris",
       "name": "Polaris Bank Limited",
       "aliases": [
+        "Polaris Bank Limited",
         "Polaris Bank"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "yescenter@polarisbanklimited.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "premiumtrust",
       "name": "PremiumTrust Bank Limited",
       "aliases": [
+        "PremiumTrust Bank Limited",
+        "PremiumTrust Bank",
         "Premium Trust Bank",
         "PremiumTrust"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "contactpremium@premiumtrustbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "providus",
       "name": "Providus Bank Limited",
       "aliases": [
-        "Providus Bank"
+        "Providus Bank Limited",
+        "Providus Bank",
+        "Providus"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "contactcentre@providusbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
-      "name": "Stanbic IBTC Bank PLC",
+      "key": "stanbic",
+      "name": "Stanbic IBTC Bank Limited",
       "aliases": [
+        "Stanbic IBTC Bank Limited",
         "Stanbic IBTC",
-        "Stanbic"
+        "Stanbic",
+        "Stanbic IBTC Bank PLC"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "customercare@stanbicibtc.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "standard_chartered",
       "name": "Standard Chartered Bank Nigeria Limited",
       "aliases": [
+        "Standard Chartered Bank Nigeria Limited",
         "Standard Chartered",
+        "Standard Chartered Nigeria",
         "SCB"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "nigeria.contactus@sc.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
-      "name": "Sterling Bank PLC",
+      "key": "sterling",
+      "name": "Sterling Bank Limited",
       "aliases": [
-        "Sterling Bank"
+        "Sterling Bank Limited",
+        "Sterling Bank",
+        "Sterling Bank PLC"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "customercare@sterling.ng"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "suntrust",
       "name": "SunTrust Bank Nigeria Limited",
       "aliases": [
-        "SunTrust Bank"
+        "SunTrust Bank Nigeria Limited",
+        "SunTrust Bank",
+        "SunTrust"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "enquiries@suntrustng.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "tajbank",
       "name": "TAJBank Limited",
       "aliases": [
+        "TAJBank Limited",
         "TAJBank",
         "TAJ Bank"
       ],
+      "category": "non_interest_bank",
       "contact": {
-        "emails": [
-          "contactcentre@tajbank.com",
-          "tajconnect@tajbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "alternative_bank",
+      "name": "The Alternative Bank Limited",
+      "aliases": [
+        "The Alternative Bank Limited",
+        "The Alternative Bank",
+        "Alternative Bank",
+        "AltBank",
+        "Alt Bank"
+      ],
+      "category": "non_interest_bank",
+      "contact": {
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
+        ]
+      }
+    },
+    {
+      "key": "titan",
       "name": "Titan Trust Bank Limited",
       "aliases": [
+        "Titan Trust Bank Limited",
         "Titan Trust Bank",
+        "Titan Bank",
         "Titan"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "info@titantrustbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "union",
       "name": "Union Bank of Nigeria PLC",
       "aliases": [
-        "Union Bank"
+        "Union Bank of Nigeria PLC",
+        "Union Bank",
+        "Union Bank Nigeria"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "contactcentre@unionbankng.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "unity",
       "name": "Unity Bank PLC",
       "aliases": [
+        "Unity Bank PLC",
         "Unity Bank"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "contactcentre@unitybankng.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "uba",
       "name": "United Bank for Africa PLC",
       "aliases": [
-        "UBA"
+        "United Bank for Africa PLC",
+        "UBA",
+        "United Bank for Africa",
+        "UBA Nigeria"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "cfc@ubagroup.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "wema",
       "name": "Wema Bank PLC",
       "aliases": [
-        "Wema Bank"
+        "Wema Bank PLC",
+        "Wema Bank",
+        "ALAT",
+        "ALAT by Wema"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "purpleconnect@wemabank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "zenith",
       "name": "Zenith Bank PLC",
       "aliases": [
-        "Zenith Bank"
+        "Zenith Bank PLC",
+        "Zenith Bank",
+        "Zenith"
       ],
+      "category": "deposit_money_bank",
       "contact": {
-        "emails": [
-          "zenithdirect@zenithbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
         ]
       }
     },
     {
+      "key": "9psb",
       "name": "9 Payment Service Bank (9PSB)",
       "aliases": [
+        "9 Payment Service Bank (9PSB)",
         "9PSB",
         "9 Payment Service Bank"
       ],
+      "category": "payment_service_bank",
       "contact": {
-        "emails": [
-          "hello@9psb.com.ng"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
         ]
       }
     },
     {
-      "name": "Hope Payment Service Bank (Hope PSB)",
+      "key": "hope_psb",
+      "name": "Hope Payment Service Bank",
       "aliases": [
+        "Hope Payment Service Bank",
         "Hope PSB",
         "Hopepsbank"
       ],
+      "category": "payment_service_bank",
       "contact": {
-        "emails": [
-          "info@hopepsbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
         ]
       }
     },
     {
-      "name": "SmartCash Payment Service Bank (SmartCash PSB)",
+      "key": "smartcash",
+      "name": "SmartCash Payment Service Bank",
       "aliases": [
+        "SmartCash Payment Service Bank",
+        "SmartCash",
         "SmartCash PSB",
-        "SmartCash"
+        "Smart Cash"
       ],
+      "category": "payment_service_bank",
       "contact": {
-        "emails": [
-          "customerservice@smartcashpsb.ng"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
         ]
       }
     },
     {
-      "name": "PalmPay",
+      "key": "opay",
+      "name": "OPay Digital Services Limited",
       "aliases": [
+        "OPay Digital Services Limited",
+        "OPay",
+        "O Pay",
+        "Paycom Nigeria",
+        "Paycom Nigeria Limited"
+      ],
+      "category": "mobile_money_operator",
+      "contact": {
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
+        ]
+      }
+    },
+    {
+      "key": "palmpay",
+      "name": "PalmPay Limited",
+      "aliases": [
+        "PalmPay Limited",
+        "PalmPay",
         "Palm Pay",
         "PalmPay Nigeria"
       ],
+      "category": "mobile_money_operator",
       "contact": {
-        "emails": [
-          "support@palmpay.co"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
         ]
       }
     },
     {
-      "name": "Paga",
+      "key": "paga",
+      "name": "Pagatech Limited (Paga)",
       "aliases": [
-        "mypaga",
-        "Paga Nigeria"
+        "Pagatech Limited (Paga)",
+        "Paga",
+        "myPaga",
+        "Paga Nigeria",
+        "Pagatech",
+        "Pagatech Limited"
       ],
+      "category": "mobile_money_operator",
       "contact": {
-        "emails": [
-          "service@mypaga.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
         ]
       }
     },
     {
-      "name": "Lotus Bank",
+      "key": "moniepoint",
+      "name": "Moniepoint Microfinance Bank Limited",
       "aliases": [
-        "Lotus",
-        "Lotus Bank Limited"
+        "Moniepoint Microfinance Bank Limited",
+        "Moniepoint",
+        "Moniepoint MFB",
+        "TeamApt",
+        "TeamApt Limited"
       ],
+      "category": "microfinance_and_payment_services",
       "contact": {
-        "emails": [
-          "support@lotusbank.com"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
         ]
       }
     },
     {
-      "name": "The Alternative Bank",
+      "key": "flutterwave",
+      "name": "Flutterwave Technology Solutions Limited",
       "aliases": [
-        "AltBank",
-        "Alternative Bank"
+        "Flutterwave Technology Solutions Limited",
+        "Flutterwave",
+        "Flutter Wave"
       ],
+      "category": "payment_service_provider",
       "contact": {
-        "emails": [
-          "help@altbank.ng"
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
+        ]
+      }
+    },
+    {
+      "key": "paystack",
+      "name": "Paystack Payment Limited",
+      "aliases": [
+        "Paystack Payment Limited",
+        "Paystack",
+        "Paystack Payments",
+        "Paystack Nigeria"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
+        ]
+      }
+    },
+    {
+      "key": "interswitch",
+      "name": "Interswitch Limited",
+      "aliases": [
+        "Interswitch Limited",
+        "Interswitch",
+        "Quickteller",
+        "Quick Teller"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
+        ]
+      }
+    },
+    {
+      "key": "remita",
+      "name": "Remita Payment Service Limited",
+      "aliases": [
+        "Remita Payment Service Limited",
+        "Remita",
+        "SystemSpecs Remita"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
+        ]
+      }
+    },
+    {
+      "key": "nomba",
+      "name": "Nomba Financial Services Limited",
+      "aliases": [
+        "Nomba Financial Services Limited",
+        "Nomba",
+        "Nomba Financial Services",
+        "Kudi",
+        "Kudi Nigeria"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": []
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "provider_identity_and_routing_only",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
         ]
       }
     }
   ],
+  "routing_rules": {
+    "first_complaint": {
+      "recipient": "The responsible bank or financial-service provider",
+      "delivery": "The provider's official complaints unit, branch, application support, website or verified complaint email",
+      "requirement": "Obtain and retain the institution's complaint reference, ticket or written acknowledgement."
+    },
+    "unresolved_complaint": {
+      "recipient": "Central Bank of Nigeria Consumer Protection Department",
+      "also_notify": "The responsible financial institution",
+      "delivery": "Verified CBN complaint email, official complaint portal or written filing through a CBN branch",
+      "applicable_timeline": "Generally two weeks after first complaining to the institution; certain excess-charge and loan complaints may have an applicable thirty-day resolution period.",
+      "requirement": "Include evidence of the earlier complaint, its reference, the disputed amount and relevant supporting documents."
+    },
+    "unknown_institution": {
+      "rule": "A financial institution not explicitly listed may still be routed safely using the organisation name supplied by the complainant.",
+      "direct_email_rule": "No email may be invented or inferred for an unlisted institution."
+    },
+    "restricted_routes": [
+      "EFCC and the Nigeria Police are not automatically copied on ordinary banking service disputes.",
+      "FCCPC, SERVICOM and NHRC are not automatically copied where the complaint falls within the CBN consumer-redress process.",
+      "A claim of fraud does not justify inventing criminal liability or declaring a person guilty.",
+      "The petition must not contain a PIN, password, one-time password, full card security code or internet-banking credential."
+    ]
+  },
   "routing_keywords": [
-    "unlawful debit",
-    "unauthorized transaction",
-    "POS debit",
-    "ATM debit",
-    "transfer reversal",
-    "chargeback",
-    "card fraud",
-    "USSD debit",
-    "mobile app debit",
-    "loan harassment",
+    "bank",
+    "banking",
+    "bank account",
+    "financial institution",
+    "microfinance bank",
+    "mfb",
+    "payment service bank",
+    "psb",
+    "mobile money",
+    "mobile wallet",
+    "fintech",
+    "payment provider",
+    "payment processor",
+    "account balance",
+    "account restriction",
     "account freeze",
-    "kyc dispute",
-    "BVN/NIN linkage",
-    "scam",
+    "frozen account",
+    "blocked account",
+    "unauthorised debit",
+    "unauthorized debit",
+    "unauthorised transaction",
+    "unauthorized transaction",
+    "failed transfer",
+    "pending transfer",
+    "transfer reversal",
+    "reversal",
+    "duplicate debit",
+    "wrong debit",
+    "atm debit",
+    "atm dispute",
+    "pos debit",
+    "pos dispute",
+    "card fraud",
+    "card transaction",
+    "chargeback",
+    "merchant dispute",
+    "ussd debit",
+    "mobile app debit",
+    "internet banking",
+    "loan complaint",
+    "loan harassment",
+    "excess charge",
+    "bank charge",
+    "interest charge",
+    "credit facility",
+    "kyc",
+    "bvn",
+    "nin linkage",
     "phishing",
-    "SIM swap banking fraud",
-    "merchant dispute"
+    "banking fraud",
+    "wallet fraud",
+    "scam transfer",
+    "cbn",
+    "consumer protection department",
+    "cpd",
+    "kuda",
+    "fairmoney",
+    "fair money",
+    "carbon",
+    "carbon finance",
+    "central bank of nigeria (cbn)",
+    "central bank of nigeria",
+    "cbn consumer protection department",
+    "consumer protection department of the cbn",
+    "access bank plc",
+    "access bank",
+    "citibank nigeria limited",
+    "citibank",
+    "citi nigeria",
+    "citi",
+    "ecobank nigeria limited",
+    "ecobank",
+    "ecobank nigeria",
+    "fidelity bank plc",
+    "fidelity bank",
+    "first bank of nigeria limited",
+    "firstbank",
+    "first bank",
+    "fbn",
+    "first city monument bank limited",
+    "fcmb",
+    "first city monument bank",
+    "first city monument bank plc",
+    "globus bank limited",
+    "globus bank",
+    "guaranty trust bank limited",
+    "gtbank",
+    "gtb",
+    "guaranty trust bank",
+    "guaranty trust bank plc",
+    "jaiz bank plc",
+    "jaiz",
+    "jaiz bank",
+    "keystone bank limited",
+    "keystone bank",
+    "lotus bank limited",
+    "lotus",
+    "lotus bank",
+    "nova bank limited",
+    "nova bank",
+    "nova merchant bank",
+    "nova merchant bank limited",
+    "optimus bank limited",
+    "optimus bank",
+    "parallex bank limited",
+    "parallex bank",
+    "parallex",
+    "polaris bank limited",
+    "polaris bank",
+    "premiumtrust bank limited",
+    "premiumtrust bank",
+    "premium trust bank",
+    "premiumtrust",
+    "providus bank limited",
+    "providus bank",
+    "providus",
+    "stanbic ibtc bank limited",
+    "stanbic ibtc",
+    "stanbic",
+    "stanbic ibtc bank plc",
+    "standard chartered bank nigeria limited",
+    "standard chartered",
+    "standard chartered nigeria",
+    "scb",
+    "sterling bank limited",
+    "sterling bank",
+    "sterling bank plc",
+    "suntrust bank nigeria limited",
+    "suntrust bank",
+    "suntrust",
+    "tajbank limited",
+    "tajbank",
+    "taj bank",
+    "the alternative bank limited",
+    "the alternative bank",
+    "alternative bank",
+    "altbank",
+    "alt bank",
+    "titan trust bank limited",
+    "titan trust bank",
+    "titan bank",
+    "titan",
+    "union bank of nigeria plc",
+    "union bank",
+    "union bank nigeria",
+    "unity bank plc",
+    "unity bank",
+    "united bank for africa plc",
+    "uba",
+    "united bank for africa",
+    "uba nigeria",
+    "wema bank plc",
+    "wema bank",
+    "alat",
+    "alat by wema",
+    "zenith bank plc",
+    "zenith bank",
+    "zenith",
+    "9 payment service bank (9psb)",
+    "9psb",
+    "9 payment service bank",
+    "hope payment service bank",
+    "hope psb",
+    "hopepsbank",
+    "smartcash payment service bank",
+    "smartcash",
+    "smartcash psb",
+    "smart cash",
+    "opay digital services limited",
+    "opay",
+    "o pay",
+    "paycom nigeria",
+    "paycom nigeria limited",
+    "palmpay limited",
+    "palmpay",
+    "palm pay",
+    "palmpay nigeria",
+    "pagatech limited (paga)",
+    "paga",
+    "mypaga",
+    "paga nigeria",
+    "pagatech",
+    "pagatech limited",
+    "moniepoint microfinance bank limited",
+    "moniepoint",
+    "moniepoint mfb",
+    "teamapt",
+    "teamapt limited",
+    "flutterwave technology solutions limited",
+    "flutterwave",
+    "flutter wave",
+    "paystack payment limited",
+    "paystack",
+    "paystack payments",
+    "paystack nigeria",
+    "interswitch limited",
+    "interswitch",
+    "quickteller",
+    "quick teller",
+    "remita payment service limited",
+    "remita",
+    "systemspecs remita",
+    "nomba financial services limited",
+    "nomba",
+    "nomba financial services",
+    "kudi",
+    "kudi nigeria"
   ],
-  "verification_policy": {
-    "official_sources_only": true,
-    "no_invented_contacts": true,
-    "verified_on": "2026-07-31"
+  "evidence_keywords": [
+    "financial institution name",
+    "account number",
+    "masked card number",
+    "transaction reference",
+    "complaint reference",
+    "transaction date",
+    "transaction amount",
+    "statement of account",
+    "transfer receipt",
+    "pos receipt",
+    "atm receipt",
+    "screenshots",
+    "loan agreement",
+    "charge schedule",
+    "correspondence"
+  ],
+  "evidence_checklist": [
+    "Name of the financial institution",
+    "Account or wallet identifier, safely masked where appropriate",
+    "Date, amount and reference of the disputed transaction",
+    "Institution complaint ticket or reference",
+    "Evidence showing that the institution was contacted first",
+    "Relevant statement, receipt or screenshot",
+    "Clear timeline of events",
+    "Relief requested",
+    "Never include a PIN, password, OTP or full card security code"
+  ],
+  "nationwide_routing_notes": [
+    "The banking complaint process applies throughout all 36 states and the Federal Capital Territory.",
+    "The customer should normally complain to the financial institution first.",
+    "Unresolved complaints against institutions within the CBN's regulatory purview may be escalated to the CBN Consumer Protection Department.",
+    "CBN written complaints may be filed through CBN branches nationwide.",
+    "Only official-source-verified direct contact details may be exposed.",
+    "Unlisted banks, microfinance banks and financial providers remain routable by their supplied organisation names without inventing email addresses."
+  ],
+  "security_rules": {
+    "prevent_double_unlock": true,
+    "no_unverified_contact_route": true,
+    "no_premature_regulatory_escalation": true,
+    "complaint_stage_consistency_required": true,
+    "preserve_user_amounts": true,
+    "remove_unsupported_rates_and_penalties": true,
+    "forbid_sensitive_credentials": [
+      "PIN",
+      "password",
+      "OTP",
+      "CVV",
+      "full card number",
+      "internet banking credential"
+    ]
   }
 }
