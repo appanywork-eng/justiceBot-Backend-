@@ -1,231 +1,564 @@
 {
   "sector": "aviation",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "country": "Nigeria",
-  "last_updated": "2026-07-29",
-  "data_quality_rules": {
+  "last_updated": "2026-08-02",
+  "purpose": "Nationwide routing of Nigerian aviation consumer complaints and safety reports",
+  "verification_policy": {
+    "official_sources_only": true,
     "no_invented_contacts": true,
-    "allow_webforms_when_no_email": true
-  },
-  "oversight": {
-    "federal_ministry": {
-      "name": "Federal Ministry of Aviation and Aerospace Development",
-      "aliases": [
-        "Ministry of Aviation",
-        "FMAAD",
-        "Federal Ministry of Aviation"
-      ],
-      "contact": {
-        "emails": [
-          "info@aviation.gov.ng"
-        ],
-        "address": "Federal Secretariat Complex (Phase 1), Shehu Shagari Way, Abuja, FCT, Nigeria",
-        "website": "https://aviation.gov.ng"
-      }
-    }
+    "unverified_email_routing_disabled": true,
+    "provider_first": true,
+    "regulator_after_unresolved_provider_complaint": true,
+    "accident_and_serious_incident_to_nsib": true,
+    "nationwide_coverage": true,
+    "verified_on": "2026-08-02"
   },
   "regulators": [
     {
+      "key": "ncaa",
       "name": "Nigerian Civil Aviation Authority (NCAA)",
       "aliases": [
         "NCAA",
-        "Nigerian Civil Aviation Authority"
+        "Nigerian Civil Aviation Authority",
+        "NCAA Consumer Protection",
+        "NCAA Consumer Protection Department",
+        "Director Consumer Protection NCAA"
       ],
       "contact": {
         "emails": [
           "cpd@ncaa.gov.ng"
         ],
-        "website": "https://cpd.ncaa.gov.ng/"
+        "phones": [
+          "+2349162011222"
+        ],
+        "address": "Nnamdi Azikiwe International Airport, Federal Capital Territory, Abuja, Nigeria",
+        "website": "https://ncaa.gov.ng/",
+        "complaint_portal": "https://cpd.ncaa.gov.ng/",
+        "complaint_form": "https://ncaa.gov.ng/report-forms/complaint-form/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://ncaa.gov.ng/report-forms/complaint-form/"
-      }
-    },
-    {
-      "name": "Federal Airports Authority of Nigeria (FAAN)",
-      "aliases": [
-        "FAAN",
-        "Federal Airports Authority of Nigeria"
-      ],
-      "contact": {
-        "emails": [
-          "info@faan.gov.ng",
-          "contact@faan.gov.ng"
-        ],
-        "website": "https://faan.gov.ng"
-      }
-    },
-    {
-      "name": "Nigerian Airspace Management Agency (NAMA)",
-      "aliases": [
-        "NAMA",
-        "Nigerian Airspace Management Agency"
-      ],
-      "contact": {
-        "emails": [
-          "info@nama.gov.ng",
-          "servicom@nama.gov.ng"
-        ],
-        "website": "https://nama.gov.ng"
-      }
-    },
-    {
-      "name": "Nigerian Meteorological Agency (NiMet)",
-      "aliases": [
-        "NiMet",
-        "Nigerian Meteorological Agency",
-        "NIMET"
-      ],
-      "contact": {
-        "emails": [
-          "info@nimet.gov.ng"
-        ],
-        "website": "https://nimet.gov.ng"
-      }
-    },
-    {
-      "name": "Nigerian Safety Investigation Bureau (NSIB)",
-      "aliases": [
-        "NSIB",
-        "Nigerian Safety Investigation Bureau"
-      ],
-      "contact": {
-        "emails": [
-          "info@nsib.gov.ng",
-          "dg@nsib.gov.ng"
-        ],
-        "website": "https://nsib.gov.ng"
-      }
-    }
-  ],
-  "watchdogs": [
-    {
-      "name": "SERVICOM (Service Compact with All Nigerians)",
-      "aliases": [
-        "SERVICOM",
-        "Service Compact with All Nigerians"
-      ],
-      "contact": {
-        "emails": [
-          "complaints@servicom.gov.ng"
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://ncaa.gov.ng/report-forms/complaint-form/",
+          "https://cpd.ncaa.gov.ng/",
+          "https://ncaa.gov.ng/contact/"
         ]
       }
     },
     {
-      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
+      "key": "nsib",
+      "name": "Nigerian Safety Investigation Bureau (NSIB)",
       "aliases": [
-        "FCCPC",
-        "Federal Competition and Consumer Protection Commission"
+        "NSIB",
+        "Nigerian Safety Investigation Bureau",
+        "Accident Investigation Bureau",
+        "AIB Nigeria",
+        "aviation accident investigation"
       ],
       "contact": {
         "emails": [
-          "contact@fccpc.gov.ng"
+          "info@nsib.gov.ng"
+        ],
+        "emergency_phones": [
+          "+2348077090908",
+          "+2348077090909"
+        ],
+        "address": "Nnamdi Azikiwe International Airport, Abuja, Nigeria",
+        "website": "https://nsib.gov.ng/",
+        "reporting_portal": "https://nsib.gov.ng/reporting",
+        "reporting_guidelines": "https://nsib.gov.ng/reporting-guidelines"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://nsib.gov.ng/reporting",
+          "https://nsib.gov.ng/reporting-guidelines",
+          "https://nsib.gov.ng/contact-us"
         ]
       }
     }
   ],
   "players": [
     {
-      "name": "Air Peace",
+      "key": "air_peace",
+      "name": "Air Peace Limited",
+      "testInput": "Air Peace",
       "aliases": [
+        "Air Peace",
         "Air Peace Airline",
-        "Air Peace Limited",
-        "Air Peace Airlines"
+        "Air Peace Airlines",
+        "Fly Air Peace"
       ],
       "contact": {
         "emails": [
           "callcenter@flyairpeace.com"
         ],
-        "website": "https://flyairpeace.com"
+        "phones": [
+          "+2342013438133",
+          "+23470035924773223"
+        ],
+        "address": "25 Sobo Arobiodu Street, GRA, Ikeja, Lagos State, Nigeria",
+        "website": "https://flyairpeace.com/",
+        "complaint_portal": "https://flyairpeace.com/help-and-contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://flyairpeace.com/help-and-contact/"
+        ]
       }
     },
     {
-      "name": "Arik Air",
+      "key": "arik",
+      "name": "Arik Air Limited",
+      "testInput": "Arik Air",
       "aliases": [
         "Arik",
-        "Arik Air Limited"
+        "Arik Air",
+        "Fly Arik"
       ],
       "contact": {
         "emails": [
-          "callcentre@arikair.com",
-          "talktous@arikair.com"
+          "callcentre@arikair.com"
         ],
-        "website": "https://arikair.com"
+        "phones": [
+          "0700003592745",
+          "+2342018891728"
+        ],
+        "address": "Arik Aviation Centre, Murtala Muhammed Airport Domestic Wing, Ikeja, Lagos State, Nigeria",
+        "website": "https://www.arikair.com/",
+        "complaint_portal": "https://www.arikair.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://www.arikair.com/"
+        ]
       }
     },
     {
-      "name": "Ibom Air",
+      "key": "ibom_air",
+      "name": "Ibom Airlines Limited (Ibom Air)",
+      "testInput": "Ibom Air",
       "aliases": [
-        "Ibom Air Limited",
+        "Ibom Air",
         "IbomAir",
-        "Ibom Airlines"
+        "Ibom Airlines",
+        "Ibom Airlines Limited"
       ],
       "contact": {
         "emails": [
-          "reservations@ibomair.com",
           "info@ibomair.com",
-          "ibomflyersupport@ibomair.com"
+          "reservations@ibomair.com"
         ],
-        "website": "https://ibomair.com"
+        "phones": [
+          "+234700123594266"
+        ],
+        "address": "Victor Attah International Airport, Uyo, Akwa Ibom State, Nigeria",
+        "website": "https://www.ibomair.com/",
+        "complaint_portal": "https://www.ibomair.com/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://www.ibomair.com/contact-us/"
+        ]
       }
     },
     {
-      "name": "Dana Air",
+      "key": "aero_contractors",
+      "name": "Aero Contractors Company of Nigeria Limited",
+      "testInput": "Aero Contractors",
       "aliases": [
-        "Dana",
-        "Dana Airlines"
+        "Aero",
+        "Aero Contractors",
+        "Aero Contractors Nigeria",
+        "ACN Aero",
+        "Fly Aero"
       ],
       "contact": {
         "emails": [
-          "contact@flydanaair.com"
+          "ticket-helpdesk@acn.aero",
+          "frontdesk@acn.aero"
         ],
-        "website": "https://flydanaair.com"
+        "phones": [
+          "+2342013302937",
+          "+2347001342376"
+        ],
+        "address": "Private Terminal, Murtala Muhammed Airport, PMB 21090, Ikeja, Lagos State, Nigeria",
+        "website": "https://flyaero.com/",
+        "complaint_portal": "https://flyaero.com/support/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://flyaero.com/support/",
+          "https://flyaero.com/"
+        ]
       }
     },
     {
-      "name": "Nigerian Aviation Handling Company (NAHCO Aviance)",
+      "key": "united_nigeria",
+      "name": "United Nigeria Airlines Company Limited",
+      "testInput": "United Nigeria Airlines",
       "aliases": [
-        "NAHCO",
-        "NAHCO Aviance",
-        "Nigerian Aviation Handling Company"
+        "United Nigeria",
+        "United Nigeria Airlines",
+        "UNA",
+        "Fly United Nigeria"
       ],
       "contact": {
         "emails": [
-          "info@nahcoaviance.com"
+          "customerservice@flyunitednigeria.com"
         ],
-        "website": "https://nahcoaviance.com"
+        "phones": [
+          "02016402255",
+          "07001032255",
+          "09131048525"
+        ],
+        "address": "Plot C2A Garden Avenue, GRA, Enugu, Enugu State, Nigeria",
+        "website": "https://flyunitednigeria.com/",
+        "complaint_portal": "https://flyunitednigeria.com/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://flyunitednigeria.com/contact-us/"
+        ]
       }
     },
     {
-      "name": "Skyway Aviation Handling Company (SAHCO PLC)",
+      "key": "green_africa",
+      "name": "Green Africa Airways Limited",
+      "testInput": "Green Africa",
       "aliases": [
-        "SAHCO",
-        "SAHCO PLC",
-        "Skyway Aviation Handling Company"
+        "Green Africa",
+        "Green Africa Airways",
+        "Green Africa Airline",
+        "GAA",
+        "gCare"
       ],
       "contact": {
         "emails": [
-          "info@sahcoplc.com"
+          "gcare@greenafrica.com"
         ],
-        "website": "https://sahcoplc.com"
+        "phones": [
+          "070047336237422",
+          "02018883055"
+        ],
+        "website": "https://www.greenafrica.com/",
+        "complaint_portal": "https://web.greenafrica.com/contact"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://web.greenafrica.com/contact",
+          "https://www.greenafrica.com/support/terms-and-conditions"
+        ]
+      }
+    },
+    {
+      "key": "max_air",
+      "name": "Max Air Limited",
+      "testInput": "Max Air",
+      "aliases": [
+        "Max Air",
+        "MaxAir",
+        "Max Air Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "cs@maxair.com.ng",
+          "reservation@maxair.com.ng"
+        ],
+        "phones": [
+          "09090092207",
+          "09110604036",
+          "07070210000"
+        ],
+        "address": "16 Ashton Road, Kano, Kano State, Nigeria",
+        "website": "https://maxair.com.ng/",
+        "complaint_portal": "https://maxair.com.ng/contact-us"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://maxair.com.ng/contact-us"
+        ]
+      }
+    },
+    {
+      "key": "rano_air",
+      "name": "Rano Air Limited",
+      "testInput": "Rano Air",
+      "aliases": [
+        "Rano",
+        "Rano Air",
+        "Rano Airline"
+      ],
+      "contact": {
+        "emails": [
+          "customercare@ranoair.com"
+        ],
+        "phones": [
+          "09169844058",
+          "09169844061",
+          "09168340356"
+        ],
+        "address": "Plot 1497, Cadastral Zone B06, Mabushi District, Abuja, Federal Capital Territory, Nigeria",
+        "website": "https://ranoair.com/",
+        "complaint_portal": "https://ranoair.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://ranoair.com/",
+          "https://ranoair.com/terms-condition/"
+        ]
+      }
+    },
+    {
+      "key": "valuejet",
+      "name": "FlyForValue Aviation Limited (ValueJet)",
+      "testInput": "ValueJet",
+      "aliases": [
+        "ValueJet",
+        "Value Jet",
+        "Fly ValueJet",
+        "FlyForValue",
+        "FlyForValue Aviation"
+      ],
+      "contact": {
+        "emails": [
+          "contactcenter@flyvaluejet.com"
+        ],
+        "phones": [
+          "02014600710",
+          "+2349125950403",
+          "+2349153823424",
+          "+2347047108136"
+        ],
+        "address": "31 Ladoke Akintola Street, Ikeja GRA, Lagos State, Nigeria",
+        "website": "https://www.flyvaluejet.com/",
+        "complaint_portal": "https://www.flyvaluejet.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://www.flyvaluejet.com/"
+        ]
+      }
+    },
+    {
+      "key": "overland",
+      "name": "Overland Airways Limited",
+      "testInput": "Overland Airways",
+      "aliases": [
+        "Overland",
+        "Overland Airways",
+        "Overland Airline"
+      ],
+      "contact": {
+        "emails": [
+          "fly@overlandairways.com"
+        ],
+        "phones": [
+          "+2348035355005",
+          "+2348035355006",
+          "+2348035355100"
+        ],
+        "address": "17 Simbiat Abiola Road, Ikeja, Lagos State, Nigeria",
+        "website": "https://www.overlandairways.com/",
+        "complaint_portal": "https://www.overlandairways.com/Contact-information/CallCentre"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "source_urls": [
+          "https://www.overlandairways.com/Contact-information/CallCentre",
+          "https://overlandairways.com/Travel-Information/Privacy-Policy"
+        ]
       }
     }
   ],
+  "routing_rules": {
+    "ordinary_first_complaint": {
+      "recipient": "Responsible airline or aviation service provider",
+      "delivery": "Verified provider complaint email, contact page, customer affairs unit or airport service desk",
+      "requirement": "The passenger should retain the complaint reference, ticket, booking reference and supporting evidence."
+    },
+    "unresolved_consumer_complaint": {
+      "recipient": "Nigerian Civil Aviation Authority (NCAA)",
+      "delivery": "NCAA Consumer Protection complaint portal, email or airport complaint desk",
+      "also_notify": "Responsible airline or aviation service provider",
+      "requirement": "Include evidence that the provider was first given an opportunity to resolve the complaint."
+    },
+    "accident_or_serious_incident": {
+      "recipient": "Nigerian Safety Investigation Bureau (NSIB)",
+      "delivery": "Immediate emergency telephone notification followed by the official secure reporting portal",
+      "requirement": "Report accidents and serious incidents without delay. Active emergencies should also be reported to emergency services."
+    },
+    "restricted_routes": [
+      "The supervising ministry is not the ordinary first-stage recipient for passenger complaints.",
+      "NCAA Consumer Protection is not a replacement for first complaining to the airline or service provider.",
+      "NSIB is for accidents and serious safety occurrences, not ordinary refunds, delays or baggage disputes.",
+      "Inactive or unverified airline contact details must not be exposed."
+    ]
+  },
   "routing_keywords": [
+    "aviation",
+    "airline",
+    "air carrier",
+    "flight",
+    "airport",
+    "air ticket",
+    "flight ticket",
+    "boarding pass",
+    "booking reference",
+    "pnr",
     "flight delay",
+    "delayed flight",
     "flight cancellation",
+    "cancelled flight",
+    "canceled flight",
+    "flight disruption",
     "denied boarding",
-    "baggage missing",
-    "baggage damage",
-    "refund",
-    "ticket fraud",
-    "airport extortion",
-    "ground handling",
-    "safety violation",
-    "airline negligence",
     "overbooking",
-    "rude staff"
-  ]
+    "refund",
+    "airline refund",
+    "ticket refund",
+    "missing baggage",
+    "lost baggage",
+    "delayed baggage",
+    "damaged baggage",
+    "baggage tag",
+    "airport service",
+    "ground handling",
+    "passenger complaint",
+    "missed connection",
+    "schedule change",
+    "ncaa",
+    "nsib",
+    "aircraft accident",
+    "aircraft incident",
+    "runway excursion",
+    "emergency landing",
+    "aircraft fire",
+    "nigerian civil aviation authority (ncaa)",
+    "nigerian civil aviation authority",
+    "ncaa consumer protection",
+    "ncaa consumer protection department",
+    "director consumer protection ncaa",
+    "nigerian safety investigation bureau (nsib)",
+    "nigerian safety investigation bureau",
+    "accident investigation bureau",
+    "aib nigeria",
+    "aviation accident investigation",
+    "air peace limited",
+    "air peace",
+    "air peace airline",
+    "air peace airlines",
+    "fly air peace",
+    "arik air limited",
+    "arik",
+    "arik air",
+    "fly arik",
+    "ibom airlines limited (ibom air)",
+    "ibom air",
+    "ibomair",
+    "ibom airlines",
+    "ibom airlines limited",
+    "aero contractors company of nigeria limited",
+    "aero",
+    "aero contractors",
+    "aero contractors nigeria",
+    "acn aero",
+    "fly aero",
+    "united nigeria airlines company limited",
+    "united nigeria",
+    "united nigeria airlines",
+    "una",
+    "fly united nigeria",
+    "green africa airways limited",
+    "green africa",
+    "green africa airways",
+    "green africa airline",
+    "gaa",
+    "gcare",
+    "max air limited",
+    "max air",
+    "maxair",
+    "max air nigeria",
+    "rano air limited",
+    "rano",
+    "rano air",
+    "rano airline",
+    "flyforvalue aviation limited (valuejet)",
+    "valuejet",
+    "value jet",
+    "fly valuejet",
+    "flyforvalue",
+    "flyforvalue aviation",
+    "overland airways limited",
+    "overland",
+    "overland airways",
+    "overland airline"
+  ],
+  "evidence_keywords": [
+    "passenger name",
+    "airline",
+    "flight number",
+    "booking reference",
+    "pnr",
+    "ticket number",
+    "date of flight",
+    "route",
+    "airport",
+    "boarding pass",
+    "baggage tag",
+    "payment receipt",
+    "provider complaint reference",
+    "delay notification",
+    "cancellation notification",
+    "photograph",
+    "medical report"
+  ],
+  "evidence_checklist": [
+    "Passenger's full name and contact details",
+    "Airline or aviation service provider",
+    "Flight number, date and route",
+    "Ticket number, booking reference or PNR",
+    "Boarding pass and baggage tag where relevant",
+    "Proof of payment",
+    "Provider complaint reference and response",
+    "Screenshots, correspondence and disruption notices",
+    "Description of the redress requested",
+    "Medical, police or safety evidence where relevant"
+  ],
+  "nationwide_routing_notes": [
+    "The consumer complaint process applies throughout Nigeria and to airlines operating flights connected with Nigeria.",
+    "Ordinary complaints should normally be submitted to the responsible provider first.",
+    "Unresolved consumer complaints may be escalated to NCAA Consumer Protection.",
+    "Accidents and serious incidents should be reported immediately to NSIB.",
+    "A provider not listed in the verified registry may still be identified by name, but no unverified email address may be exposed."
+  ],
+  "security_rules": {
+    "prevent_double_unlock": true,
+    "no_unverified_contact_route": true,
+    "no_premature_regulatory_escalation": true,
+    "complaint_stage_consistency_required": true,
+    "safety_occurrence_override": true
+  }
 }

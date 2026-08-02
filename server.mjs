@@ -20,6 +20,9 @@ import {
 import {
   NIGERIAN_TELECOM_DETECTION_KEYWORDS,
 } from "./lib/nigeriaTelecomRegistry.mjs";
+import {
+  NIGERIAN_AVIATION_DETECTION_KEYWORDS,
+} from "./lib/nigeriaAviationRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -761,24 +764,8 @@ function builtInKeywordMap() {
   return {
     power:
       NIGERIAN_POWER_DETECTION_KEYWORDS,
-    aviation: [
-      "flight",
-      "airport",
-      "airline",
-      "ncaa",
-      "faan",
-      "aviation",
-      "air peace",
-      "airpeace",
-      "baggage",
-      "flight delay",
-      "flight cancellation",
-      "cancelled flight",
-      "denied boarding",
-      "boarding pass",
-      "overbooking",
-      "air ticket",
-    ],
+    aviation:
+      NIGERIAN_AVIATION_DETECTION_KEYWORDS,
     banking: ["bank", "atm", "pos", "debit", "transfer", "chargeback", "unlawful debit", "cbn", "failed transfer", "reversal", "ussd", "mobile banking"],
     telecoms:
       NIGERIAN_TELECOM_DETECTION_KEYWORDS,

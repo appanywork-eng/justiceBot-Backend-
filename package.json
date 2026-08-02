@@ -91,7 +91,8 @@
     "test:power-nationwide": "node scripts/test-power-nationwide.mjs",
     "test:complaint-stage": "node scripts/test-complaint-stage-consistency.mjs",
     "test:national-sectors": "node scripts/test-national-sector-framework.mjs",
-    "test:telecoms-nationwide": "node scripts/test-telecoms-nationwide.mjs"
+    "test:telecoms-nationwide": "node scripts/test-telecoms-nationwide.mjs",
+    "test:aviation-nationwide": "node scripts/test-aviation-nationwide.mjs"
   },
   "repository": {
     "type": "git",
