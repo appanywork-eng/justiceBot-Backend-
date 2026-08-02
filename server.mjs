@@ -35,6 +35,9 @@ import {
 import {
   NIGERIAN_ANTI_CORRUPTION_DETECTION_KEYWORDS,
 } from "./lib/nigeriaAntiCorruptionRegistry.mjs";
+import {
+  NIGERIAN_DIASPORA_DETECTION_KEYWORDS,
+} from "./lib/nigeriaDiasporaRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -810,22 +813,8 @@ function builtInKeywordMap() {
     ],
     anti_corruption:
       NIGERIAN_ANTI_CORRUPTION_DETECTION_KEYWORDS,
-    diaspora_report: [
-      "diaspora",
-      "nidcom",
-      "embassy",
-      "high commission",
-      "consulate",
-      "passport seized",
-      "passport withheld",
-      "detained abroad",
-      "arrested abroad",
-      "deportation",
-      "stranded abroad",
-      "trafficking",
-      "human trafficking",
-      "migration",
-    ],
+    diaspora_report:
+      NIGERIAN_DIASPORA_DETECTION_KEYWORDS,
   };
 }
 

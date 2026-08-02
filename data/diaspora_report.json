@@ -1,165 +1,353 @@
 {
   "sector": "diaspora_report",
-  "version": "1.1.0",
   "country": "Nigeria",
-  "last_updated": "2026-07-30",
-  "oversight": {
-    "federal_ministry": {
-      "name": "Federal Ministry of Foreign Affairs",
+  "version": "2.0.0",
+  "last_updated": "2026-08-02",
+  "purpose": [
+    "Route Nigerians abroad to the correct consular, immigration, diaspora-welfare or protection channel",
+    "Use the nearest Nigerian diplomatic mission for country-specific consular assistance",
+    "Protect trafficking victims and persons facing immediate danger",
+    "Prevent guessed embassy emails and indiscriminate recipient selection"
+  ],
+  "verification_policy": {
+    "official_sources_only": true,
+    "block_unverified_direct_contacts": true,
+    "direct_contact_requires_verification": true,
+    "mission_email_must_not_be_guessed": true
+  },
+  "authorities": [
+    {
+      "key": "nearest_nigerian_diplomatic_mission",
+      "name": "The Nearest Nigerian Embassy, High Commission or Consulate",
       "aliases": [
-        "MFA",
-        "Foreign Affairs"
+        "The Nearest Nigerian Embassy, High Commission or Consulate",
+        "Nigerian Embassy",
+        "Nigeria Embassy",
+        "Nigerian High Commission",
+        "Nigeria High Commission",
+        "Nigerian Consulate",
+        "Nigeria Consulate",
+        "Nigerian diplomatic mission",
+        "nearest Nigerian mission",
+        "embassy of Nigeria",
+        "consulate of Nigeria"
       ],
+      "country_specific": true,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "",
+        "website": "https://foreignaffairs.gov.ng/diplomatic-missions/",
+        "mission_directory": "https://foreignaffairs.gov.ng/diplomatic-missions/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://foreignaffairs.gov.ng/diplomatic-missions/",
+          "https://foreignaffairs.gov.ng/services/visas-%26-passports/"
+        ]
+      }
+    },
+    {
+      "key": "mfa_consular_services",
+      "name": "Federal Ministry of Foreign Affairs – Consular and Legal Department",
+      "aliases": [
+        "Federal Ministry of Foreign Affairs – Consular and Legal Department",
+        "Ministry of Foreign Affairs",
+        "Federal Ministry of Foreign Affairs",
+        "MFA Nigeria",
+        "Nigeria Foreign Affairs Ministry",
+        "Consular and Legal Department",
+        "MFA Consular Services"
+      ],
+      "country_specific": false,
       "contact": {
         "emails": [
           "info@foreignaffairs.gov.ng"
         ],
+        "phone_numbers": [
+          "+234952365223"
+        ],
         "address": "Tafewa Balewa House, Central Business District, Abuja, Nigeria",
         "website": "https://foreignaffairs.gov.ng/",
-        "mission_directory": "https://foreignaffairs.gov.ng/diplomatic-missions/"
+        "consular_services": "https://foreignaffairs.gov.ng/services/visas-%26-passports/",
+        "diplomatic_missions": "https://foreignaffairs.gov.ng/diplomatic-missions/",
+        "authentication_platform": "https://acs.foreignaffairs.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://foreignaffairs.gov.ng/",
+          "https://foreignaffairs.gov.ng/services/visas-%26-passports/",
+          "https://foreignaffairs.gov.ng/diplomatic-missions/",
+          "https://acs.foreignaffairs.gov.ng/"
+        ]
       }
-    }
-  },
-  "core_institutions": [
+    },
     {
+      "key": "nidcom_diaspora_support",
       "name": "Nigerians in Diaspora Commission (NiDCOM)",
       "aliases": [
+        "Nigerians in Diaspora Commission (NiDCOM)",
         "NiDCOM",
-        "NIDCOM"
+        "NIDCOM",
+        "Nigerians in Diaspora Commission",
+        "Diaspora Commission",
+        "Nigeria Diaspora Commission"
       ],
+      "country_specific": false,
       "contact": {
         "emails": [
           "admin@nidcom.gov.ng"
         ],
-        "address": "Federal Secretariat Complex, Phase 1, Annex 3, 2nd Floor, Abuja, Nigeria",
-        "website": "https://nidcom.gov.ng/contact-nidcom/"
+        "phone_numbers": [
+          "+2347014606361",
+          "+23492780553"
+        ],
+        "address": "Federal Secretariat, Phase 1, Annex 3, 2nd Floor, Abuja, Nigeria",
+        "website": "https://nidcom.gov.ng/",
+        "contact_page": "https://nidcom.gov.ng/contact-nidcom/",
+        "diaspora_registry": "https://registry.nidcom.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://nidcom.gov.ng/",
+          "https://nidcom.gov.ng/contact-nidcom/",
+          "https://registry.nidcom.gov.ng/"
+        ]
       }
-    }
-  ],
-  "regulators": [
+    },
     {
+      "key": "nis_passport_support",
       "name": "Nigeria Immigration Service (NIS)",
       "aliases": [
+        "Nigeria Immigration Service (NIS)",
         "NIS",
         "Nigeria Immigration Service",
-        "Immigration"
+        "Nigerian Immigration Service",
+        "Immigration Service",
+        "NIS Passport Office",
+        "passport immigration"
       ],
+      "country_specific": false,
       "contact": {
         "emails": [
           "nis.servicom@nigeriaimmigration.gov.ng",
           "support@immigration.gov.ng"
         ],
-        "address": "Nigeria Immigration Service Headquarters, Umar Musa Yar'Adua Express Way, Airport Road, Sauka, Abuja, Nigeria",
-        "website": "https://immigration.gov.ng/contact-us/"
+        "phone_numbers": [
+          "+2349121900655",
+          "+2349121556359",
+          "+2349121477092"
+        ],
+        "address": "Umar Musa Yar'Adua Expressway, Airport Road, Sauka, Abuja, Nigeria",
+        "website": "https://immigration.gov.ng/",
+        "contact_page": "https://immigration.gov.ng/contact/",
+        "passport_information": "https://immigration.gov.ng/passports/",
+        "passport_application": "https://passport.immigration.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://immigration.gov.ng/contact/",
+          "https://immigration.gov.ng/passports/",
+          "https://passport.immigration.gov.ng/"
+        ]
       }
-    }
-  ],
-  "watchdogs": [
+    },
     {
+      "key": "naptip_trafficking_report",
       "name": "National Agency for the Prohibition of Trafficking in Persons (NAPTIP)",
       "aliases": [
+        "National Agency for the Prohibition of Trafficking in Persons (NAPTIP)",
         "NAPTIP",
-        "Human Trafficking Agency"
+        "National Agency for the Prohibition of Trafficking in Persons",
+        "anti trafficking agency",
+        "Nigeria anti trafficking agency",
+        "human trafficking agency"
       ],
+      "country_specific": false,
       "contact": {
         "emails": [
           "info@naptip.gov.ng"
         ],
-        "phones": [
+        "phone_numbers": [
           "+2347030000203",
           "08002255627847"
         ],
-        "address": "No. 2028, Dalaba Street, Wuse Zone 5, Abuja, Nigeria",
-        "website": "https://nsod.naptip.gov.ng/"
-      }
-    },
-    {
-      "name": "Public Complaints Commission (PCC)",
-      "aliases": [
-        "PCC"
-      ],
-      "contact": {
-        "emails": [
-          "info@pcc.gov.ng"
-        ]
-      }
-    },
-    {
-      "name": "Office of the Secretary to the Government of the Federation (OSGF)",
-      "aliases": [
-        "OSGF",
-        "Secretary to the Government of the Federation",
-        "SGF Office"
-      ],
-      "contact": {
-        "emails": [
-          "info@osgf.gov.ng"
-        ]
-      }
-    },
-    {
-      "name": "Office of the Attorney-General of the Federation and Minister of Justice (AGF)",
-      "aliases": [
-        "AGF",
-        "Attorney-General of the Federation",
-        "Federal Ministry of Justice"
-      ],
-      "contact": {
-        "emails": [
-          "info@justice.gov.ng"
-        ]
-      }
-    },
-    {
-      "name": "Office of the Chief of Staff to the President",
-      "aliases": [
-        "Chief of Staff to the President",
-        "CoS to the President",
-        "State House"
-      ],
-      "contact": {
-        "emails": [
-          "info@statehouse.gov.ng"
-        ]
-      }
-    },
-    {
-      "name": "The Nigerian Senate",
-      "aliases": [
-        "Senate",
-        "National Assembly Senate",
-        "NASS Senate"
-      ],
-      "contact": {
-        "emails": [
-          "info@nass.gov.ng"
-        ]
-      }
-    },
-    {
-      "name": "The House of Representatives, Federal Republic of Nigeria",
-      "aliases": [
-        "House of Representatives",
-        "House of Reps",
-        "NASS House",
-        "Green Chamber"
-      ],
-      "contact": {
-        "emails": [
-          "info@nass.gov.ng"
+        "address": "No. 2028 Dalaba Street, Wuse Zone 5, Abuja, Nigeria",
+        "website": "https://naptip.gov.ng/",
+        "incident_reporting": "https://nsod.naptip.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://naptip.gov.ng/",
+          "https://nsod.naptip.gov.ng/"
         ]
       }
     }
   ],
-  "players": [],
-  "verification": {
-    "status": "VERIFIED_OFFICIAL_SOURCES",
-    "verified_on": "2026-07-30",
-    "source_urls": [
-      "https://foreignaffairs.gov.ng/diplomatic-missions/",
-      "https://nidcom.gov.ng/contact-nidcom/",
-      "https://immigration.gov.ng/contact-us/",
-      "https://nsod.naptip.gov.ng/"
-    ]
+  "routing_policy": {
+    "immediate_emergency": "Active danger must route first to the relevant host-country emergency service. Ordinary petition generation must be blocked.",
+    "trafficking_and_exploitation": "Suspected trafficking, forced labour, deceptive recruitment or passport seizure must route to NAPTIP with the nearest Nigerian mission, NiDCOM and the Foreign Affairs Ministry included where appropriate.",
+    "passport_first_stage": "A first passport, renewal, replacement or emergency travel-document request abroad must route through the nearest Nigerian embassy, high commission or consulate.",
+    "passport_escalation": "An unresolved passport or immigration-service complaint with a previous reference must route to the Nigeria Immigration Service.",
+    "consular_welfare": "Country-specific welfare, detention, hospitalisation, death, evacuation or stranded-person assistance must route first to the nearest Nigerian diplomatic mission.",
+    "diaspora_coordination": "General diaspora welfare, coordination and institutional-support reports must route to NiDCOM.",
+    "headquarters_consular_support": "The Federal Ministry of Foreign Affairs may support mission-level consular cases or headquarters escalation.",
+    "mission_contact_safety": "Mission emails must not be guessed. The official diplomatic-mission directory must be used to identify the responsible mission."
+  },
+  "routing_keywords": [
+    "Nigerian abroad",
+    "Nigerians abroad",
+    "Nigerian in diaspora",
+    "Nigerians in diaspora",
+    "diaspora complaint",
+    "consular assistance",
+    "consular help",
+    "consular emergency",
+    "embassy assistance",
+    "embassy complaint",
+    "high commission assistance",
+    "consulate assistance",
+    "stranded Nigerian",
+    "stranded abroad",
+    "stranded overseas",
+    "distressed Nigerian abroad",
+    "detained abroad",
+    "arrested abroad",
+    "imprisoned abroad",
+    "deportation",
+    "immigration detention abroad",
+    "legal assistance abroad",
+    "hospitalised abroad",
+    "hospitalized abroad",
+    "death abroad",
+    "body repatriation",
+    "repatriation of remains",
+    "emergency evacuation",
+    "evacuation abroad",
+    "lost passport abroad",
+    "stolen passport abroad",
+    "expired passport abroad",
+    "passport renewal abroad",
+    "passport delay abroad",
+    "passport application delay",
+    "contactless passport",
+    "passport biometric",
+    "passport appointment",
+    "passport correction",
+    "passport data correction",
+    "emergency travel certificate",
+    "travel document",
+    "consular registration",
+    "register with Nigerian embassy",
+    "foreign employer abuse",
+    "migrant worker abuse",
+    "salary withheld abroad",
+    "passport seized by employer",
+    "domestic worker abuse abroad",
+    "forced labour abroad",
+    "forced labor abroad",
+    "deceptive recruitment",
+    "recruitment scam abroad",
+    "human trafficking",
+    "trafficked abroad",
+    "sexual exploitation abroad",
+    "labour exploitation abroad",
+    "labor exploitation abroad",
+    "victim of trafficking",
+    "return to Nigeria",
+    "voluntary return",
+    "diaspora welfare",
+    "diaspora organisation",
+    "diaspora organization",
+    "Nigerian mission",
+    "diplomatic mission",
+    "The Nearest Nigerian Embassy, High Commission or Consulate",
+    "Nigerian Embassy",
+    "Nigeria Embassy",
+    "Nigerian High Commission",
+    "Nigeria High Commission",
+    "Nigerian Consulate",
+    "Nigeria Consulate",
+    "Nigerian diplomatic mission",
+    "nearest Nigerian mission",
+    "embassy of Nigeria",
+    "consulate of Nigeria",
+    "Federal Ministry of Foreign Affairs – Consular and Legal Department",
+    "Ministry of Foreign Affairs",
+    "Federal Ministry of Foreign Affairs",
+    "MFA Nigeria",
+    "Nigeria Foreign Affairs Ministry",
+    "Consular and Legal Department",
+    "MFA Consular Services",
+    "Nigerians in Diaspora Commission (NiDCOM)",
+    "NiDCOM",
+    "NIDCOM",
+    "Nigerians in Diaspora Commission",
+    "Diaspora Commission",
+    "Nigeria Diaspora Commission",
+    "Nigeria Immigration Service (NIS)",
+    "NIS",
+    "Nigeria Immigration Service",
+    "Nigerian Immigration Service",
+    "Immigration Service",
+    "NIS Passport Office",
+    "passport immigration",
+    "National Agency for the Prohibition of Trafficking in Persons (NAPTIP)",
+    "NAPTIP",
+    "National Agency for the Prohibition of Trafficking in Persons",
+    "anti trafficking agency",
+    "Nigeria anti trafficking agency",
+    "human trafficking agency"
+  ],
+  "evidence_checklist": [
+    "Country and city where the incident occurred",
+    "Full name and Nigerian citizenship information",
+    "Responsible embassy, high commission or consulate where known",
+    "Passport application ID or payment reference where relevant",
+    "Previous complaint reference and date",
+    "Names of employers, recruiters, agents or institutions involved",
+    "Chronology of events with dates and locations",
+    "Employment contract, recruitment documents or payment evidence",
+    "Police, immigration, hospital or detention reference where available",
+    "Safe contact details for the affected Nigerian",
+    "Details of immediate threats, exploitation or passport seizure"
+  ],
+  "drafting_safety": {
+    "active_emergency_blocks_ordinary_generation": true,
+    "suspected_trafficker_not_automatically_copied": true,
+    "unsafe_employer_not_automatically_copied": true,
+    "mission_email_must_not_be_invented": true,
+    "passwords_and_one_time_codes_prohibited": true,
+    "full_payment_card_details_prohibited": true,
+    "unnecessary_passport_biodata_prohibited": true,
+    "allegations_must_not_be_stated_as_proven_facts": true,
+    "reporter_and_victim_safety_must_be_considered": true
+  },
+  "security_rules": {
+    "official_sources_only": true,
+    "unverified_contacts_gated": true,
+    "active_emergency_blocks_generation": true,
+    "host_country_emergency_services_take_priority": true,
+    "preserve_evidence_only_when_safe": true
   }
 }
