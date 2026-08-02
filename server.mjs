@@ -26,6 +26,9 @@ import {
 import {
   NIGERIAN_AVIATION_DETECTION_KEYWORDS,
 } from "./lib/nigeriaAviationRegistry.mjs";
+import {
+  NIGERIAN_HEALTH_DETECTION_KEYWORDS,
+} from "./lib/nigeriaHealthRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -774,7 +777,8 @@ function builtInKeywordMap() {
     telecoms:
       NIGERIAN_TELECOM_DETECTION_KEYWORDS,
     education: ["school", "university", "waec", "jamb", "nuc", "education", "tetfund", "transcript"],
-    health: ["hospital", "clinic", "doctor", "ncdc", "nhis", "medical", "health"],
+    health:
+      NIGERIAN_HEALTH_DETECTION_KEYWORDS,
     security: ["police", "army", "navy", "airforce", "nscdc", "unlawful arrest", "immigration", "dss", "kidnap", "detention"],
     judiciary: ["court", "judge", "justice", "supreme", "magistrate", "bail", "delayed judgement", "njc"],
     international_escalation: [
