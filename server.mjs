@@ -41,6 +41,9 @@ import {
 import {
   NIGERIAN_SECURITY_DETECTION_KEYWORDS,
 } from "./lib/nigeriaSecurityRegistry.mjs";
+import {
+  NIGERIAN_JUDICIARY_DETECTION_KEYWORDS,
+} from "./lib/nigeriaJudiciaryRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -794,7 +797,8 @@ function builtInKeywordMap() {
       NIGERIAN_HEALTH_DETECTION_KEYWORDS,
     security:
       NIGERIAN_SECURITY_DETECTION_KEYWORDS,
-    judiciary: ["court", "judge", "justice", "supreme", "magistrate", "bail", "delayed judgement", "njc"],
+    judiciary:
+      NIGERIAN_JUDICIARY_DETECTION_KEYWORDS,
     international_escalation: [
       "un",
       "ecowas",

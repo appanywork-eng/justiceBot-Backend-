@@ -1,291 +1,596 @@
 {
   "sector": "judiciary",
   "country": "Nigeria",
-  "version": "1.1.0",
-  "last_updated": "2026-07-30",
-  "notes": {
-    "constitutional_independence": "Judiciary has constitutional independence; complaints are routed mainly through judicial oversight bodies (NJC/FJSC), court administration, and rights watchdogs. Avoid contempt of court: focus on administrative misconduct, delay, corruption, registry failure, or rights violations.",
-    "to_vs_cc_rule_for_petitiondesk": [
-      "TO = the PRIMARY responsible institution in your case (usually the specific Court / Court Registry / NJC/FJSC depending on issue).",
-      "CC = oversight/watchdogs (PCC for maladministration, NHRC for rights issues, etc.)."
-    ]
+  "version": "2.0.0",
+  "last_updated": "2026-08-02",
+  "purpose": [
+    "Route Nigerian court-administration and judicial complaints through the correct lawful process",
+    "Separate disciplinary complaints from appeals against judgments",
+    "Route justice-chain human-rights violations to NHRC",
+    "Route lawyer misconduct through the authorised professional disciplinary process",
+    "Prevent guessed court, judicial and disciplinary email addresses"
+  ],
+  "verification_policy": {
+    "official_sources_only": true,
+    "block_unverified_direct_contacts": true,
+    "direct_contact_requires_verification": true,
+    "portal_and_physical_routes_are_permitted": true,
+    "guessed_court_emails_prohibited": true,
+    "disciplinary_petition_cannot_replace_appeal": true
   },
-  "oversight": {
-    "federal_ministry_of_justice": {
-      "name": "Federal Ministry of Justice",
-      "aliases": [
-        "Ministry of Justice",
-        "FMOJ",
-        "Federal Ministry of Justice (FMOJ)"
-      ],
-      "role": "Justice-sector coordination, federal legal policy; Attorney-General of the Federation functions sit here (AGF).",
-      "contact": {
-        "emails": [
-          "fmoj.foi@justice.gov.ng"
-        ]
-      }
-    }
-  },
-  "core_judicial_oversight_and_service_bodies": [
+  "authorities": [
     {
+      "key": "njc_judicial_discipline",
       "name": "National Judicial Council (NJC)",
       "aliases": [
+        "National Judicial Council (NJC)",
         "NJC",
-        "National Judicial Council"
+        "National Judicial Council",
+        "Chairman of the National Judicial Council",
+        "Chief Justice and Chairman of the NJC",
+        "Office of the Secretary to the National Judicial Council",
+        "NJC Complaint Registry"
       ],
-      "type": "Judicial oversight (discipline/complaints as applicable)",
+      "portal_only": true,
+      "physical_filing_required": true,
+      "country_specific": false,
       "contact": {
-        "emails": [
-          "info@njc.gov.ng"
+        "emails": [],
+        "phone_numbers": [
+          "09-4603190"
         ],
-        "website": "https://www.njc.gov.ng/index.php/judicial-discipline-regulation"
+        "address": "Office of the Secretary to the National Judicial Council, Abuja, Nigeria",
+        "website": "https://njc.gov.ng/",
+        "discipline_regulations": "https://njc.gov.ng/discipline-regulations",
+        "discipline_regulations_legacy": "https://njc.gov.ng/index.php/judicial-discipline-regulation",
+        "filing_guidance": "Complaint must be signed, contain specific facts and a contact address, and be accompanied by a verifying affidavit. It must be filed at the Office of the Secretary to the Council, Office of the Chief Justice of Nigeria, or relevant Head of Court."
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-30",
-        "source": "https://www.njc.gov.ng/index.php/judicial-discipline-regulation"
-      }
-    },
-    {
-      "name": "Federal Judicial Service Commission (FJSC)",
-      "aliases": [
-        "FJSC",
-        "Federal Judicial Service Commission"
-      ],
-      "type": "Judicial service body (federal judicial appointments/admin matters as applicable)",
-      "contact": {
-        "emails": [
-          "info@fjsc.gov.ng"
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://njc.gov.ng/discipline-regulations",
+          "https://njc.gov.ng/index.php/judicial-discipline-regulation",
+          "https://njc.gov.ng/index.php/faq"
         ]
       }
     },
     {
-      "name": "Body of Benchers (BOB)",
+      "key": "nhrc_justice_chain_complaints",
+      "name": "National Human Rights Commission (NHRC)",
       "aliases": [
-        "BOB",
-        "Body of Benchers"
+        "National Human Rights Commission (NHRC)",
+        "NHRC",
+        "National Human Rights Commission",
+        "Nigeria Human Rights Commission",
+        "Human Rights Commission"
       ],
-      "type": "Legal profession governance (where applicable)",
+      "portal_only": false,
+      "physical_filing_required": false,
+      "country_specific": false,
       "contact": {
         "emails": [
-          "info@bob.gov.ng"
-        ]
-      }
-    }
-  ],
-  "courts_and_registry_targets": [
-    {
-      "name": "Supreme Court of Nigeria",
-      "aliases": [
-        "Supreme Court",
-        "Supreme Court of the Federal Republic of Nigeria"
-      ],
-      "type": "Court (Apex)",
-      "contact": {
-        "emails": [
-          "info@supremecourt.gov.ng"
-        ]
-      }
-    },
-    {
-      "name": "Court of Appeal of Nigeria",
-      "aliases": [
-        "Court of Appeal",
-        "COA",
-        "Nigeria Court of Appeal"
-      ],
-      "type": "Court",
-      "contact": {
-        "emails": [
-          "hq@courtofappeal.gov.ng"
-        ]
-      }
-    },
-    {
-      "name": "Federal High Court of Nigeria",
-      "aliases": [
-        "Federal High Court",
-        "FHC"
-      ],
-      "type": "Court",
-      "contact": {
-        "emails": [
-          "info@fhc.gov.ng"
-        ]
-      }
-    },
-    {
-      "name": "High Court (State) / Chief Judge (State)",
-      "aliases": [
-        "State High Court",
-        "High Court",
-        "Chief Judge",
-        "State Judiciary"
-      ],
-      "type": "Court (State)",
-      "contact": {
-        "emails": []
+          "info@nhrc.gov.ng"
+        ],
+        "phone_numbers": [
+          "08006472428",
+          "6472",
+          "092903746",
+          "092908829",
+          "09032192577"
+        ],
+        "address": "No. 19 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://www.nigeriarights.gov.ng/",
+        "complaint_form": "https://www.nigeriarights.gov.ng/index.php/complaint-form",
+        "complaint_guidance": "https://www.nigeriarights.gov.ng/about/nhrc-mandate.html",
+        "contact_page": "https://www.nigeriarights.gov.ng/contact-us.html"
       },
-      "notes": "State judiciaries differ by state. Keep a separate state_judiciary.json later (Abuja/FCT, Lagos, Kano, etc.)."
-    }
-  ],
-  "watchdogs": [
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.nigeriarights.gov.ng/index.php/complaint-form",
+          "https://www.nigeriarights.gov.ng/about/nhrc-mandate.html",
+          "https://www.nigeriarights.gov.ng/contact-us.html"
+        ]
+      }
+    },
     {
+      "key": "pcc_court_administration_complaints",
       "name": "Public Complaints Commission (PCC)",
       "aliases": [
+        "Public Complaints Commission (PCC)",
         "PCC",
-        "Public Complaints Commission"
+        "Public Complaints Commission",
+        "Nigeria Ombudsman",
+        "Federal Ombudsman"
       ],
-      "role": "Maladministration, refusal to act, delay in administrative duties, poor service delivery in public institutions (including court registry/administration complaints).",
+      "portal_only": false,
+      "physical_filing_required": false,
+      "country_specific": false,
       "contact": {
         "emails": [
           "complaint@pcc.gov.ng",
           "info@pcc.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2348070100580",
+          "+2342097000099"
+        ],
+        "address": "25 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://pcc.gov.ng/",
+        "contact_page": "https://pcc.gov.ng/contact-us/",
+        "complaint_procedure": "https://pcc.gov.ng/procedures-for-lodging-complaints/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://pcc.gov.ng/contact-us/",
+          "https://pcc.gov.ng/procedures-for-lodging-complaints/",
+          "https://pcc.gov.ng/how-the-commission-functions/"
         ]
       }
     },
     {
-      "name": "National Human Rights Commission (NHRC)",
+      "key": "supreme_court_administration",
+      "name": "Supreme Court of Nigeria",
       "aliases": [
-        "NHRC",
-        "National Human Rights Commission"
+        "Supreme Court of Nigeria",
+        "Supreme Court",
+        "Apex Court",
+        "Chief Registrar Supreme Court",
+        "Supreme Court Registry",
+        "Supreme Court Litigation Information Desk"
       ],
-      "role": "Human rights violations (unlawful detention, torture, denial of bail, fair-hearing concerns, abuse by justice-chain actors).",
+      "portal_only": false,
+      "physical_filing_required": false,
+      "country_specific": false,
       "contact": {
         "emails": [
-          "info@nhrc.gov.ng"
+          "info@supremecourt.gov.ng",
+          "litigation@supremecourt.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2347039983117"
+        ],
+        "address": "Three Arms Zone, Abuja, Nigeria",
+        "website": "https://supremecourt.gov.ng/",
+        "contact_page": "https://supremecourt.gov.ng/contactus",
+        "litigation_information": "https://supremecourt.gov.ng/litigation-information-desk"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://supremecourt.gov.ng/contactus",
+          "https://supremecourt.gov.ng/litigation-information-desk"
+        ]
+      }
+    },
+    {
+      "key": "court_of_appeal_administration",
+      "name": "Court of Appeal of Nigeria – Relevant Division or Headquarters",
+      "aliases": [
+        "Court of Appeal of Nigeria – Relevant Division or Headquarters",
+        "Court of Appeal",
+        "Court of Appeal of Nigeria",
+        "Nigeria Court of Appeal",
+        "COA",
+        "Court of Appeal Registry",
+        "Court of Appeal Division",
+        "President Court of Appeal",
+        "Chief Registrar Court of Appeal"
+      ],
+      "portal_only": true,
+      "physical_filing_required": false,
+      "country_specific": true,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "Three Arms Zone, Shehu Shagari Way, Central Business District, Abuja, Nigeria",
+        "website": "https://www.courtofappeal.gov.ng/",
+        "contact_form": "https://www.courtofappeal.gov.ng/contact",
+        "divisions_directory": "https://www.courtofappeal.gov.ng/contact"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://www.courtofappeal.gov.ng/",
+          "https://www.courtofappeal.gov.ng/contact"
+        ]
+      }
+    },
+    {
+      "key": "federal_high_court_administration",
+      "name": "Federal High Court of Nigeria – Relevant Judicial Division",
+      "aliases": [
+        "Federal High Court of Nigeria – Relevant Judicial Division",
+        "Federal High Court",
+        "Federal High Court of Nigeria",
+        "FHC",
+        "Federal High Court Registry",
+        "Chief Registrar Federal High Court",
+        "Federal High Court Judicial Division"
+      ],
+      "portal_only": false,
+      "physical_filing_required": false,
+      "country_specific": false,
+      "contact": {
+        "emails": [
+          "info@fhc.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2348074601579"
+        ],
+        "address": "Shehu Shagari Expressway, Central Business District, Abuja, Nigeria",
+        "website": "https://fhc.gov.ng/",
+        "contact_page": "https://fhc.gov.ng/contact/",
+        "divisions_directory": "https://fhc.gov.ng/judicial-divisions/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://fhc.gov.ng/contact/",
+          "https://fhc.gov.ng/judicial-divisions/",
+          "https://fhc.gov.ng/about-us/"
+        ]
+      }
+    },
+    {
+      "key": "national_industrial_court_administration",
+      "name": "National Industrial Court of Nigeria – Relevant Division",
+      "aliases": [
+        "National Industrial Court of Nigeria – Relevant Division",
+        "National Industrial Court",
+        "National Industrial Court of Nigeria",
+        "NICN",
+        "Industrial Court",
+        "NICN Registry",
+        "Chief Registrar National Industrial Court"
+      ],
+      "portal_only": false,
+      "physical_filing_required": false,
+      "country_specific": false,
+      "contact": {
+        "emails": [
+          "info@nicn.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2348143710567",
+          "+2347013235494"
+        ],
+        "address": "No. 1 Justice Adejumo Street, Area 3, Garki, Abuja, Nigeria",
+        "website": "https://www.nicn.gov.ng/",
+        "contact_page": "https://www.nicn.gov.ng/contact",
+        "divisions_directory": "https://www.nicn.gov.ng/divisions-registries"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.nicn.gov.ng/contact",
+          "https://www.nicn.gov.ng/divisions-registries"
+        ]
+      }
+    },
+    {
+      "key": "fct_high_court_administration",
+      "name": "High Court of the Federal Capital Territory, Abuja",
+      "aliases": [
+        "High Court of the Federal Capital Territory, Abuja",
+        "FCT High Court",
+        "High Court of the FCT",
+        "High Court of the Federal Capital Territory",
+        "Federal Capital Territory Judiciary",
+        "FCT Judiciary",
+        "Chief Registrar FCT High Court",
+        "Chief Judge FCT"
+      ],
+      "portal_only": false,
+      "physical_filing_required": false,
+      "country_specific": false,
+      "contact": {
+        "emails": [
+          "info@fcthighcourt.gov.ng"
+        ],
+        "phone_numbers": [
+          "+23492737084",
+          "+2347084336622"
+        ],
+        "address": "Plot 426, Tigris Crescent, Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://www.fcthighcourt.gov.ng/",
+        "contact_page": "https://www.fcthighcourt.gov.ng/113-2/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.fcthighcourt.gov.ng/113-2/"
+        ]
+      }
+    },
+    {
+      "key": "lpdc_legal_practitioner_discipline",
+      "name": "Legal Practitioners Disciplinary Committee (LPDC), Body of Benchers",
+      "aliases": [
+        "Legal Practitioners Disciplinary Committee (LPDC), Body of Benchers",
+        "LPDC",
+        "Legal Practitioners Disciplinary Committee",
+        "Body of Benchers",
+        "BOB",
+        "Chairman Body of Benchers",
+        "Lawyer Discipline",
+        "Legal Practitioner Discipline"
+      ],
+      "portal_only": true,
+      "physical_filing_required": true,
+      "country_specific": false,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [
+          "+2349161270000",
+          "09064083585"
+        ],
+        "address": "Body of Benchers Secretariat, Plot 688, Institute and Research District, FCC Phase III, Abuja, Nigeria",
+        "website": "https://new.bob.gov.ng/",
+        "contact_page": "https://new.bob.gov.ng/contact-2/",
+        "filing_guidance": "Use the prescribed written disciplinary process and submit through an authorised recipient or directly through the LPDC or Body of Benchers Secretariat."
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://new.bob.gov.ng/contact-2/"
+        ]
+      }
+    },
+    {
+      "key": "relevant_state_judiciary",
+      "name": "The Relevant State Judiciary, Head of Court or Chief Registrar",
+      "aliases": [
+        "The Relevant State Judiciary, Head of Court or Chief Registrar",
+        "State High Court",
+        "State Judiciary",
+        "State Court",
+        "Chief Judge",
+        "State Chief Judge",
+        "Chief Registrar",
+        "Court Registrar",
+        "High Court Registry",
+        "Sharia Court of Appeal",
+        "Customary Court of Appeal",
+        "Judicial Service Commission"
+      ],
+      "portal_only": true,
+      "physical_filing_required": false,
+      "country_specific": true,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "",
+        "website": "https://njc.gov.ng/",
+        "official_route": "Use the responsible State Judiciary's verified official website, physical registry or Head of Court. Do not guess a State court email address.",
+        "discipline_guidance": "https://njc.gov.ng/discipline-regulations"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "official_identity_and_public_service_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://njc.gov.ng/discipline-regulations",
+          "https://njc.gov.ng/"
         ]
       }
     }
   ],
-  "how_to_address_and_route": {
-    "default_salutation": "Dear Sir/Madam",
-    "judicial_titles_guidance": [
-      "Use office titles, not personal names (e.g., 'The Chairman, NJC', 'The Chief Registrar', 'The President, Court of Appeal').",
-      "Avoid insulting language; stick to facts, dates, and evidence.",
-      "If your matter is still pending in court, frame complaint as ADMINISTRATIVE/MALADMINISTRATION (e.g., registry delay, missing file, refusal to process) not as attacking the judge’s decision."
-    ],
-    "primary_to_rules": [
-      {
-        "when": "Registry delay / missing case file / refusal to compile record / CTC delay",
-        "to": "The Chief Registrar / Registrar of the Court (relevant court)",
-        "cc": [
-          "NJC (if systemic or severe)",
-          "PCC (maladministration)"
-        ]
-      },
-      {
-        "when": "Judicial misconduct / bribery / abuse of office / bias (disciplinary complaint)",
-        "to": "The Chairman, National Judicial Council (NJC)",
-        "cc": [
-          "PCC (maladministration angle where applicable)",
-          "NHRC (if rights impacted)"
-        ]
-      },
-      {
-        "when": "Unlawful detention / denial of bail / torture / police disobedience of court order",
-        "to": "NHRC (rights complaint) OR relevant justice-chain authority",
-        "cc": [
-          "PCC",
-          "NJC (if judicial admin issue is involved)"
-        ]
-      }
-    ]
+  "routing_policy": {
+    "judicial_misconduct": "Complaints alleging misconduct by a judicial officer must route to the National Judicial Council and comply with its signed complaint and verifying-affidavit procedure.",
+    "appeal_or_review": "A petition cannot overturn, reverse or vary a judgment, ruling, conviction or sentence. The user must pursue the appropriate appeal, review or court process within applicable deadlines.",
+    "lawyer_misconduct": "Professional misconduct allegations against a legal practitioner must route through the Legal Practitioners Disciplinary Committee or authorised Body of Benchers process.",
+    "justice_chain_rights": "Unlawful detention, denial of access to counsel, disobedience of court orders and related justice-chain rights violations must route to the National Human Rights Commission.",
+    "court_registry": "Missing files, certified-copy delays, record-compilation failures, service failures and registry misconduct must route first to the responsible court or Chief Registrar.",
+    "court_delay_first_stage": "A first administrative complaint concerning court delay must route to the relevant Head of Court or Chief Registrar.",
+    "court_delay_escalation": "A serious or continuing delay already reported through the court's administrative channel may escalate to the National Judicial Council, subject to its formal complaint rules.",
+    "state_judiciary": "State court complaints must use the responsible State Judiciary's verified website, physical registry or Head of Court. State court emails must not be guessed.",
+    "maladministration": "The Public Complaints Commission may be included for court-registry or public-administration failures, without interfering with judicial decision-making.",
+    "constitutional_independence": "Administrative recipients must not be asked to overturn judgments, direct judicial outcomes or interfere with pending proceedings."
   },
-  "routing_keywords": {
-    "delay_and_backlog": [
-      "delayed justice",
-      "delay of justice",
-      "undue delay",
-      "endless adjournment",
-      "frequent adjournments",
-      "court backlog",
-      "slow trial",
-      "trial delay",
-      "judgment delayed",
-      "ruling delayed",
-      "judgment not delivered",
-      "reserved ruling",
-      "reserved judgment",
-      "no sitting",
-      "strike affected hearing",
-      "court not sitting"
-    ],
-    "registry_and_administration": [
-      "court registry delay",
-      "registry refusal",
-      "registry extortion",
-      "missing case file",
-      "lost case file",
-      "case file missing",
-      "file movement",
-      "case file not found",
-      "record of appeal delay",
-      "appeal record not compiled",
-      "compilation of records",
-      "CTC delay",
-      "certified true copy delay",
-      "court process not served",
-      "service of court process",
-      "hearing notice not issued",
-      "enforcement process delay",
-      "sheriff delay",
-      "bail bond processing delay"
-    ],
-    "misconduct_and_corruption": [
-      "judicial misconduct",
-      "corruption in court",
-      "bribery allegation",
-      "bias allegation",
-      "conflict of interest",
-      "judge compromised",
-      "registry bribery",
-      "lawyer misconduct",
-      "court staff misconduct",
-      "forged court document",
-      "fake court order",
-      "altered court record"
-    ],
-    "orders_and_enforcement": [
-      "disobedience of court order",
-      "police ignored court order",
-      "refusal to obey court order",
-      "order enforcement failure",
-      "garnishee proceedings",
-      "judgment enforcement",
-      "writ of execution",
-      "contempt of court",
-      "ex parte order abuse",
-      "injunction abuse",
-      "conflicting court orders",
-      "forum shopping"
-    ],
-    "rights_and_detention_chain": [
-      "unlawful detention",
-      "denial of bail",
-      "bail refused",
-      "remand without trial",
-      "torture allegation",
-      "inhuman treatment",
-      "forced confession",
-      "illegal arrest",
-      "fundamental rights enforcement",
-      "access to lawyer denied",
-      "fair hearing denied",
-      "case stalled in DPP",
-      "AGF intervention",
-      "prison remand abuse"
-    ]
-  },
+  "routing_keywords": [
+    "judiciary complaint",
+    "court complaint",
+    "court administration complaint",
+    "court registry complaint",
+    "judicial misconduct",
+    "judge misconduct",
+    "judge demanded bribe",
+    "judicial bribery",
+    "judge bribery",
+    "judge compromised",
+    "bias allegation",
+    "judicial conflict of interest",
+    "improper ex parte communication",
+    "sexual harassment by judge",
+    "court registry delay",
+    "registry delay",
+    "registry refusal",
+    "registry extortion",
+    "court staff misconduct",
+    "missing case file",
+    "lost case file",
+    "case file missing",
+    "record of appeal delay",
+    "record not compiled",
+    "appeal record not compiled",
+    "certified true copy delay",
+    "CTC delay",
+    "hearing notice not issued",
+    "court process not served",
+    "sheriff delay",
+    "bail bond processing delay",
+    "judgment not delivered",
+    "reserved judgment delayed",
+    "ruling delayed",
+    "reserved ruling",
+    "endless adjournment",
+    "frequent adjournments",
+    "court not sitting",
+    "trial delay",
+    "undue judicial delay",
+    "justice delayed",
+    "unlawful detention",
+    "remand without trial",
+    "denial of bail",
+    "fair hearing denied",
+    "access to lawyer denied",
+    "police ignored court order",
+    "disobedience of court order",
+    "refusal to obey court order",
+    "judgment enforcement delay",
+    "writ of execution delay",
+    "garnishee proceedings delay",
+    "lawyer misconduct",
+    "legal practitioner misconduct",
+    "lawyer withheld client money",
+    "lawyer misappropriated funds",
+    "lawyer abandoned case",
+    "lawyer forged court document",
+    "fake court order",
+    "altered court record",
+    "appeal the judgment",
+    "appeal the ruling",
+    "overturn the judgment",
+    "reverse the judgment",
+    "set aside the judgment",
+    "National Judicial Council (NJC)",
+    "NJC",
+    "National Judicial Council",
+    "Chairman of the National Judicial Council",
+    "Chief Justice and Chairman of the NJC",
+    "Office of the Secretary to the National Judicial Council",
+    "NJC Complaint Registry",
+    "National Human Rights Commission (NHRC)",
+    "NHRC",
+    "National Human Rights Commission",
+    "Nigeria Human Rights Commission",
+    "Human Rights Commission",
+    "Public Complaints Commission (PCC)",
+    "PCC",
+    "Public Complaints Commission",
+    "Nigeria Ombudsman",
+    "Federal Ombudsman",
+    "Supreme Court of Nigeria",
+    "Supreme Court",
+    "Apex Court",
+    "Chief Registrar Supreme Court",
+    "Supreme Court Registry",
+    "Supreme Court Litigation Information Desk",
+    "Court of Appeal of Nigeria – Relevant Division or Headquarters",
+    "Court of Appeal",
+    "Court of Appeal of Nigeria",
+    "Nigeria Court of Appeal",
+    "COA",
+    "Court of Appeal Registry",
+    "Court of Appeal Division",
+    "President Court of Appeal",
+    "Chief Registrar Court of Appeal",
+    "Federal High Court of Nigeria – Relevant Judicial Division",
+    "Federal High Court",
+    "Federal High Court of Nigeria",
+    "FHC",
+    "Federal High Court Registry",
+    "Chief Registrar Federal High Court",
+    "Federal High Court Judicial Division",
+    "National Industrial Court of Nigeria – Relevant Division",
+    "National Industrial Court",
+    "National Industrial Court of Nigeria",
+    "NICN",
+    "Industrial Court",
+    "NICN Registry",
+    "Chief Registrar National Industrial Court",
+    "High Court of the Federal Capital Territory, Abuja",
+    "FCT High Court",
+    "High Court of the FCT",
+    "High Court of the Federal Capital Territory",
+    "Federal Capital Territory Judiciary",
+    "FCT Judiciary",
+    "Chief Registrar FCT High Court",
+    "Chief Judge FCT",
+    "Legal Practitioners Disciplinary Committee (LPDC), Body of Benchers",
+    "LPDC",
+    "Legal Practitioners Disciplinary Committee",
+    "Body of Benchers",
+    "BOB",
+    "Chairman Body of Benchers",
+    "Lawyer Discipline",
+    "Legal Practitioner Discipline",
+    "The Relevant State Judiciary, Head of Court or Chief Registrar",
+    "State High Court",
+    "State Judiciary",
+    "State Court",
+    "Chief Judge",
+    "State Chief Judge",
+    "Chief Registrar",
+    "Court Registrar",
+    "High Court Registry",
+    "Sharia Court of Appeal",
+    "Customary Court of Appeal",
+    "Judicial Service Commission"
+  ],
   "evidence_checklist": [
-    "Case title and suit number",
-    "Court division/location",
-    "Chronology (dates of filing, hearing, adjournments, rulings)",
-    "Receipts/proof of payment (filing fees, CTC, service fees)",
-    "Copies of motions/processes/orders (if any)",
-    "Registry acknowledgement/reference number (if any)",
-    "Names/titles of officials involved (Registrar/Clerk/Chief Registrar) — titles preferred",
-    "Any written responses, emails, SMS, WhatsApp messages",
-    "Proof of harm caused by delay (missed deadlines, detention days, financial loss)"
-  ]
+    "Full case title and suit, charge or appeal number",
+    "Court name, judicial division and location",
+    "Names or official titles of judicial or registry officers involved",
+    "Chronology of filing, hearing, adjournment, ruling and judgment dates",
+    "Copies of relevant court processes, orders and judgments",
+    "Receipts for filing, certified copies, service or enforcement",
+    "Previous complaint acknowledgement or reference number",
+    "Correspondence with the registry, court or legal practitioner",
+    "Details of money, documents or client property held by a lawyer",
+    "Witness statements or supporting affidavits where required",
+    "Evidence of detention, denied access to counsel or disobedience of an order",
+    "The specific administrative or disciplinary remedy requested"
+  ],
+  "drafting_safety": {
+    "disciplinary_petition_cannot_replace_appeal": true,
+    "merits_of_pending_case_must_not_be_prejudged": true,
+    "court_orders_must_not_be_misrepresented": true,
+    "allegations_must_not_be_stated_as_proven_facts": true,
+    "contemptuous_or_insulting_language_prohibited": true,
+    "judicial_independence_must_be_respected": true,
+    "njc_affidavit_requirement_must_be_preserved": true,
+    "legal_deadlines_must_not_be_guessed": true,
+    "guessed_court_emails_prohibited": true,
+    "unnecessary_personal_data_prohibited": true,
+    "passwords_and_one_time_codes_prohibited": true
+  },
+  "security_rules": {
+    "official_sources_only": true,
+    "six_verified_direct_contact_routes": true,
+    "four_safe_portal_or_physical_routes": true,
+    "unverified_contacts_gated": true,
+    "physical_filing_requirements_preserved": true,
+    "state_judiciary_contacts_not_invented": true
+  }
 }
