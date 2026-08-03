@@ -72,6 +72,10 @@ import {
   resolveJurisdictionRouting,
   resolvePreSectorJurisdiction,
 } from "./lib/jurisdictionEngine.mjs";
+import {
+  buildStructuredComplaintPrompt,
+  resolveDeliveryPlan,
+} from "./lib/routingDelivery.mjs";
 
 dotenv.config();
 
@@ -2430,6 +2434,24 @@ app.post("/generate-petition", async (req, res) => {
       ? jurisdictionRouting.documentPurpose
       : "Professional petition requesting investigation and appropriate administrative action";
 
+  const structuredComplaintPrompt =
+    buildStructuredComplaintPrompt({
+      complaint,
+
+      institutionName,
+
+      issueLocation:
+        resolvedIssueLocation,
+
+      institutionLevel,
+
+      escalationStage,
+
+      priorComplaintReference,
+
+      country,
+    });
+
   try {
     let petitionText =
       await generateGeminiText({
@@ -2505,7 +2527,7 @@ CRITICAL RULES:
 - Under 950 words.`,
 
         prompt:
-          `Draft the petition from this complaint:\n\n${complaint}`,
+          `Draft the petition using only the structured facts below. Do not omit a supplied institution, issue location, complaint stage or previous complaint reference.\n\n${structuredComplaintPrompt}`,
 
         maxOutputTokens: 4096,
       });
@@ -2536,29 +2558,38 @@ CRITICAL RULES:
     const toNames = extractSectionInstitutionNames(petitionText, "TO");
     const ccNames = extractSectionInstitutionNames(petitionText, "CC");
 
-    const toItems = safeUniq(
+    const catalogToItems = safeUniq(
       toNames
-        .map((n) => matchInstitutionNameToCatalog(n, sectorCatalog) || matchInstitutionAcrossAllSectors(n, sector))
+        .map(
+          name =>
+            matchInstitutionNameToCatalog(
+              name,
+              sectorCatalog
+            ) ||
+            matchInstitutionAcrossAllSectors(
+              name,
+              sector
+            )
+        )
         .filter(Boolean)
     );
 
-    const ccItems = safeUniq(
+    const catalogCcItems = safeUniq(
       ccNames
-        .map((n) => matchInstitutionNameToCatalog(n, sectorCatalog) || matchInstitutionAcrossAllSectors(n, sector))
+        .map(
+          name =>
+            matchInstitutionNameToCatalog(
+              name,
+              sectorCatalog
+            ) ||
+            matchInstitutionAcrossAllSectors(
+              name,
+              sector
+            )
+        )
         .filter(Boolean)
     );
 
-    petitionText = injectInstitutionAddressesIntoPetition(petitionText, toItems, ccItems);
-
-    const toEmailsFromJson = safeUniq(toItems.flatMap((m) => m.emails)).filter(isEmail);
-    const ccEmailsFromJson = safeUniq(ccItems.flatMap((m) => m.emails)).filter(isEmail);
-
-    /*
-     * Active jurisdiction resolvers specify
-     * their own precise CC recipients.
-     * Legacy sectors retain the earlier
-     * general oversight behaviour.
-     */
     const adminCC =
       jurisdictionRouting.matched
         ? []
@@ -2567,16 +2598,27 @@ CRITICAL RULES:
             caseType,
           });
 
-    const finalCC =
-      safeUniq([
-        ...ccEmailsFromJson,
-        ...adminCC,
-      ]).filter(isEmail);
+    let legacyToEmails =
+      safeUniq(
+        catalogToItems
+          .flatMap(
+            item =>
+              item.emails
+          )
+      ).filter(
+        isEmail
+      );
 
-    let finalToEmails = toEmailsFromJson;
-    let finalToInstitutions = toItems.map((m) => m.name);
+    let legacyToInstitutions =
+      catalogToItems.map(
+        item =>
+          item.name
+      );
 
-    if (sector === "general") {
+    if (
+      sector === "general" &&
+      !jurisdictionRouting.matched
+    ) {
       const pccItem =
         matchInstitutionNameToCatalog(
           "Public Complaints Commission (PCC)",
@@ -2588,48 +2630,84 @@ CRITICAL RULES:
         );
 
       const verifiedPccEmails =
-        Array.isArray(pccItem?.emails)
+        Array.isArray(
+          pccItem?.emails
+        )
           ? pccItem.emails
           : [];
 
-      finalToEmails = safeUniq([
-        ...verifiedPccEmails,
-        OVERSIGHT_EMAILS.PCC,
-        ...PCC_FALLBACK_EMAILS,
-      ]).filter(isEmail);
+      legacyToEmails =
+        safeUniq([
+          ...verifiedPccEmails,
+          OVERSIGHT_EMAILS.PCC,
+          ...PCC_FALLBACK_EMAILS,
+        ]).filter(
+          isEmail
+        );
 
-      finalToInstitutions = [
+      legacyToInstitutions = [
         pccItem?.name ||
           "Public Complaints Commission (PCC)",
       ];
     }
 
-    if (
-      jurisdictionRouting.matched
-    ) {
-      finalToInstitutions = [
-        jurisdictionRouting
-          .primaryInstitution,
-      ];
+    const deliveryPlan =
+      resolveDeliveryPlan({
+        routingDecision:
+          jurisdictionRouting.matched
+            ? jurisdictionRouting
+            : null,
 
-      /*
-       * A portal-only or physical-filing route
-       * must never create an email action.
-       */
-      if (
-        jurisdictionRouting
-          .emailRoutingExpected ===
-          false
-      ) {
-        finalToEmails = [];
-      }
-    }
+        catalogToItems,
 
-    let emailRoutingAvailable = true;
-    if (!finalToEmails.length) {
-      emailRoutingAvailable = false;
-      finalToEmails = [];
-    }
+        catalogCcItems,
+
+        legacyToEmails,
+
+        legacyToInstitutions,
+
+        legacyCcInstitutions:
+          catalogCcItems.map(
+            item =>
+              item.name
+          ),
+
+        legacyAdminCc:
+          adminCC,
+      });
+
+    const documentToItems =
+      deliveryPlan.primaryItem
+        ? [
+            deliveryPlan
+              .primaryItem,
+          ]
+        : catalogToItems;
+
+    petitionText =
+      injectInstitutionAddressesIntoPetition(
+        petitionText,
+        documentToItems,
+        catalogCcItems
+      );
+
+    const finalToEmails =
+      deliveryPlan.toEmails;
+
+    const finalCC =
+      deliveryPlan.ccEmails;
+
+    const finalToInstitutions =
+      deliveryPlan
+        .toInstitutions;
+
+    const finalCcInstitutions =
+      deliveryPlan
+        .ccInstitutions;
+
+    const emailRoutingAvailable =
+      deliveryPlan
+        .emailRoutingAvailable;
 
     const unlockMode =
       FREE_ACCESS_ENABLED &&
@@ -2646,7 +2724,8 @@ CRITICAL RULES:
       caseType,
       subject,
       toInstitutions: finalToInstitutions,
-      ccInstitutions: ccItems.map((m) => m.name),
+      ccInstitutions:
+        finalCcInstitutions,
       toEmails: finalToEmails,
       ccEmails: finalCC,
       emailRoutingAvailable,
@@ -2654,6 +2733,11 @@ CRITICAL RULES:
         jurisdictionRouting.matched
           ? jurisdictionRouting
           : null,
+
+      submissionRoute:
+        deliveryPlan
+          .submissionRoute,
+
       paymentInitializedAt: null,
       flw_tx_id: "",
       return_to: "",
@@ -2700,6 +2784,10 @@ CRITICAL RULES:
         jurisdictionRouting.matched
           ? jurisdictionRouting
           : null,
+
+      submissionRoute:
+        deliveryPlan
+          .submissionRoute,
     });
   } catch (err) {
     console.error("Generation error:", err);
@@ -2889,6 +2977,10 @@ app.post(
 
         routingDecision:
           stored.routingDecision ||
+          null,
+
+        submissionRoute:
+          stored.submissionRoute ||
           null,
       };
 
@@ -3399,6 +3491,10 @@ app.post("/unlock-petition", async (req, res) => {
         routingDecision:
           stored.routingDecision ||
           null,
+
+        submissionRoute:
+          stored.submissionRoute ||
+          null,
       };
 
       await storeUnlocked(
@@ -3452,6 +3548,10 @@ app.post("/unlock-petition", async (req, res) => {
 
         routingDecision:
           stored.routingDecision ||
+          null,
+
+        submissionRoute:
+          stored.submissionRoute ||
           null,
       };
 
