@@ -268,6 +268,157 @@ console.log(
   "✅ NON-TRANSITIONED STATE USES NERC REDRESS CHANNEL"
 );
 
+const transitionedAuthorities =
+  Object.values(
+    TRANSITIONED_STATE_REGULATORS
+  );
+
+const directStateAuthorities =
+  transitionedAuthorities.filter(
+    authority =>
+      authority.verification
+        .direct_email_verified
+  );
+
+const dynamicStateAuthorities =
+  transitionedAuthorities.filter(
+    authority =>
+      authority.dynamic_route
+  );
+
+assert.equal(
+  directStateAuthorities.length,
+  9
+);
+
+assert.equal(
+  dynamicStateAuthorities.length,
+  7
+);
+
+for (
+  const [
+    stateName,
+    providerInput,
+    stateKey,
+  ]
+  of transitionedStateTests
+) {
+  const authority =
+    TRANSITIONED_STATE_REGULATORS[
+      stateKey
+    ];
+
+  const route =
+    resolvePowerRouting({
+      sector:
+        "power",
+
+      complaint:
+        "My written provider complaint remains unresolved.",
+
+      institutionName:
+        providerInput,
+
+      issueLocation:
+        stateName,
+
+      escalationStage:
+        "unresolved",
+
+      priorComplaintReference:
+        `METADATA-${stateKey.toUpperCase()}-12345`,
+
+      country:
+        "Nigeria",
+    });
+
+  assert.ok(
+    Array.isArray(
+      route.contactEmails
+    ),
+    `${stateKey}: contactEmails missing`
+  );
+
+  assert.ok(
+    Array.isArray(
+      route.contactPhoneNumbers
+    ),
+    `${stateKey}: contactPhoneNumbers missing`
+  );
+
+  assert.ok(
+    route.submissionUrl,
+    `${stateKey}: official submission URL missing`
+  );
+
+  assert.ok(
+    route.sourceUrls.length > 0,
+    `${stateKey}: official sources missing`
+  );
+
+  if (
+    authority.verification
+      .direct_email_verified
+  ) {
+    assert.equal(
+      route.emailRoutingExpected,
+      true,
+      `${stateKey}: verified email route disabled`
+    );
+
+    assert.ok(
+      route.contactEmails.length > 0,
+      `${stateKey}: verified email missing`
+    );
+  } else {
+    assert.equal(
+      route.emailRoutingExpected,
+      false,
+      `${stateKey}: dynamic route enabled email unexpectedly`
+    );
+
+    assert.equal(
+      route.contactEmails.length,
+      0,
+      `${stateKey}: unverified email exposed`
+    );
+  }
+}
+
+assert.ok(
+  fctRoute.contactEmails.includes(
+    "abujaforum@nerc.gov.ng"
+  )
+);
+
+assert.ok(
+  fctRoute.submissionUrl
+);
+
+assert.ok(
+  nonTransitionRoute
+    .submissionUrl
+);
+
+assert.equal(
+  nonTransitionRoute
+    .emailRoutingExpected,
+  false
+);
+
+console.log(
+  "✅ NINE VERIFIED DIRECT-EMAIL STATE ROUTES ARE ENFORCED"
+);
+
+console.log(
+  "✅ SEVEN SAFE DIRECTORY/PHYSICAL STATE ROUTES ARE ENFORCED"
+);
+
+console.log(
+  "✅ LIVE POWER ROUTES EXPOSE VERIFIED CONTACT METADATA"
+);
+
 const powerData =
   JSON.parse(
     fs.readFileSync(

@@ -1,7 +1,7 @@
 {
   "sector": "power",
   "country": "Nigeria",
-  "last_updated": "2026-07-31",
+  "last_updated": "2026-08-03",
   "oversight": {
     "federal_ministry": {
       "name": "Federal Ministry of Power",
@@ -19,15 +19,44 @@
   },
   "regulators": [
     {
+      "key": "nerc_national",
       "name": "Nigerian Electricity Regulatory Commission (NERC)",
       "aliases": [
+        "Nigerian Electricity Regulatory Commission (NERC)",
         "NERC",
-        "Nigerian Electricity Regulatory Commission"
+        "Nigerian Electricity Regulatory Commission",
+        "NERC Headquarters",
+        "NERC HQ"
       ],
+      "jurisdiction": "Federal electricity market and final NERC complaint escalation",
+      "scope": "Final escalation after the responsible DisCo and applicable NERC Consumer Forum process",
+      "dynamic_route": false,
       "contact": {
         "emails": [
-          "info@nerc.gov.ng",
-          "complaints@nerc.gov.ng"
+          "info@nerc.gov.ng"
+        ],
+        "phones": [
+          "+23494621400",
+          "+23494621410"
+        ],
+        "address": "Plot 1387, Cadastral Zone A00, Central Business District, Abuja, FCT, Nigeria",
+        "website": "https://nerc.gov.ng/",
+        "complaint_ticket": "https://nerc.freshdesk.com/support/tickets/new",
+        "complaint_guidance": "https://nerc.gov.ng/need-help/services/how-to-file-a-complaint/",
+        "forum_directory": "https://nerc.gov.ng/forum-offices/",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/contact-nerc/",
+          "https://nerc.gov.ng/need-help/services/how-to-file-a-complaint/",
+          "https://nerc.gov.ng/forum-offices/",
+          "https://nerc.freshdesk.com/support/tickets/new",
+          "https://nerc.gov.ng/resources/sercs/"
         ]
       }
     },
@@ -44,278 +73,579 @@
       }
     },
     {
+      "key": "nerc_abuja_forum",
       "name": "NERC Abuja Forum",
       "aliases": [
+        "NERC Abuja Forum",
         "Abuja Forum",
-        "NERC Abuja Consumer Forum"
+        "NERC Abuja Consumer Forum",
+        "Abuja NERC Forum"
       ],
+      "jurisdiction": "Federal Capital Territory",
+      "scope": "Escalation of unresolved electricity complaints after the responsible DisCo Customer Complaints Unit",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "abujaforum@nerc.gov.ng"
         ],
-        "address": "No. 14, Road 131, Gwarinpa, Abuja, Nigeria",
-        "website": "https://nerc.gov.ng/forum-offices/"
+        "phones": [
+          "08146862225"
+        ],
+        "address": "No. 14, Road 131, Gwarinpa, Abuja, FCT, Nigeria",
+        "website": "https://nerc.gov.ng/forum-offices/abuja-forum-office/",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "https://nerc.gov.ng/forum-offices/",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/forum-offices/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/forum-offices/",
+          "https://nerc.gov.ng/forum-offices/abuja-forum-office/",
+          "https://nerc.gov.ng/need-help/services/how-to-file-a-complaint/",
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "abia",
       "name": "Abia State Electricity Regulatory Authority",
       "aliases": [
-        "ASERA"
+        "Abia State Electricity Regulatory Authority",
+        "ASERA",
+        "Abia Electricity Regulator"
       ],
+      "jurisdiction": "Abia State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "info.asera@abiastate.gov.ng"
         ],
+        "phones": [
+          "07079092439"
+        ],
         "address": "15 Library Avenue, Umuahia, Abia State, Nigeria",
-        "website": "https://asera.abiastate.gov.ng"
+        "website": "https://asera.abiastate.gov.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "anambra",
       "name": "Anambra State Electricity Regulatory Commission",
       "aliases": [
-        "ASERC"
+        "Anambra State Electricity Regulatory Commission",
+        "ASERC",
+        "Anambra Electricity Regulator"
       ],
+      "jurisdiction": "Anambra State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "info@aserc.anambrastate.gov.ng"
         ],
+        "phones": [
+          "09162402960"
+        ],
         "address": "ASERC Complex, Old Government House Complex, Awka, Anambra State, Nigeria",
-        "website": "https://aserc.anambrastate.gov.ng"
+        "website": "https://aserc.anambrastate.gov.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "bayelsa",
       "name": "Bayelsa State Electricity Regulatory Authority",
       "aliases": [
-        "BYERA"
+        "Bayelsa State Electricity Regulatory Authority",
+        "BYERA",
+        "Bayelsa Electricity Regulator"
       ],
+      "jurisdiction": "Bayelsa State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "office@byera.energy"
         ],
+        "phones": [
+          "09122636936"
+        ],
         "address": "Oxbow Lake, Yenagoa, Bayelsa State, Nigeria",
-        "website": "https://byera.energy"
+        "website": "https://byera.energy",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "edo",
       "name": "Edo State Electricity Regulatory Commission",
       "aliases": [
-        "Edo State Electricity Regulator"
+        "Edo State Electricity Regulatory Commission",
+        "Edo State Electricity Regulator",
+        "Edo Electricity Regulator"
       ],
-      "contact": {},
-      "verification": {
-        "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
-      }
-    },
-    {
-      "name": "Ekiti State Electricity Regulatory Bureau",
-      "aliases": [
-        "EKSERB"
-      ],
+      "jurisdiction": "Edo State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": true,
       "contact": {
-        "address": "Old NERC Forum Building, Adebayo Road, Ado Ekiti, Ekiti State, Nigeria",
-        "website": "https://ekserb.ng"
+        "emails": [],
+        "phones": [],
+        "address": "",
+        "website": "",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "ekiti",
+      "name": "Ekiti State Electricity Regulatory Bureau",
+      "aliases": [
+        "Ekiti State Electricity Regulatory Bureau",
+        "EKSERB",
+        "Ekiti Electricity Regulator"
+      ],
+      "jurisdiction": "Ekiti State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": true,
+      "contact": {
+        "emails": [],
+        "phones": [],
+        "address": "Old NERC Forum Building, Adebayo Road, Ado Ekiti, Ekiti State, Nigeria",
+        "website": "https://ekserb.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
+      }
+    },
+    {
+      "key": "enugu",
       "name": "Enugu State Electricity Regulatory Commission",
       "aliases": [
-        "EERC"
+        "Enugu State Electricity Regulatory Commission",
+        "EERC",
+        "Enugu Electricity Regulator"
       ],
+      "jurisdiction": "Enugu State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "info@eerc.en.gov.ng"
         ],
+        "phones": [
+          "07072051569"
+        ],
         "address": "No. 2 Forest Close, Off Forest Crescent, Off Park Avenue, G.R.A. Enugu, Enugu State, Nigeria",
-        "website": "https://eerc.en.gov.ng"
+        "website": "https://eerc.en.gov.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "gombe",
       "name": "Gombe State Electricity Regulatory Commission",
       "aliases": [
-        "GOSERC"
+        "Gombe State Electricity Regulatory Commission",
+        "GOSERC",
+        "Gombe Electricity Regulator"
       ],
+      "jurisdiction": "Gombe State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "infogoserc@gmail.com"
         ],
-        "address": "Mohammed Aliyu Plaza, Gombe-Bauchi Express Road, Gombe State, Nigeria"
+        "phones": [
+          "08033141578"
+        ],
+        "address": "Mohammed Aliyu Plaza, Gombe-Bauchi Express Road, Gombe State, Nigeria",
+        "website": "",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "imo",
       "name": "Imo State Electricity Regulatory Commission",
       "aliases": [
-        "ISERC"
+        "Imo State Electricity Regulatory Commission",
+        "ISERC",
+        "Imo Electricity Regulator"
       ],
+      "jurisdiction": "Imo State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": true,
       "contact": {
+        "emails": [],
+        "phones": [
+          "08033437594"
+        ],
         "address": "Electricity House, Concorde Boulevard, New Owerri, Imo State, Nigeria",
-        "website": "https://iserc.com.ng"
+        "website": "https://iserc.com.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "kogi",
       "name": "Kogi State Electricity Regulatory Commission",
       "aliases": [
-        "KERC"
+        "Kogi State Electricity Regulatory Commission",
+        "KERC",
+        "Kogi Electricity Regulator"
       ],
+      "jurisdiction": "Kogi State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "info@kerc.kg.gov.ng"
         ],
+        "phones": [
+          "09124267545",
+          "09077324141"
+        ],
         "address": "Alheri Junction, Along Crowther Memorial College, Lokoja, Kogi State, Nigeria",
-        "website": "https://kerc.kg.gov.ng"
+        "website": "https://kerc.kg.gov.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "lagos",
       "name": "Lagos State Electricity Regulatory Commission",
       "aliases": [
-        "LASERC"
+        "Lagos State Electricity Regulatory Commission",
+        "LASERC",
+        "Lagos Electricity Regulator"
       ],
+      "jurisdiction": "Lagos State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "info@laserc.com.ng"
         ],
-        "address": "Block B Lagos Revenue House, Assbifi Road, Alausa, Lagos 101233, Lagos State, Nigeria",
-        "website": "https://laserc.com.ng"
+        "phones": [
+          "09169346145"
+        ],
+        "address": "Block B, Lagos Revenue House, Assbifi Road, Alausa, Lagos 101233, Lagos State, Nigeria",
+        "website": "https://laserc.com.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "nasarawa",
       "name": "Nasarawa State Electricity Regulatory Commission",
       "aliases": [
-        "NASERC"
+        "Nasarawa State Electricity Regulatory Commission",
+        "NASERC",
+        "Nasarawa Electricity Regulator"
       ],
+      "jurisdiction": "Nasarawa State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": true,
       "contact": {
+        "emails": [],
+        "phones": [],
         "address": "Former Ministry of Health, Opposite Federal Secretariat, Jos Road, Lafia, Nasarawa State, Nigeria",
-        "website": "https://naserc.na.gov.ng"
+        "website": "https://naserc.na.gov.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "niger",
       "name": "Niger State Electricity Regulatory Commission",
       "aliases": [
-        "NSERC"
+        "Niger State Electricity Regulatory Commission",
+        "NSERC",
+        "Niger Electricity Regulator"
       ],
+      "jurisdiction": "Niger State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "info@nserc.ni.gov.ng"
         ],
+        "phones": [
+          "07044440453"
+        ],
         "address": "No. 6 Nnamdi Azikwe Road, Minna, Niger State, Nigeria",
-        "website": "https://nserc.ni.gov.ng"
+        "website": "https://nserc.ni.gov.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "ogun",
       "name": "Ogun State Electricity Regulatory Commission",
       "aliases": [
-        "Ogun State Electricity Regulator"
+        "Ogun State Electricity Regulatory Commission",
+        "Ogun State Electricity Regulator",
+        "Ogun Electricity Regulator"
       ],
-      "contact": {},
+      "jurisdiction": "Ogun State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": true,
+      "contact": {
+        "emails": [],
+        "phones": [],
+        "address": "",
+        "website": "",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
+      },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "ondo",
       "name": "Ondo State Electricity Regulatory Bureau",
       "aliases": [
-        "OSERB"
+        "Ondo State Electricity Regulatory Bureau",
+        "OSERB",
+        "Ondo Electricity Regulator"
       ],
+      "jurisdiction": "Ondo State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": false,
       "contact": {
         "emails": [
           "ondoserb@gmail.com"
         ],
+        "phones": [
+          "08070956100",
+          "07083258660",
+          "09034685101"
+        ],
         "address": "5 Samuel Olukayode Street, Old UNICEF Building, Alagbaka, Akure, Ondo State, Nigeria",
-        "website": "https://oserb.ng"
+        "website": "https://oserb.ng",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     },
     {
+      "key": "oyo",
       "name": "Oyo State Electricity Regulatory Commission",
       "aliases": [
-        "Oyo State Electricity Regulator"
+        "Oyo State Electricity Regulatory Commission",
+        "Oyo State Electricity Regulator",
+        "Oyo Electricity Regulator"
       ],
-      "contact": {},
-      "verification": {
-        "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
-      }
-    },
-    {
-      "name": "Plateau State Electricity Regulatory Commission",
-      "aliases": [
-        "Plateau State Electricity Regulator"
-      ],
+      "jurisdiction": "Oyo State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": true,
       "contact": {
-        "address": "Former Tati Hotel, Gada Biu, Jos, Plateau State, Nigeria"
+        "emails": [],
+        "phones": [],
+        "address": "",
+        "website": "",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-07-29",
-        "source": "https://nerc.gov.ng/resources/sercs/"
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
+      }
+    },
+    {
+      "key": "plateau",
+      "name": "Plateau State Electricity Regulatory Commission",
+      "aliases": [
+        "Plateau State Electricity Regulatory Commission",
+        "Plateau State Electricity Regulator",
+        "Plateau Electricity Regulator"
+      ],
+      "jurisdiction": "Plateau State",
+      "scope": "Intrastate electricity regulation and consumer complaint escalation",
+      "dynamic_route": true,
+      "contact": {
+        "emails": [],
+        "phones": [],
+        "address": "Former Tati Hotel, Gada Biu, Jos, Plateau State, Nigeria",
+        "website": "",
+        "complaint_ticket": "",
+        "complaint_guidance": "",
+        "forum_directory": "",
+        "official_directory": "https://nerc.gov.ng/resources/sercs/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://nerc.gov.ng/resources/sercs/"
+        ]
       }
     }
   ],
@@ -744,7 +1074,7 @@
       }
     }
   ],
-  "version": "3.0.0",
+  "version": "2.0.0",
   "verification_policy": {
     "official_sources_only": true,
     "no_invented_contacts": true,
@@ -872,5 +1202,14 @@
     "An unresolved complaint should be escalated to the applicable State Electricity Regulator where the state has completed transition.",
     "For states that have not transitioned, use the applicable NERC Consumer Forum or official NERC complaint channel.",
     "Institution aliases and common spelling variations must never change the applicable national or state jurisdiction."
-  ]
+  ],
+  "routing_policy": {
+    "provider_first": "Submit the complaint first to the responsible electricity distribution company and retain its acknowledgement or complaint reference.",
+    "transitioned_states": "After an unresolved provider complaint, route intrastate matters in transitioned states to the applicable state electricity regulator.",
+    "fct": "After an unresolved AEDC complaint arising in the FCT, route through the verified NERC Abuja Forum channel.",
+    "non_transitioned_states": "After an unresolved provider complaint in a non-transitioned state, use the appropriate NERC Consumer Forum or official complaint-ticket channel.",
+    "direct_state_routes": 9,
+    "safe_directory_state_routes": 7,
+    "guessed_contacts_prohibited": true
+  }
 }
