@@ -1,215 +1,405 @@
 {
   "sector": "general",
-  "version": "2.1.0",
   "country": "Nigeria",
-  "description": "Fallback sector for complaints that do not match a specialist sector. General administrative complaints route primarily to the Public Complaints Commission.",
-  "last_verified": "2026-07-30",
+  "version": "3.0.0",
+  "last_updated": "2026-08-03",
+  "description": "Nationwide fallback sector for administrative complaints that do not belong to a more specific regulated sector.",
+  "purpose": [
+    "Route general administrative injustice primarily to the Public Complaints Commission",
+    "Include SERVICOM only for public-service delivery failures",
+    "Include FCCPC only for relevant consumer-service complaints",
+    "Include NHRC only where the facts disclose a human-rights issue",
+    "Require official dynamic resolution for state PCC offices and internal institutional complaint units",
+    "Prevent guessed contacts and unrelated copying"
+  ],
   "verification_policy": {
     "official_sources_only": true,
     "no_invented_contacts": true,
     "unverified_email_routing_disabled": true,
-    "review_interval_days": 90
+    "dynamic_routes_must_use_official_directories": true,
+    "specialist_sector_takes_priority": true,
+    "civil_dispute_bodies_excluded": true
   },
-  "keywords": [],
-  "oversight": {
-    "pcc": {
+  "authorities": [
+    {
+      "key": "pcc_national_administrative_complaints",
       "name": "Public Complaints Commission (PCC)",
       "aliases": [
+        "Public Complaints Commission (PCC)",
         "Public Complaints Commission",
         "PCC",
-        "Ombudsman",
+        "Nigeria Ombudsman",
+        "Nigerian Ombudsman",
         "Federal Ombudsman",
-        "Nigeria Ombudsman"
+        "Administrative Ombudsman",
+        "Public Complaints Commission Nigeria"
       ],
-      "emails": [
-        "complaint@pcc.gov.ng",
-        "info@pcc.gov.ng"
-      ],
-      "phones": [
-        "+2348070100580",
-        "+2342097000099"
-      ],
-      "addresses": [
-        "25 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria"
-      ],
-      "websites": [
-        "https://pcc.gov.ng/",
-        "https://pcc.gov.ng/contact-us/",
-        "https://pcc.gov.ng/procedures-for-lodging-complaints/"
-      ],
-      "email_routing_enabled": true,
-      "routing_priority": "primary",
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-29",
-      "source_urls": [
-        "https://pcc.gov.ng/contact-us/",
-        "https://pcc.gov.ng/procedures-for-lodging-complaints/"
-      ]
-    }
-  },
-  "watchdogs": [
-    {
-      "name": "National Human Rights Commission (NHRC)",
-      "aliases": [
-        "NHRC",
-        "National Human Rights Commission",
-        "Human Rights Commission"
-      ],
-      "emails": [
-        "info@nhrc.gov.ng"
-      ],
-      "phones": [
-        "08006472428",
-        "092903746",
-        "092908829",
-        "09032192577"
-      ],
-      "addresses": [
-        "No. 19 Aguiyi Ironsi Street, Maitama, PMB 444, Garki, Abuja, Nigeria"
-      ],
-      "websites": [
-        "https://www.nhrc.gov.ng/",
-        "https://www.nhrc.gov.ng/contact-us.html"
-      ],
-      "email_routing_enabled": true,
-      "routing_scope": "human_rights_and_related_matters",
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-29",
-      "source_urls": [
-        "https://www.nhrc.gov.ng/contact-us.html"
-      ]
+      "scope": "general administrative injustice involving government bodies, public officials, companies and organisations within PCC jurisdiction",
+      "portal_only": false,
+      "dynamic_route": false,
+      "internal_first": false,
+      "contact": {
+        "emails": [
+          "complaint@pcc.gov.ng",
+          "info@pcc.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2348070100580",
+          "+2342097000099"
+        ],
+        "address": "25 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://pcc.gov.ng/",
+        "complaint_procedure": "https://pcc.gov.ng/procedures-for-lodging-complaints/",
+        "contact_page": "https://pcc.gov.ng/contact-us/",
+        "state_offices": "https://pcc.gov.ng/state-offices-contacts/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://pcc.gov.ng/contact-us/",
+          "https://pcc.gov.ng/procedures-for-lodging-complaints/",
+          "https://pcc.gov.ng/how-the-commission-functions/"
+        ]
+      }
     },
     {
-      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
+      "key": "pcc_state_office_directory",
+      "name": "Relevant Public Complaints Commission State or Area Office",
       "aliases": [
-        "FCCPC",
-        "Federal Competition and Consumer Protection Commission",
-        "Consumer Protection Commission",
-        "Consumer Protection"
+        "Relevant Public Complaints Commission State or Area Office",
+        "PCC State Office",
+        "PCC Area Office",
+        "Public Complaints Commission State Office",
+        "Public Complaints Commission Area Office",
+        "Nearest PCC Office",
+        "Relevant PCC State Office",
+        "State Ombudsman Office"
       ],
-      "emails": [
-        "contact@fccpc.gov.ng"
-      ],
-      "phones": [
-        "08056002020",
-        "08056003030"
-      ],
-      "addresses": [
-        "23 Jimmy Carter Street, Asokoro, Abuja, Nigeria"
-      ],
-      "websites": [
-        "https://fccpc.gov.ng/",
-        "https://fccpc.gov.ng/about-us/contact/"
-      ],
-      "email_routing_enabled": true,
-      "routing_scope": "consumer_and_service_delivery_matters",
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-29",
-      "source_urls": [
-        "https://fccpc.gov.ng/about-us/contact/"
-      ]
+      "scope": "location-specific PCC complaint intake and investigation",
+      "portal_only": true,
+      "dynamic_route": true,
+      "internal_first": false,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "",
+        "website": "https://pcc.gov.ng/state-offices-contacts/",
+        "state_office_directory": "https://pcc.gov.ng/state-offices-contacts/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://pcc.gov.ng/state-offices-contacts/",
+          "https://pcc.gov.ng/procedures-for-lodging-complaints/"
+        ]
+      }
     },
     {
+      "key": "servicom_public_service_complaints",
       "name": "SERVICOM",
       "aliases": [
         "SERVICOM",
-        "Servicom",
-        "Service Compact with All Nigerians"
+        "Service Compact with All Nigerians",
+        "SERVICOM Office",
+        "SERVICOM Unit",
+        "Ministerial SERVICOM Unit",
+        "MDA SERVICOM Unit",
+        "Public Service Delivery Unit"
       ],
-      "emails": [
-        "info@servicom.gov.ng"
-      ],
-      "phones": [
-        "+2348106419581",
-        "+2348153566084"
-      ],
-      "addresses": [
-        "1st Floor, Phase 3, Federal Secretariat, Shehu Shagari Way, Abuja, FCT, Nigeria"
-      ],
-      "websites": [
-        "https://servicom.gov.ng/",
-        "https://servicom.gov.ng/contact/"
-      ],
-      "email_routing_enabled": true,
-      "routing_scope": "public_service_delivery_matters",
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-29",
-      "source_urls": [
-        "https://servicom.gov.ng/contact/"
-      ]
-    }
-  ],
-  "core_institutions": [
-    {
-      "name": "Citizens' Mediation Bureau (CMB), Lagos State",
-      "aliases": [
-        "Citizens Mediation Bureau",
-        "Citizens' Mediation Bureau",
-        "Citizens Mediation Centre",
-        "Citizens' Mediation Centre",
-        "Lagos CMB",
-        "Lagos CMC",
-        "CMC Ikeja"
-      ],
-      "emails": [
-        "cmcikeja01@gmail.com",
-        "info@lagosstatemoj.org"
-      ],
-      "phones": [
-        "08118161620",
-        "+2349167802222"
-      ],
-      "addresses": [
-        "7, LJ Dosunmu Street, Opposite Beehive School, CBD, Alausa, Ikeja, Lagos, Nigeria"
-      ],
-      "websites": [
-        "https://lagosstatemoj.org/cmc/"
-      ],
-      "email_routing_enabled": true,
-      "routing_scope": "lagos_state_civil_mediation",
-      "email_note": "The direct Gmail address is published on the official Lagos State Ministry of Justice website.",
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-29",
-      "source_urls": [
-        "https://lagosstatemoj.org/cmc/",
-        "https://lagosstate.gov.ng/news/all/view/67dd8f1a51182815ea6c0bb7"
-      ]
+      "scope": "failure, delay or poor quality in public-service delivery",
+      "portal_only": false,
+      "dynamic_route": false,
+      "internal_first": false,
+      "contact": {
+        "emails": [
+          "info@servicom.gov.ng"
+        ],
+        "phone_numbers": [
+          "+2348106419581",
+          "+2348153566084"
+        ],
+        "address": "1st Floor, Phase 3, Federal Secretariat, Shehu Shagari Way, Abuja, Nigeria",
+        "website": "https://servicom.gov.ng/",
+        "contact_page": "https://servicom.gov.ng/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://servicom.gov.ng/contact/"
+        ]
+      }
     },
     {
-      "name": "Lagos Multi-Door Courthouse (LMDC)",
+      "key": "fccpc_consumer_service_complaints",
+      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
       "aliases": [
-        "LMDC",
-        "Lagos Multi Door Courthouse",
-        "Lagos Multi-Door Courthouse",
-        "Lagos ADR Courthouse"
+        "Federal Competition and Consumer Protection Commission (FCCPC)",
+        "FCCPC",
+        "Federal Competition and Consumer Protection Commission",
+        "Consumer Protection Commission",
+        "Nigeria Consumer Protection",
+        "Consumer Complaint Commission",
+        "Consumer Protection Authority Nigeria"
       ],
-      "emails": [],
-      "phones": [],
-      "addresses": [],
-      "websites": [
-        "https://jis.lagosjudiciary.gov.ng/ViewAboutUS.aspx"
+      "scope": "consumer complaints concerning goods, commercial services, unfair charges, failed delivery or refused redress",
+      "portal_only": false,
+      "dynamic_route": false,
+      "internal_first": false,
+      "contact": {
+        "emails": [
+          "contact@fccpc.gov.ng"
+        ],
+        "phone_numbers": [
+          "08056002020",
+          "08056003030"
+        ],
+        "address": "23 Jimmy Carter Street, Asokoro, Abuja, Nigeria",
+        "website": "https://fccpc.gov.ng/",
+        "contact_page": "https://fccpc.gov.ng/about-us/contact/",
+        "complaint_guidance": "https://fccpc.gov.ng/consumers/complaint-handling/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://fccpc.gov.ng/about-us/contact/",
+          "https://fccpc.gov.ng/consumers/complaint-handling/",
+          "https://fccpc.gov.ng/about-us/faqs/"
+        ]
+      }
+    },
+    {
+      "key": "nhrc_general_rights_complaints",
+      "name": "National Human Rights Commission (NHRC)",
+      "aliases": [
+        "National Human Rights Commission (NHRC)",
+        "NHRC",
+        "National Human Rights Commission",
+        "Nigeria Human Rights Commission",
+        "Human Rights Commission Nigeria",
+        "Nigerian Human Rights Commission"
       ],
-      "complaint_portals": [
-        "https://lagosjudiciary.gov.ng/contact"
+      "scope": "general complaints that also disclose a credible human-rights violation",
+      "portal_only": false,
+      "dynamic_route": false,
+      "internal_first": false,
+      "contact": {
+        "emails": [
+          "info@nhrc.gov.ng"
+        ],
+        "phone_numbers": [
+          "08006472428",
+          "6472",
+          "092903746",
+          "092908829",
+          "09032192577",
+          "07041678566",
+          "07053529460"
+        ],
+        "address": "No. 19 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://www.nigeriarights.gov.ng/",
+        "complaint_form": "https://www.nigeriarights.gov.ng/index.php/complaint-form",
+        "contact_page": "https://www.nigeriarights.gov.ng/contact-us.html"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://www.nigeriarights.gov.ng/index.php/complaint-form",
+          "https://www.nigeriarights.gov.ng/contact-us.html"
+        ]
+      }
+    },
+    {
+      "key": "relevant_mda_internal_complaint_unit",
+      "name": "Relevant Institution Internal Complaint or SERVICOM Unit",
+      "aliases": [
+        "Relevant Institution Internal Complaint or SERVICOM Unit",
+        "Internal Complaint Unit",
+        "Internal Complaints Unit",
+        "Complaint Desk",
+        "Complaints Desk",
+        "Customer Service Unit",
+        "Internal Grievance Unit",
+        "Internal Review Unit",
+        "Ministerial SERVICOM Unit",
+        "MDA Complaint Unit",
+        "Agency Complaint Unit",
+        "Department Complaint Unit"
       ],
-      "email_routing_enabled": false,
-      "routing_status": "PORTAL_ONLY_PENDING_DIRECT_CONTACT_VERIFICATION",
-      "verification_status": "INSTITUTION_VERIFIED_DIRECT_EMAIL_UNCONFIRMED",
-      "verified_on": "2026-07-29",
-      "source_urls": [
-        "https://jis.lagosjudiciary.gov.ng/ViewAboutUS.aspx",
-        "https://lagosjudiciary.gov.ng/contact"
-      ]
+      "scope": "first-stage complaint to the responsible institution before external administrative escalation",
+      "portal_only": true,
+      "dynamic_route": true,
+      "internal_first": true,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "",
+        "website": "https://servicom.gov.ng/",
+        "institution_specific_channel": "DYNAMIC_OFFICIAL_INSTITUTION_CHANNEL",
+        "escalation_guidance": "https://pcc.gov.ng/procedures-for-lodging-complaints/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://pcc.gov.ng/procedures-for-lodging-complaints/",
+          "https://servicom.gov.ng/contact/"
+        ]
+      }
     }
   ],
-  "regulators": [],
-  "players": [],
-  "routing_notes": [
-    "Use this sector only when no specialist sector matches.",
-    "The default primary recipient for general administrative complaints is the Public Complaints Commission.",
-    "NHRC should be copied only where the complaint raises a human-rights issue.",
-    "SERVICOM and FCCPC should be copied only where relevant to public service or consumer service delivery.",
-    "For private civil disputes, use verified ADR or state justice channels where appropriate.",
-    "Never route to an email marked unverified or disabled."
-  ]
+  "routing_policy": {
+    "specialist_sector_first": "Use general administration only when no specialist sector provides a more appropriate regulator or complaint mechanism.",
+    "internal_first": "Where a responsible institution has an internal complaint, grievance or SERVICOM unit, the complainant should ordinarily lodge and document that complaint before external escalation.",
+    "default_primary": "The Public Complaints Commission is the primary national route for general administrative injustice.",
+    "state_location": "Use the official PCC state-office directory for location-specific routing. Do not construct or guess state-office email addresses.",
+    "public_service": "Include SERVICOM only where the complaint concerns delay, refusal, poor quality or failure in public-service delivery.",
+    "consumer_service": "Include FCCPC only where the complaint concerns goods, paid services, unfair charges, failed delivery, refused refunds or related consumer redress.",
+    "human_rights": "Include NHRC only where the facts disclose a credible human-rights concern.",
+    "recipient_limit": "Copy only institutions whose legal or administrative mandate is clearly raised by the complaint.",
+    "civil_disputes": "Private civil disputes and state ADR matters must be handled under the civil-disputes sector rather than general administration."
+  },
+  "routing_keywords": [
+    "general administrative complaint",
+    "administrative injustice",
+    "administrative unfairness",
+    "administrative abuse",
+    "administrative excess",
+    "administrative maladministration",
+    "government administrative delay",
+    "public service complaint",
+    "public service delivery failure",
+    "government service delivery failure",
+    "government agency complaint",
+    "government department complaint",
+    "ministry complaint",
+    "MDA complaint",
+    "public authority complaint",
+    "public officer complaint",
+    "civil service complaint",
+    "official refusal to act",
+    "government refusal to act",
+    "agency refusal to act",
+    "ministry refusal to act",
+    "unexplained administrative delay",
+    "application ignored by government",
+    "government failed to respond",
+    "agency failed to respond",
+    "ministry failed to respond",
+    "public institution failed to respond",
+    "certificate processing delay",
+    "approval processing delay",
+    "licence processing delay",
+    "license processing delay",
+    "permit processing delay",
+    "benefit processing delay",
+    "official misconduct complaint",
+    "bureaucratic injustice",
+    "bureaucratic delay",
+    "ombudsman complaint",
+    "internal complaint unresolved",
+    "internal grievance unresolved",
+    "complaint reference ignored",
+    "service complaint unresolved",
+    "consumer service complaint",
+    "service not delivered",
+    "refund refused",
+    "unfair commercial charge",
+    "human rights complaint",
+    "Public Complaints Commission (PCC)",
+    "Public Complaints Commission",
+    "PCC",
+    "Nigeria Ombudsman",
+    "Nigerian Ombudsman",
+    "Federal Ombudsman",
+    "Administrative Ombudsman",
+    "Public Complaints Commission Nigeria",
+    "Relevant Public Complaints Commission State or Area Office",
+    "PCC State Office",
+    "PCC Area Office",
+    "Public Complaints Commission State Office",
+    "Public Complaints Commission Area Office",
+    "Nearest PCC Office",
+    "Relevant PCC State Office",
+    "State Ombudsman Office",
+    "SERVICOM",
+    "Service Compact with All Nigerians",
+    "SERVICOM Office",
+    "SERVICOM Unit",
+    "Ministerial SERVICOM Unit",
+    "MDA SERVICOM Unit",
+    "Public Service Delivery Unit",
+    "Federal Competition and Consumer Protection Commission (FCCPC)",
+    "FCCPC",
+    "Federal Competition and Consumer Protection Commission",
+    "Consumer Protection Commission",
+    "Nigeria Consumer Protection",
+    "Consumer Complaint Commission",
+    "Consumer Protection Authority Nigeria",
+    "National Human Rights Commission (NHRC)",
+    "NHRC",
+    "National Human Rights Commission",
+    "Nigeria Human Rights Commission",
+    "Human Rights Commission Nigeria",
+    "Nigerian Human Rights Commission",
+    "Relevant Institution Internal Complaint or SERVICOM Unit",
+    "Internal Complaint Unit",
+    "Internal Complaints Unit",
+    "Complaint Desk",
+    "Complaints Desk",
+    "Customer Service Unit",
+    "Internal Grievance Unit",
+    "Internal Review Unit",
+    "MDA Complaint Unit",
+    "Agency Complaint Unit",
+    "Department Complaint Unit"
+  ],
+  "minimum_complaint_pack": [
+    "Complainant's full name and contact details",
+    "Name of the institution, official, company or organisation complained against",
+    "Clear chronological statement of the administrative problem",
+    "Dates of applications, requests, decisions and follow-up efforts",
+    "Internal complaint or reference number where available",
+    "Copies of correspondence and supporting records",
+    "Explanation of the injustice or service failure",
+    "Specific remedy or administrative action requested"
+  ],
+  "drafting_safety": {
+    "specialist_sector_must_not_be_bypassed": true,
+    "allegations_must_not_be_presented_as_proven_facts": true,
+    "internal_steps_must_not_be_falsely_claimed": true,
+    "unrelated_watchdogs_must_not_be_copied": true,
+    "guessed_state_office_emails_prohibited": true,
+    "guessed_mda_emails_prohibited": true,
+    "civil_dispute_routes_excluded": true,
+    "passwords_and_one_time_codes_prohibited": true,
+    "unnecessary_personal_data_prohibited": true,
+    "abusive_or_threatening_language_prohibited": true
+  },
+  "security_rules": {
+    "six_verified_authorities": true,
+    "four_verified_direct_contact_routes": true,
+    "two_safe_dynamic_routes": true,
+    "pcc_is_default_primary": true,
+    "official_state_directory_required": true,
+    "internal_mda_contact_is_dynamic": true,
+    "no_guessed_direct_contacts": true,
+    "no_indiscriminate_copying": true
+  }
 }
