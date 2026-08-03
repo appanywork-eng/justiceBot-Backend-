@@ -1,105 +1,416 @@
 {
   "sector": "civil_disputes",
-  "version": "1.0.0",
   "country": "Nigeria",
-  "description": "Verified routing for private civil disputes, beginning with landlord and tenant matters.",
-  "last_verified": "2026-07-29",
+  "version": "2.0.0",
+  "last_updated": "2026-08-03",
+  "description": "Verified nationwide routing for private civil disputes, including landlord-tenant, private debt, contract, property, inheritance and commercial disputes.",
+  "purpose": [
+    "Keep private civil disputes outside PCC and unrelated regulatory routes",
+    "Route suitable FCT disputes to Abuja Multi-Door Court",
+    "Route suitable Lagos disputes to the Citizens' Mediation Bureau or Lagos Multi-Door Courthouse",
+    "Resolve other state ADR institutions only through official judiciary or Ministry of Justice sources",
+    "Use the appropriate court registry where mediation is refused, unsuccessful or unsuitable",
+    "Generate a formal-notice fallback where the dispute location is unknown"
+  ],
   "verification_policy": {
     "official_sources_only": true,
     "no_invented_contacts": true,
-    "unverified_email_routing_disabled": true
+    "unverified_email_routing_disabled": true,
+    "dynamic_routes_must_use_official_judiciary_sources": true,
+    "specialist_regulated_sector_takes_priority": true,
+    "private_disputes_do_not_default_to_pcc": true
   },
-  "keywords": [
-    "landlord",
-    "tenant",
-    "tenancy",
-    "rent increase",
-    "house rent",
-    "rent dispute",
-    "quit notice",
-    "eviction notice",
-    "rented apartment",
-    "rented house",
-    "lease agreement",
-    "property manager"
-  ],
-  "institutions": [
+  "authorities": [
     {
+      "key": "abuja_multi_door_court",
       "name": "Abuja Multi-Door Court (AMDC)",
       "aliases": [
+        "Abuja Multi-Door Court (AMDC)",
         "Abuja Multi Door Court",
         "Abuja Multi-Door Court",
         "Abuja Multi-Door Court House",
-        "AMDC"
+        "Abuja Multi Door Courthouse",
+        "AMDC",
+        "FCT Multi-Door Court",
+        "FCT Multi Door Court"
       ],
-      "emails": [],
-      "phones": [],
-      "addresses": [
-        "Abuja Multi-Door Court House, Gudu, Abuja, FCT, Nigeria"
-      ],
-      "websites": [
-        "https://www.fcthighcourt.gov.ng/abuja-multi-door-court-amdc/",
-        "https://www.fcthighcourt.gov.ng/wp-content/uploads/2025/07/AMDC-User-Guide.pdf"
-      ],
-      "email_routing_enabled": false,
-      "submission_methods": [
-        "Walk-in filing",
-        "Request Form filed at the AMDC Registry",
-        "Court referral"
-      ],
-      "routing_scope": "FCT civil disputes and alternative dispute resolution",
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-29",
-      "source_urls": [
-        "https://www.fcthighcourt.gov.ng/abuja-multi-door-court-amdc/",
-        "https://www.fcthighcourt.gov.ng/court-listing/specialized-courts/",
-        "https://www.fcthighcourt.gov.ng/wp-content/uploads/2025/07/AMDC-User-Guide.pdf"
-      ]
+      "jurisdiction": "Federal Capital Territory",
+      "scope": "FCT civil, commercial, landlord-tenant and other disputes suitable for mediation, arbitration or ADR",
+      "portal_only": true,
+      "dynamic_route": false,
+      "mediation_route": true,
+      "court_route": false,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "Abuja Multi-Door Court House, Gudu, Abuja, FCT, Nigeria",
+        "website": "https://www.fcthighcourt.gov.ng/abuja-multi-door-court-amdc/",
+        "filing_guidance": "https://www.fcthighcourt.gov.ng/wp-content/uploads/2025/07/AMDC-User-Guide.pdf",
+        "parent_court_contact": "https://www.fcthighcourt.gov.ng/",
+        "submission_methods": [
+          "Walk-in filing",
+          "Request Form filed at the AMDC Registry",
+          "Court referral"
+        ]
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://www.fcthighcourt.gov.ng/abuja-multi-door-court-amdc/",
+          "https://www.fcthighcourt.gov.ng/wp-content/uploads/2025/07/AMDC-User-Guide.pdf",
+          "https://www.fcthighcourt.gov.ng/client-services-unit/"
+        ]
+      }
     },
     {
+      "key": "lagos_citizens_mediation_bureau",
       "name": "Citizens' Mediation Bureau (CMB), Lagos State",
       "aliases": [
+        "Citizens' Mediation Bureau (CMB), Lagos State",
         "Citizens Mediation Bureau",
         "Citizens' Mediation Bureau",
         "Citizens Mediation Centre",
         "Citizens' Mediation Centre",
+        "Lagos Citizens Mediation Bureau",
+        "Lagos Citizens Mediation Centre",
         "Lagos CMB",
         "Lagos CMC",
-        "CMC Ikeja"
+        "CMC Ikeja",
+        "CMB Lagos"
       ],
-      "emails": [
-        "cmcikeja01@gmail.com"
+      "jurisdiction": "Lagos State",
+      "scope": "Lagos civil, landlord-tenant, family, inheritance, land, monetary and commercial mediation disputes",
+      "portal_only": false,
+      "dynamic_route": false,
+      "mediation_route": true,
+      "court_route": false,
+      "contact": {
+        "emails": [
+          "cmcikeja01@gmail.com"
+        ],
+        "phone_numbers": [
+          "08118161620"
+        ],
+        "address": "7 LJ Dosunmu Street, Opposite Beehive School, CBD, Alausa, Ikeja, Lagos, Nigeria",
+        "website": "https://lagosstatemoj.org/cmc/",
+        "submission_methods": [
+          "Email petition",
+          "Walk-in submission",
+          "Telephone request",
+          "Referral",
+          "Court order"
+        ],
+        "service_cost": "Free mediation service",
+        "office_directory": "https://lagosstatemoj.org/cmc/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": true,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://lagosstatemoj.org/cmc/",
+          "https://lagosstatemoj.org/offices/"
+        ]
+      }
+    },
+    {
+      "key": "lagos_multi_door_courthouse",
+      "name": "Lagos Multi-Door Courthouse (LMDC)",
+      "aliases": [
+        "Lagos Multi-Door Courthouse (LMDC)",
+        "Lagos Multi Door Courthouse",
+        "Lagos Multi-Door Courthouse",
+        "Lagos Multi Door Court",
+        "Lagos ADR Courthouse",
+        "LMDC"
       ],
-      "phones": [
-        "08118161620"
+      "jurisdiction": "Lagos State",
+      "scope": "Lagos court-connected or independently referred civil and commercial ADR matters",
+      "portal_only": true,
+      "dynamic_route": false,
+      "mediation_route": true,
+      "court_route": false,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "High Court of Lagos State, Lagos State, Nigeria",
+        "website": "https://jis.lagosjudiciary.gov.ng/ViewAboutUS.aspx",
+        "judiciary_contact": "https://lagosjudiciary.gov.ng/contact",
+        "judiciary_directory": "https://jis.lagosjudiciary.gov.ng/ViewDirectories.aspx",
+        "filing_channel": "OFFICIAL_LAGOS_JUDICIARY_OR_LMDC_REGISTRY"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": false,
+        "source_urls": [
+          "https://jis.lagosjudiciary.gov.ng/ViewAboutUS.aspx",
+          "https://lagosjudiciary.gov.ng/about",
+          "https://jis.lagosjudiciary.gov.ng/ViewDirectories.aspx"
+        ]
+      }
+    },
+    {
+      "key": "relevant_state_adr_centre",
+      "name": "Relevant State Multi-Door Courthouse or Official ADR Centre",
+      "aliases": [
+        "Relevant State Multi-Door Courthouse or Official ADR Centre",
+        "State Multi-Door Courthouse",
+        "State Multi Door Courthouse",
+        "State Multi-Door Court",
+        "State Multi Door Court",
+        "State ADR Centre",
+        "State Mediation Centre",
+        "Relevant State ADR Centre",
+        "Relevant Multi-Door Courthouse",
+        "Court Connected Mediation Centre"
       ],
-      "addresses": [
-        "7 LJ Dosunmu Street, Opposite Beehive School, CBD, Alausa, Ikeja, Lagos, Nigeria"
+      "jurisdiction": "Relevant Nigerian state",
+      "scope": "Private disputes suitable for mediation or other ADR outside the specifically verified FCT and Lagos routes",
+      "portal_only": true,
+      "dynamic_route": true,
+      "mediation_route": true,
+      "court_route": false,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "",
+        "website": "DYNAMIC_OFFICIAL_STATE_JUDICIARY_CHANNEL",
+        "official_resolution_method": "Locate the relevant institution only through the official state judiciary or state ministry of justice website",
+        "filing_channel": "DYNAMIC_OFFICIAL_ADR_REGISTRY"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://www.fcthighcourt.gov.ng/abuja-multi-door-court-amdc/",
+          "https://jis.lagosjudiciary.gov.ng/ViewAboutUS.aspx"
+        ]
+      }
+    },
+    {
+      "key": "relevant_small_claims_or_magistrates_court",
+      "name": "Relevant Small Claims Court or Magistrates' Court Registry",
+      "aliases": [
+        "Relevant Small Claims Court or Magistrates' Court Registry",
+        "Small Claims Court",
+        "Small Claim Court",
+        "Magistrates Court",
+        "Magistrate Court",
+        "District Court",
+        "Area Court",
+        "Civil Court Registry",
+        "Relevant Magistrates Court",
+        "Relevant Small Claims Court",
+        "Court Registry"
       ],
-      "websites": [
-        "https://lagosstatemoj.org/cmc/"
-      ],
-      "email_routing_enabled": true,
-      "submission_methods": [
-        "Email petition",
-        "Walk-in submission",
-        "Telephone request",
-        "Court referral"
-      ],
-      "routing_scope": "Lagos landlord-tenant and other civil mediation disputes",
-      "verification_status": "VERIFIED_OFFICIAL_SOURCE",
-      "verified_on": "2026-07-29",
-      "source_urls": [
-        "https://lagosstatemoj.org/cmc/",
-        "https://lagosstate.gov.ng/news/all/view/67dd8f1a51182815ea6c0bb7"
-      ]
+      "jurisdiction": "Relevant Nigerian state or the Federal Capital Territory",
+      "scope": "Civil claims requiring formal adjudication where mediation is unsuitable, refused or unsuccessful",
+      "portal_only": true,
+      "dynamic_route": true,
+      "mediation_route": false,
+      "court_route": true,
+      "contact": {
+        "emails": [],
+        "phone_numbers": [],
+        "address": "",
+        "website": "DYNAMIC_OFFICIAL_COURT_REGISTRY",
+        "official_resolution_method": "Confirm the correct court, monetary jurisdiction, venue, limitation period and filing procedure through the official judiciary",
+        "filing_channel": "DYNAMIC_OFFICIAL_COURT_FILING_CHANNEL"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-03",
+        "direct_email_verified": false,
+        "dynamic_resolution_required": true,
+        "source_urls": [
+          "https://www.fcthighcourt.gov.ng/",
+          "https://lagosjudiciary.gov.ng/MagistrateSmallClaimReports.html?ID=13"
+        ]
+      }
     }
   ],
-  "routing_rules": [
-    "FCT landlord-tenant disputes route to Abuja Multi-Door Court.",
-    "Lagos landlord-tenant disputes route to Citizens' Mediation Bureau.",
-    "Where no verified jurisdiction-specific institution is available, generate a formal notice to the landlord or property manager without an email route.",
-    "Do not route a private dispute against an unidentified individual landlord to PCC.",
-    "Do not claim that a rent increase is unlawful merely because the percentage is high."
-  ]
+  "routing_policy": {
+    "regulated_sector_first": "Complaints involving electricity, banking, aviation, telecommunications, healthcare, education or another regulated service must remain in the relevant specialist sector.",
+    "voluntary_adr": "Private civil disputes suitable for settlement may first be referred to an appropriate mediation or Multi-Door Courthouse process.",
+    "fct_adr": "Suitable FCT disputes route to Abuja Multi-Door Court unless the facts clearly require formal court filing.",
+    "lagos_general_mediation": "Suitable Lagos landlord-tenant, debt, family-property and similar disputes may route to the Citizens' Mediation Bureau.",
+    "lagos_complex_adr": "Suitable Lagos commercial, partnership and complex contractual disputes may route to Lagos Multi-Door Courthouse.",
+    "other_states": "Outside FCT and Lagos, locate the relevant official state ADR institution dynamically through the state judiciary or Ministry of Justice.",
+    "court_escalation": "Where mediation is refused, unsuccessful or unsuitable, confirm the correct Small Claims Court, Magistrates' Court or other competent court through the official judiciary.",
+    "unknown_location": "Where jurisdiction cannot be established, generate a formal notice to the other party without selecting or guessing an institutional email.",
+    "no_pcc": "Do not route an ordinary private civil dispute against an individual, landlord, tenant or private contracting party to the Public Complaints Commission.",
+    "legal_limitations": "Do not guarantee jurisdiction, liability, monetary limits, limitation periods or litigation outcomes. These must be confirmed under the applicable state rules."
+  },
+  "routing_keywords": [
+    "private civil dispute",
+    "civil dispute",
+    "civil claim",
+    "civil mediation",
+    "alternative dispute resolution",
+    "ADR",
+    "mediation request",
+    "settlement request",
+    "landlord",
+    "tenant",
+    "tenancy",
+    "rent dispute",
+    "house rent dispute",
+    "rent increase dispute",
+    "rent arrears",
+    "unpaid rent",
+    "quit notice",
+    "eviction notice",
+    "threatened eviction",
+    "illegal eviction",
+    "locked out by landlord",
+    "landlord locked me out",
+    "tenant refused to leave",
+    "tenancy agreement",
+    "lease agreement",
+    "rental agreement",
+    "security deposit",
+    "rent deposit",
+    "caution fee",
+    "deposit refund",
+    "landlord refused deposit",
+    "property manager dispute",
+    "estate manager dispute",
+    "repair obligation",
+    "landlord refused repairs",
+    "tenant damaged property",
+    "private debt",
+    "personal debt",
+    "unpaid personal loan",
+    "money owed by individual",
+    "debt recovery",
+    "monetary claim",
+    "loan repayment dispute",
+    "breach of private contract",
+    "breach of agreement",
+    "contract dispute",
+    "sale agreement dispute",
+    "purchase agreement dispute",
+    "failed private agreement",
+    "neighbour dispute",
+    "neighbor dispute",
+    "boundary dispute",
+    "property boundary dispute",
+    "shared property dispute",
+    "inheritance dispute",
+    "family property dispute",
+    "land ownership dispute",
+    "possession dispute",
+    "commercial mediation",
+    "business partnership dispute",
+    "partnership disagreement",
+    "shareholder private dispute",
+    "payment dispute between individuals",
+    "payment dispute between businesses",
+    "demand letter",
+    "pre-action notice",
+    "letter before action",
+    "notice of demand",
+    "settlement agreement",
+    "mediation agreement",
+    "memorandum of understanding dispute",
+    "MOU dispute",
+    "small claims court",
+    "magistrates court civil claim",
+    "court-connected mediation",
+    "Abuja Multi-Door Court (AMDC)",
+    "Abuja Multi Door Court",
+    "Abuja Multi-Door Court",
+    "Abuja Multi-Door Court House",
+    "Abuja Multi Door Courthouse",
+    "AMDC",
+    "FCT Multi-Door Court",
+    "FCT Multi Door Court",
+    "Citizens' Mediation Bureau (CMB), Lagos State",
+    "Citizens Mediation Bureau",
+    "Citizens' Mediation Bureau",
+    "Citizens Mediation Centre",
+    "Citizens' Mediation Centre",
+    "Lagos Citizens Mediation Bureau",
+    "Lagos Citizens Mediation Centre",
+    "Lagos CMB",
+    "Lagos CMC",
+    "CMC Ikeja",
+    "CMB Lagos",
+    "Lagos Multi-Door Courthouse (LMDC)",
+    "Lagos Multi Door Courthouse",
+    "Lagos Multi-Door Courthouse",
+    "Lagos Multi Door Court",
+    "Lagos ADR Courthouse",
+    "LMDC",
+    "Relevant State Multi-Door Courthouse or Official ADR Centre",
+    "State Multi-Door Courthouse",
+    "State Multi Door Courthouse",
+    "State Multi-Door Court",
+    "State Multi Door Court",
+    "State ADR Centre",
+    "State Mediation Centre",
+    "Relevant State ADR Centre",
+    "Relevant Multi-Door Courthouse",
+    "Court Connected Mediation Centre",
+    "Relevant Small Claims Court or Magistrates' Court Registry",
+    "Small Claims Court",
+    "Small Claim Court",
+    "Magistrates Court",
+    "Magistrate Court",
+    "District Court",
+    "Area Court",
+    "Civil Court Registry",
+    "Relevant Magistrates Court",
+    "Relevant Small Claims Court",
+    "Court Registry"
+  ],
+  "supported_dispute_types": [
+    "Landlord and tenant disputes",
+    "Rent, deposit, repairs and possession disputes",
+    "Private debt and personal-loan recovery",
+    "Private contract and agreement disputes",
+    "Business partnership and commercial disputes",
+    "Property possession and boundary disputes",
+    "Inheritance and family-property disputes",
+    "Other private civil disputes suitable for mediation or adjudication"
+  ],
+  "minimum_complaint_pack": [
+    "Full names and contact details of the parties",
+    "Address or location where the dispute arose",
+    "Nature of the legal or contractual relationship",
+    "Clear chronological statement of facts",
+    "Relevant agreement, tenancy document, invoice, receipt or payment record",
+    "Copies of notices and previous correspondence",
+    "Amount claimed or disputed where applicable",
+    "Settlement efforts already made",
+    "Specific remedy or settlement requested"
+  ],
+  "drafting_safety": {
+    "allegations_must_not_be_presented_as_proven_facts": true,
+    "regulated_sectors_must_not_be_bypassed": true,
+    "pcc_misrouting_prohibited": true,
+    "guessed_court_emails_prohibited": true,
+    "guessed_adr_emails_prohibited": true,
+    "unlawful_rent_increase_must_not_be_assumed": true,
+    "court_jurisdiction_must_not_be_guaranteed": true,
+    "limitation_period_must_not_be_guessed": true,
+    "threats_or_abusive_language_prohibited": true,
+    "unnecessary_personal_data_prohibited": true
+  },
+  "security_rules": {
+    "five_verified_authorities": true,
+    "one_verified_direct_contact_route": true,
+    "four_safe_portal_or_dynamic_routes": true,
+    "official_state_resolution_required": true,
+    "no_indiscriminate_copying": true,
+    "no_guessed_contacts": true
+  }
 }
