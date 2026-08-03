@@ -269,6 +269,178 @@ console.log(
   "✅ NATIONAL TELECOM DETECTION KEYWORDS ARE COMPLETE"
 );
 
+for (
+  const provider
+  of NIGERIAN_TELECOM_PROVIDERS
+) {
+  const route =
+    resolveTelecomRouting({
+      sector:
+        "telecoms",
+
+      complaint:
+        "I have a telecommunications service complaint.",
+
+      institutionName:
+        provider.testInput,
+
+      escalationStage:
+        "initial",
+
+      country:
+        "Nigeria",
+    });
+
+  assert.equal(
+    route.emailRoutingExpected,
+    true,
+    `${provider.key}: verified email route disabled`
+  );
+
+  assert.deepEqual(
+    route.contactEmails,
+    provider.contact.emails,
+    `${provider.key}: provider email metadata mismatch`
+  );
+
+  assert.deepEqual(
+    route.contactPhoneNumbers,
+    provider.contact.phones,
+    `${provider.key}: provider phone metadata mismatch`
+  );
+
+  assert.equal(
+    route.submissionUrl,
+    provider.contact.complaint_portal ||
+      provider.contact.website,
+    `${provider.key}: provider portal mismatch`
+  );
+
+  assert.ok(
+    route.sourceUrls.length > 0,
+    `${provider.key}: official source URLs missing`
+  );
+
+  const escalation =
+    resolveTelecomRouting({
+      sector:
+        "telecoms",
+
+      complaint:
+        "I complained to the operator but the issue remains unresolved.",
+
+      institutionName:
+        provider.testInput,
+
+      escalationStage:
+        "unresolved",
+
+      priorComplaintReference:
+        `LIVE-${provider.key.toUpperCase()}-12345`,
+
+      country:
+        "Nigeria",
+    });
+
+  assert.equal(
+    escalation.routeKey,
+    "ncc_consumer_portal"
+  );
+
+  assert.equal(
+    escalation.emailRoutingExpected,
+    false
+  );
+
+  assert.deepEqual(
+    escalation.contactEmails,
+    []
+  );
+
+  assert.deepEqual(
+    escalation.contactPhoneNumbers,
+    NCC_TELECOM_ESCALATION
+      .contact
+      .phones
+  );
+
+  assert.equal(
+    escalation.submissionUrl,
+    NCC_TELECOM_ESCALATION
+      .contact
+      .complaint_portal
+  );
+
+  assert.ok(
+    escalation.sourceUrls.length > 0
+  );
+}
+
+console.log(
+  "✅ LIVE PROVIDER ROUTES EXPOSE VERIFIED CONTACT METADATA"
+);
+
+console.log(
+  "✅ LIVE NCC ESCALATION USES THE VERIFIED PORTAL WITHOUT AN EMAIL ROUTE"
+);
+
+const unknownProvider =
+  resolveTelecomRouting({
+    sector:
+      "telecoms",
+
+    complaint:
+      "I have a mobile network service complaint.",
+
+    institutionName:
+      "Regional Mobile Services Limited",
+
+    escalationStage:
+      "initial",
+
+    country:
+      "Nigeria",
+  });
+
+assert.equal(
+  unknownProvider.matched,
+  true
+);
+
+assert.equal(
+  unknownProvider.routeKey,
+  "telecom_provider_first_unverified_channel"
+);
+
+assert.equal(
+  unknownProvider.primaryInstitution,
+  "Regional Mobile Services Limited"
+);
+
+assert.equal(
+  unknownProvider.emailRoutingExpected,
+  false
+);
+
+assert.deepEqual(
+  unknownProvider.contactEmails,
+  []
+);
+
+assert.equal(
+  unknownProvider.submissionUrl,
+  ""
+);
+
+assert.match(
+  unknownProvider.routingNote,
+  /do not use a guessed email address/i
+);
+
+console.log(
+  "✅ UNKNOWN TELECOM PROVIDERS NEVER RECEIVE GUESSED CONTACT DETAILS"
+);
+
 const telecomData =
   JSON.parse(
     fs.readFileSync(

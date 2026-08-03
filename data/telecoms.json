@@ -2,7 +2,7 @@
   "sector": "telecoms",
   "version": "2.0.0",
   "country": "Nigeria",
-  "last_updated": "2026-08-01",
+  "last_updated": "2026-08-03",
   "purpose": "Nationwide routing of Nigerian telecommunications consumer complaints",
   "verification_policy": {
     "official_sources_only": true,
@@ -206,7 +206,10 @@
       "Legislative bodies are not automatically copied on ordinary telecommunications complaints.",
       "Immigration authorities are not telecommunications complaint bodies.",
       "NHRC or other rights bodies may be considered only where the facts independently raise a human-rights issue."
-    ]
+    ],
+    "verified_live_metadata": "Live routing exposes only officially verified operator emails, telephone numbers, portals, addresses and source URLs.",
+    "unknown_provider": "Where the provider name is user-supplied but not present in the verified registry, generate the complaint without exposing or guessing any email address.",
+    "ncc_escalation": "The NCC escalation route uses the official consumer complaint portal, complaint-management system and consumer telephone channels. It does not expose an invented NCC complaint email."
   },
   "keywords": [
     "telecom",
@@ -319,6 +322,9 @@
     "ttl_storage_seconds": 7200,
     "no_unverified_contact_route": true,
     "no_premature_regulatory_escalation": true,
-    "complaint_stage_consistency_required": true
+    "complaint_stage_consistency_required": true,
+    "no_guessed_provider_email": true,
+    "ncc_portal_only": true,
+    "verified_contact_metadata_required": true
   }
 }
