@@ -44,6 +44,9 @@ import {
 import {
   NIGERIAN_JUDICIARY_DETECTION_KEYWORDS,
 } from "./lib/nigeriaJudiciaryRegistry.mjs";
+import {
+  NIGERIAN_INTERNATIONAL_ESCALATION_DETECTION_KEYWORDS,
+} from "./lib/nigeriaInternationalEscalationRegistry.mjs";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -799,26 +802,8 @@ function builtInKeywordMap() {
       NIGERIAN_SECURITY_DETECTION_KEYWORDS,
     judiciary:
       NIGERIAN_JUDICIARY_DETECTION_KEYWORDS,
-    international_escalation: [
-      "un",
-      "ecowas",
-      "au",
-      "icc",
-      "eu",
-      "international",
-      "united nations",
-      "un human rights",
-      "congress",
-      "u.s. congress",
-      "house committee",
-      "senate",
-      "state department",
-      "foreign affairs committee",
-      "house of commons",
-      "uk parliament",
-      "european parliament",
-      "ohchr",
-    ],
+    international_escalation:
+      NIGERIAN_INTERNATIONAL_ESCALATION_DETECTION_KEYWORDS,
     anti_corruption:
       NIGERIAN_ANTI_CORRUPTION_DETECTION_KEYWORDS,
     diaspora_report:
