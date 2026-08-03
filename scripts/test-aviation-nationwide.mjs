@@ -373,6 +373,228 @@ console.log(
   "✅ NATIONAL AVIATION DETECTION KEYWORDS ARE COMPLETE"
 );
 
+for (
+  const provider
+  of NIGERIAN_AVIATION_PROVIDERS
+) {
+  const route =
+    resolveAviationRouting({
+      sector:
+        "aviation",
+
+      complaint:
+        "I have a passenger service complaint concerning my flight.",
+
+      institutionName:
+        provider.testInput,
+
+      escalationStage:
+        "initial",
+
+      country:
+        "Nigeria",
+    });
+
+  assert.equal(
+    route.emailRoutingExpected,
+    true,
+    `${provider.key}: verified email routing disabled`
+  );
+
+  assert.deepEqual(
+    route.contactEmails,
+    provider.contact.emails,
+    `${provider.key}: airline email metadata mismatch`
+  );
+
+  assert.deepEqual(
+    route.contactPhoneNumbers,
+    provider.contact.phones,
+    `${provider.key}: airline phone metadata mismatch`
+  );
+
+  assert.equal(
+    route.submissionUrl,
+    provider.contact.complaint_portal ||
+      provider.contact.website,
+    `${provider.key}: airline complaint portal mismatch`
+  );
+
+  assert.ok(
+    route.sourceUrls.length > 0,
+    `${provider.key}: official source URLs missing`
+  );
+
+  const escalation =
+    resolveAviationRouting({
+      sector:
+        "aviation",
+
+      complaint:
+        "I complained to the airline but the passenger complaint remains unresolved.",
+
+      institutionName:
+        provider.testInput,
+
+      escalationStage:
+        "unresolved",
+
+      priorComplaintReference:
+        `LIVE-${provider.key.toUpperCase()}-12345`,
+
+      country:
+        "Nigeria",
+    });
+
+  assert.equal(
+    escalation.routeKey,
+    "ncaa_consumer_protection"
+  );
+
+  assert.deepEqual(
+    escalation.contactEmails,
+    NCAA_AVIATION_ESCALATION
+      .contact
+      .emails
+  );
+
+  assert.deepEqual(
+    escalation.contactPhoneNumbers,
+    NCAA_AVIATION_ESCALATION
+      .contact
+      .phones
+  );
+
+  assert.equal(
+    escalation.submissionUrl,
+    NCAA_AVIATION_ESCALATION
+      .contact
+      .complaint_portal
+  );
+
+  assert.ok(
+    escalation.sourceUrls.length > 0
+  );
+}
+
+console.log(
+  "✅ LIVE AVIATION ROUTES EXPOSE VERIFIED CONTACT METADATA"
+);
+
+console.log(
+  "✅ LIVE NCAA ESCALATION EXPOSES VERIFIED EMAIL AND PORTAL METADATA"
+);
+
+const liveSafetyRoute =
+  resolveAviationRouting({
+    sector:
+      "aviation",
+
+    complaint:
+      "An aircraft crashed and there is a serious aviation incident.",
+
+    issueLocation:
+      "Nigeria",
+
+    escalationStage:
+      "initial",
+
+    country:
+      "Nigeria",
+  });
+
+assert.equal(
+  liveSafetyRoute.routeKey,
+  "nsib_accident_or_serious_incident"
+);
+
+assert.deepEqual(
+  liveSafetyRoute.contactEmails,
+  NSIB_AVIATION_SAFETY
+    .contact
+    .emails
+);
+
+assert.deepEqual(
+  liveSafetyRoute
+    .contactEmergencyPhoneNumbers,
+  NSIB_AVIATION_SAFETY
+    .contact
+    .emergency_phones
+);
+
+assert.equal(
+  liveSafetyRoute.submissionUrl,
+  NSIB_AVIATION_SAFETY
+    .contact
+    .reporting_portal
+);
+
+assert.ok(
+  liveSafetyRoute.sourceUrls.length > 0
+);
+
+console.log(
+  "✅ LIVE NSIB SAFETY ROUTE EXPOSES VERIFIED EMERGENCY AND REPORTING CHANNELS"
+);
+
+const unknownAirlineMetadata =
+  resolveAviationRouting({
+    sector:
+      "aviation",
+
+    complaint:
+      "My flight was cancelled and I request a refund.",
+
+    institutionName:
+      "Example International Airline",
+
+    escalationStage:
+      "initial",
+
+    country:
+      "Nigeria",
+  });
+
+assert.equal(
+  unknownAirlineMetadata.routeKey,
+  "aviation_provider_first"
+);
+
+assert.equal(
+  unknownAirlineMetadata
+    .emailRoutingExpected,
+  false
+);
+
+assert.deepEqual(
+  unknownAirlineMetadata
+    .contactEmails,
+  []
+);
+
+assert.deepEqual(
+  unknownAirlineMetadata
+    .contactPhoneNumbers,
+  []
+);
+
+assert.equal(
+  unknownAirlineMetadata
+    .submissionUrl,
+  ""
+);
+
+assert.match(
+  unknownAirlineMetadata
+    .routingNote,
+  /do not use a guessed email address/i
+);
+
+console.log(
+  "✅ UNKNOWN AIRLINES NEVER RECEIVE GUESSED CONTACT DETAILS"
+);
+
 const aviationData =
   JSON.parse(
     fs.readFileSync(
