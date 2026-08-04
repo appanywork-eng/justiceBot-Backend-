@@ -94,7 +94,7 @@
     "test:telecoms-nationwide": "node scripts/test-telecoms-nationwide.mjs",
     "test:aviation-nationwide": "node scripts/test-aviation-nationwide.mjs",
     "test:banking-nationwide": "node scripts/test-banking-nationwide.mjs",
-    "test:all": "npm run check && npm run test:national-sectors && npm run test:routing-contact-contract && npm run test:routing-delivery && npm run test:explicit-sector-handoff && npm run test:institution-sector-priority && npm run test:complaint-stage && npm run test:power-nationwide && npm run test:power-routing && npm run test:telecoms-nationwide && npm run test:aviation-nationwide && npm run test:banking-nationwide && npm run test:banking-routing-quality && npm run test:banking-delivery-quality && npm run test:banking-all-provider-delivery && npm run test:health-nationwide && npm run test:education-nationwide && npm run test:anti-corruption-nationwide && npm run test:diaspora-nationwide && npm run test:security-nationwide && npm run test:judiciary-nationwide && npm run test:international-escalation-nationwide && npm run test:general-nationwide && npm run test:civil-disputes-nationwide && npm run test:legal-safety && npm run test:safety",
+    "test:all": "npm run check && npm run test:national-sectors && npm run test:routing-contact-contract && npm run test:routing-delivery && npm run test:explicit-sector-handoff && npm run test:institution-sector-priority && npm run test:complaint-stage && npm run test:power-nationwide && npm run test:power-routing && npm run test:power-provider-delivery && npm run test:telecoms-nationwide && npm run test:aviation-nationwide && npm run test:banking-nationwide && npm run test:banking-routing-quality && npm run test:banking-delivery-quality && npm run test:banking-all-provider-delivery && npm run test:health-nationwide && npm run test:education-nationwide && npm run test:anti-corruption-nationwide && npm run test:diaspora-nationwide && npm run test:security-nationwide && npm run test:judiciary-nationwide && npm run test:international-escalation-nationwide && npm run test:general-nationwide && npm run test:civil-disputes-nationwide && npm run test:legal-safety && npm run test:safety",
     "test:health-nationwide": "node scripts/test-health-nationwide.mjs",
     "test:education-nationwide": "node scripts/test-education-nationwide.mjs",
     "test:anti-corruption-nationwide": "node scripts/test-anti-corruption-nationwide.mjs",
@@ -110,7 +110,8 @@
     "test:banking-routing-quality": "node scripts/test-banking-routing-quality.mjs",
     "test:banking-delivery-quality": "node scripts/test-banking-delivery-quality.mjs",
     "test:banking-all-provider-delivery": "node scripts/test-banking-all-provider-delivery.mjs",
-    "test:explicit-sector-handoff": "node scripts/test-explicit-sector-handoff.mjs"
+    "test:explicit-sector-handoff": "node scripts/test-explicit-sector-handoff.mjs",
+    "test:power-provider-delivery": "node scripts/test-power-provider-delivery.mjs"
   },
   "repository": {
     "type": "git",
