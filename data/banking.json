@@ -1,6 +1,6 @@
 {
   "sector": "banking",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "country": "Nigeria",
   "last_updated": "2026-08-04",
   "purpose": "Nationwide routing of complaints against Nigerian banks, microfinance institutions, payment-service banks, mobile-money operators and payment-service providers",
@@ -37,7 +37,7 @@
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
+        "verified_on": "2026-08-04",
         "scope": "identity_direct_contact_and_complaint_process",
         "source_urls": [
           "https://www.cbn.gov.ng/supervision/cpdcomgt.html",
@@ -57,15 +57,36 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "contactcenter@accessbankplc.com"
+        ],
+        "escalation_emails": [
+          "cc-ombudsman@accessbankplc.com"
+        ],
+        "phones": [
+          "0700 300 0000",
+          "0201 280 2500",
+          "0201 271 2005",
+          "0201 227 3000"
+        ],
+        "website": "https://www.accessbankplc.com/help/complaint-channels",
+        "complaint_form": "https://www.accessbankplc.com/help/complaint-channels",
+        "escalation_page": "https://www.accessbankplc.com/contact-us/we-care",
+        "address": "Access Bank PLC Head Office, 14/15 Prince Alaba Abiodun, Oniru Road, Victoria Island, Lagos, Nigeria",
+        "app_guidance": "Complaints may also be submitted through Access Bank's official mobile applications, WhatsApp banking or any Access Bank branch."
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_direct_email_phone_address_complaint_channel_and_internal_ombudsman",
+        "direct_email_verified": true,
+        "escalation_email_verified": true,
+        "phone_numbers_verified": true,
+        "complaint_form_verified": true,
+        "address_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
+          "https://www.accessbankplc.com/help/complaint-channels",
+          "https://www.accessbankplc.com/contact-us/we-care"
         ]
       }
     },
@@ -80,16 +101,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "complaints.nigeria@citi.com"
+        ],
+        "website": "https://www.citigroup.com/global/about-us/global-presence/nigeria",
+        "complaint_portal": "https://www.citigroup.com/global/about-us/global-presence/nigeria"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.citigroup.com/global/about-us/global-presence/nigeria"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -102,16 +128,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "ENGContactCentre@ecobank.com"
+        ],
+        "website": "https://www.ecobank.com/ng/personal-banking/contact-us",
+        "complaint_portal": "https://www.ecobank.com/ng/personal-banking/contact-us"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.ecobank.com/ng/personal-banking/contact-us",
+          "https://ecobank.com/ng/personal-banking/ways-to-bank/internet-banking"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -123,16 +155,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "trueserve@fidelitybank.ng"
+        ],
+        "website": "https://www.fidelitybank.ng/contact-us/",
+        "complaint_portal": "https://www.fidelitybank.ng/contact-us/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.fidelitybank.ng/contact-us/",
+          "https://fidelitybank.ng/fidelity-card/credit-card/fidelity-visa-platinum-credit-card/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -146,16 +184,24 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "firstcontactcomplaints@firstbankgroup.com",
+          "complaints@firstbankgroup.com"
+        ],
+        "website": "https://complaints.firstbanknigeria.com",
+        "complaint_portal": "https://complaints.firstbanknigeria.com"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://complaints.firstbanknigeria.com",
+          "https://www.firstbanknigeria.com/contact/feedback-complaints/",
+          "https://www.firstbanknigeria.com/contact/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -169,16 +215,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "customerservice@fcmb.com"
+        ],
+        "website": "https://www.fcmb.com/customer-service.php",
+        "complaint_portal": "https://www.fcmb.com/customer-service.php"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.fcmb.com/customer-service.php"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -190,16 +241,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "contactcenter@globusbank.com"
+        ],
+        "website": "https://www.globusbank.com/contact_us.html",
+        "complaint_portal": "https://www.globusbank.com/contact_us.html"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.globusbank.com/contact_us.html"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -222,7 +278,7 @@
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
+        "verified_on": "2026-08-04",
         "scope": "provider_identity_and_direct_complaint_contact",
         "direct_email_verified": true,
         "source_urls": [
@@ -241,16 +297,21 @@
       ],
       "category": "non_interest_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "contactcentre@jaizbankplc.com"
+        ],
+        "website": "https://jaizonline.jaizbankplc.com/login",
+        "complaint_portal": "https://jaizonline.jaizbankplc.com/login"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://jaizonline.jaizbankplc.com/login"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -262,16 +323,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "contactcentre@keystonebankng.com"
+        ],
+        "website": "https://www.keystonebankng.com/help-desk/complaints-channel/",
+        "complaint_portal": "https://www.keystonebankng.com/help-desk/complaints-channel/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.keystonebankng.com/help-desk/complaints-channel/",
+          "https://www.keystonebankng.com/help-desk/customer-protection-information/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -284,16 +351,22 @@
       ],
       "category": "non_interest_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "complaints@lotusbank.com",
+          "support@lotusbank.com"
+        ],
+        "website": "https://www.lotusbank.com/customer-support",
+        "complaint_portal": "https://www.lotusbank.com/customer-support"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.lotusbank.com/customer-support"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -308,16 +381,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "support@novabank.ng",
+          "info@novabank.ng"
+        ],
+        "website": "https://www.novabank.ng/contact/",
+        "complaint_portal": "https://www.novabank.ng/contact/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.novabank.ng/contact/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -329,16 +408,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "opticonnect@optimusbank.com"
+        ],
+        "website": "https://ibank.optimusbank.com/support",
+        "complaint_portal": "https://ibank.optimusbank.com/support"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://ibank.optimusbank.com/support",
+          "https://www.optimusbank.com/security-center"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -351,16 +436,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "customercare@parallexbank.com",
+          "info@parallexbank.com"
+        ],
+        "website": "https://www.parallexbank.com/help",
+        "complaint_portal": "https://www.parallexbank.com/help"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.parallexbank.com/help"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -372,16 +463,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "yescenter@polarisbanklimited.com"
+        ],
+        "website": "https://www.polarisbanklimited.com/",
+        "complaint_portal": "https://www.polarisbanklimited.com/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.polarisbanklimited.com/",
+          "https://portal.polarisbanklimited.com/bvn-nin-account-linking/initiate-process"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -395,16 +492,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "contactpremium@premiumtrustbank.com"
+        ],
+        "website": "https://premiumtrustbank.com/faq/",
+        "complaint_portal": "https://premiumtrustbank.com/faq/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://premiumtrustbank.com/faq/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -417,16 +519,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "businessconcierge@providusbank.com"
+        ],
+        "website": "https://www.providusbank.com/complaints",
+        "complaint_portal": "https://www.providusbank.com/complaints"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.providusbank.com/complaints"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -479,16 +586,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "clientcare.ng@sc.com"
+        ],
+        "website": "https://www.sc.com/ng/contact-us/",
+        "complaint_portal": "https://www.sc.com/ng/contact-us/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.sc.com/ng/contact-us/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -501,16 +613,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "customercare@sterling.ng"
+        ],
+        "website": "https://sterling.ng/complaint/",
+        "complaint_portal": "https://sterling.ng/complaint/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://sterling.ng/complaint/",
+          "https://sterling.ng/support/contact-us/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -523,16 +641,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "helpdesk@suntrustng.com"
+        ],
+        "website": "https://suntrustng.com/contact-us/",
+        "complaint_portal": "https://suntrustng.com/contact-us/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://suntrustng.com/contact-us/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -545,16 +668,21 @@
       ],
       "category": "non_interest_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "tajconnect@tajbank.com"
+        ],
+        "website": "https://tajbank.com/contact/",
+        "complaint_portal": "https://tajbank.com/contact/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://tajbank.com/contact/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -569,16 +697,23 @@
       ],
       "category": "non_interest_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "customercare@altbank.ng"
+        ],
+        "website": "https://altbank.ng/complaints/",
+        "complaint_portal": "https://altbank.ng/complaints/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://altbank.ng/complaints/",
+          "https://altmobile.altbank.ng/contact",
+          "https://altbank.ng/contact-us/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -592,16 +727,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "Contactcentre@titantrustbank.com"
+        ],
+        "website": "https://titantrustbank.com/contact-us/",
+        "complaint_portal": "https://titantrustbank.com/contact-us/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://titantrustbank.com/contact-us/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -614,16 +754,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "customerservice@unionbankng.com"
+        ],
+        "website": "https://unionbankng.com/support/",
+        "complaint_portal": "https://unionbankng.com/support/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://unionbankng.com/support/",
+          "https://unionbankng.com/contact-us/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -635,16 +781,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "we_care@unitybankng.com"
+        ],
+        "website": "https://www.unitybankng.com/contact",
+        "complaint_portal": "https://www.unitybankng.com/contact"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.unitybankng.com/contact"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -658,16 +809,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "cfc@ubagroup.com"
+        ],
+        "website": "https://www.ubagroup.com/nigeria/help/contact-us/",
+        "complaint_portal": "https://www.ubagroup.com/nigeria/help/contact-us/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.ubagroup.com/nigeria/help/contact-us/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -681,16 +837,21 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "purpleconnect@wemabank.com"
+        ],
+        "website": "https://www.wemabank.com/contact-us",
+        "complaint_portal": "https://www.wemabank.com/contact-us"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.wemabank.com/contact-us"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -703,16 +864,22 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "zenithdirect@zenithbank.com"
+        ],
+        "website": "https://www.zenithbank.com/",
+        "complaint_portal": "https://www.zenithbank.com/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
-        ]
+          "https://www.zenithbank.com/",
+          "https://www.zenithbank.com/corporate-banking/loans-investment"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -725,16 +892,21 @@
       ],
       "category": "payment_service_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "hello@9psb.com.ng"
+        ],
+        "website": "https://9psb.com.ng/contact/",
+        "complaint_portal": "https://9psb.com.ng/contact/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://9psb.com.ng/contact/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -747,16 +919,23 @@
       ],
       "category": "payment_service_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "customercare@hopepsbank.com",
+          "info@hopepsbank.com"
+        ],
+        "website": "https://support.hopepsbank.com/",
+        "complaint_portal": "https://support.hopepsbank.com/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://support.hopepsbank.com/",
+          "https://hopepsbank.com/contact"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -770,16 +949,21 @@
       ],
       "category": "payment_service_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "customerservice@smartcashpsb.ng"
+        ],
+        "website": "https://smartcashpsb.ng/",
+        "complaint_portal": "https://smartcashpsb.ng/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://smartcashpsb.ng/"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -794,16 +978,21 @@
       ],
       "category": "mobile_money_operator",
       "contact": {
-        "emails": []
+        "emails": [
+          "customerservice@opay-inc.com"
+        ],
+        "website": "https://play.google.com/store/apps/details?id=team.opay.pay",
+        "complaint_portal": "https://play.google.com/store/apps/details?id=team.opay.pay"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://play.google.com/store/apps/details?id=team.opay.pay"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -817,16 +1006,23 @@
       ],
       "category": "mobile_money_operator",
       "contact": {
-        "emails": []
+        "emails": [
+          "support@palmpay.com"
+        ],
+        "website": "https://www.palmpay.com/company/contact/",
+        "complaint_portal": "https://www.palmpay.com/company/contact/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://www.palmpay.com/company/contact/",
+          "https://play.google.com/store/apps/details?id=com.transsnet.palmpay",
+          "https://h5.palmpay.app/h5/conditions/ng/palmpay"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -842,16 +1038,21 @@
       ],
       "category": "mobile_money_operator",
       "contact": {
-        "emails": []
+        "emails": [
+          "help@paga.com"
+        ],
+        "website": "https://help.paga.com/support/solutions/articles/35000283460-how-do-i-contact-customer-support-for-card-related-issues-",
+        "complaint_portal": "https://help.paga.com/support/solutions/articles/35000283460-how-do-i-contact-customer-support-for-card-related-issues-"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://help.paga.com/support/solutions/articles/35000283460-how-do-i-contact-customer-support-for-card-related-issues-"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -866,16 +1067,21 @@
       ],
       "category": "microfinance_and_payment_services",
       "contact": {
-        "emails": []
+        "emails": [
+          "support@moniepoint.com"
+        ],
+        "website": "https://moniepoint.com/ng/contact",
+        "complaint_portal": "https://moniepoint.com/ng/contact"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://moniepoint.com/ng/contact"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -888,16 +1094,23 @@
       ],
       "category": "payment_service_provider",
       "contact": {
-        "emails": []
+        "emails": [
+          "hi@flutterwavego.com"
+        ],
+        "website": "https://flutterwave.com/ng/support/submit-request",
+        "complaint_portal": "https://flutterwave.com/ng/support/submit-request"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://flutterwave.com/ng/support/submit-request",
+          "https://flutterwave.com/ng/payment-protection-promise",
+          "https://flutterwave.com/ng/contact-sales"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -911,16 +1124,22 @@
       ],
       "category": "payment_service_provider",
       "contact": {
-        "emails": []
+        "emails": [
+          "support@paystack.com"
+        ],
+        "website": "https://paystack.com/contact/support",
+        "complaint_portal": "https://paystack.com/contact/support"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://paystack.com/contact/support",
+          "https://support.paystack.com/en/articles/2127554"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -934,16 +1153,22 @@
       ],
       "category": "payment_service_provider",
       "contact": {
-        "emails": []
+        "emails": [
+          "support@interswitchgroup.com"
+        ],
+        "website": "https://help.interswitchgroup.com/",
+        "complaint_portal": "https://help.interswitchgroup.com/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://help.interswitchgroup.com/",
+          "https://selfservice.interswitchgroup.com/support/solutions/articles/48001210990-i-want-reversal-i-have-not-gotten-my-funds-back-i-have-not-gotten-reversal"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -956,16 +1181,21 @@
       ],
       "category": "payment_service_provider",
       "contact": {
-        "emails": []
+        "emails": [
+          "support@remita.net"
+        ],
+        "website": "https://support.remita.net/portal/en/home",
+        "complaint_portal": "https://support.remita.net/portal/en/home"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://support.remita.net/portal/en/home"
+        ],
+        "complaint_form_verified": true
       }
     },
     {
@@ -980,16 +1210,22 @@
       ],
       "category": "payment_service_provider",
       "contact": {
-        "emails": []
+        "emails": [
+          "support@nomba.com"
+        ],
+        "website": "https://nomba.com/",
+        "complaint_portal": "https://nomba.com/"
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/PaymentsSystem/PSPs.html"
-        ]
+          "https://nomba.com/",
+          "https://nomba.com/credit-terms-of-service"
+        ],
+        "complaint_form_verified": true
       }
     }
   ],
