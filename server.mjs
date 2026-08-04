@@ -976,6 +976,7 @@ async function detectSectorAI(text) {
 }
 
 async function resolveComplaintRouting({
+  sector: requestedSectorInput = "",
   complaint = "",
   issueLocation = "",
   petitionerAddress = "",
@@ -988,6 +989,13 @@ async function resolveComplaintRouting({
   providerResponseStatus = "",
   country = "Nigeria",
 } = {}) {
+  const requestedSector =
+    String(requestedSectorInput || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/-/g, "_");
+
   const preSectorRouting =
     resolvePreSectorJurisdiction({
       complaint,
@@ -1049,6 +1057,14 @@ async function resolveComplaintRouting({
 
     source =
       "institution_priority";
+  } else if (
+    requestedSector
+  ) {
+    sector =
+      requestedSector;
+
+    source =
+      "explicit_sector";
   } else {
     sector =
       await detectSectorSmart(
@@ -1088,6 +1104,9 @@ async function resolveComplaintRouting({
 
   const sectorDetection = {
     source,
+
+    requestedSector,
+
     selectedSector:
       sector,
 
@@ -2318,6 +2337,7 @@ app.post(
   async (req, res) => {
     try {
       const {
+        sector = "",
         complaint = "",
         petitioner = {},
         disputeLocation = "",
@@ -2341,6 +2361,7 @@ app.post(
 
       const result =
         await resolveComplaintRouting({
+          sector,
           complaint,
 
           issueLocation:
