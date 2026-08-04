@@ -98,10 +98,11 @@ assert.equal(
   true
 );
 
-assert.ok(
-  stanbicRoute.contactEmails.includes(
-    "CustomerCareNigeria@stanbicibtc.com"
-  )
+assert.deepEqual(
+  stanbicRoute.contactEmails,
+  [
+    "CustomerCareNigeria@stanbicibtc.com",
+  ]
 );
 
 assert.ok(
@@ -132,10 +133,13 @@ console.log(
 const accessRoute =
   resolveBankingRouting({
     complaint:
-      "I have an account complaint.",
+      "Access Bank restricted my account and has not resolved my complaint.",
 
     institutionName:
       "Access Bank",
+
+    issueLocation:
+      "Abuja",
 
     escalationStage:
       "initial",
@@ -145,17 +149,65 @@ const accessRoute =
   });
 
 assert.equal(
+  accessRoute.routeKey,
+  "bank_provider_first"
+);
+
+assert.equal(
+  accessRoute.primaryInstitution,
+  "Access Bank PLC"
+);
+
+assert.equal(
   accessRoute.emailRoutingExpected,
-  false
+  true
 );
 
 assert.deepEqual(
   accessRoute.contactEmails,
-  []
+  [
+    "contactcenter@accessbankplc.com",
+  ]
+);
+
+assert.ok(
+  accessRoute.contactPhoneNumbers.includes(
+    "0700 300 0000"
+  )
+);
+
+assert.ok(
+  accessRoute.contactPhoneNumbers.length >= 4
+);
+
+assert.match(
+  accessRoute.submissionUrl,
+  /^https:\/\/www\.accessbankplc\.com\//
+);
+
+assert.match(
+  accessRoute.contactAddress,
+  /Victoria Island/i
+);
+
+assert.ok(
+  accessRoute.sourceUrls.length >= 2
+);
+
+assert.equal(
+  accessRoute.contactEmails.includes(
+    "cc-ombudsman@accessbankplc.com"
+  ),
+  false,
+  "Access Ombudsman must not be used for an initial complaint"
 );
 
 console.log(
-  "✅ UNENRICHED BANKS RETAIN SAFE NO-EMAIL ROUTING"
+  "✅ ACCESS BANK FIRST COMPLAINT EXPOSES VERIFIED DELIVERY CHANNELS"
+);
+
+console.log(
+  "✅ ACCESS BANK OMBUDSMAN IS NOT USED PREMATURELY"
 );
 
 
