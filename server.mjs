@@ -76,6 +76,10 @@ import {
   buildStructuredComplaintPrompt,
   resolveDeliveryPlan,
 } from "./lib/routingDelivery.mjs";
+import {
+  detectInstitutionSector,
+  INSTITUTION_SECTOR_PRIORITY_VERSION,
+} from "./lib/institutionSectorPriority.mjs";
 
 dotenv.config();
 
@@ -969,6 +973,151 @@ async function detectSectorAI(text) {
 
     return "unknown";
   }
+}
+
+async function resolveComplaintRouting({
+  complaint = "",
+  issueLocation = "",
+  petitionerAddress = "",
+  institutionName = "",
+  institutionLevel = "",
+  escalationStage = "",
+  priorComplaintReference = "",
+  country = "Nigeria",
+} = {}) {
+  const preSectorRouting =
+    resolvePreSectorJurisdiction({
+      complaint,
+      issueLocation,
+      petitionerAddress,
+      institutionName,
+      institutionLevel,
+      escalationStage,
+      priorComplaintReference,
+      country,
+    });
+
+  const sectorDetectionText =
+    buildSectorDetectionText({
+      complaint,
+      institutionName,
+      issueLocation,
+    });
+
+  const institutionPriority =
+    detectInstitutionSector(
+      institutionName
+    );
+
+  const combinedHeuristic =
+    preSectorRouting.matched
+      ? {
+          sector:
+            preSectorRouting.sector ||
+            "civil_disputes",
+
+          score: 1000,
+
+          reason:
+            "jurisdiction_override",
+        }
+      : detectSectorHeuristic(
+          sectorDetectionText
+        );
+
+  let sector = "";
+  let source = "";
+
+  if (preSectorRouting.matched) {
+    sector =
+      preSectorRouting.sector ||
+      "civil_disputes";
+
+    source =
+      "pre_sector_jurisdiction";
+  } else if (
+    institutionPriority.matched
+  ) {
+    sector =
+      institutionPriority.sector;
+
+    source =
+      "institution_priority";
+  } else {
+    sector =
+      await detectSectorSmart(
+        sectorDetectionText
+      );
+
+    source =
+      "combined_heuristic_or_ai";
+  }
+
+  if (
+    !sector ||
+    sector === "unknown"
+  ) {
+    sector = "general";
+    source =
+      "general_fallback";
+  }
+
+  const jurisdictionRouting =
+    preSectorRouting.matched
+      ? preSectorRouting
+      : resolveJurisdictionRouting({
+          sector,
+          complaint,
+          issueLocation,
+          petitionerAddress,
+          institutionName,
+          institutionLevel,
+          escalationStage,
+          priorComplaintReference,
+          country,
+        });
+
+  const sectorDetection = {
+    source,
+    selectedSector:
+      sector,
+
+    institutionPriority: {
+      matched:
+        institutionPriority.matched,
+
+      sector:
+        institutionPriority.sector,
+
+      score:
+        institutionPriority.score,
+
+      evidence:
+        institutionPriority.evidence,
+
+      version:
+        institutionPriority.version,
+    },
+
+    combinedHeuristic: {
+      sector:
+        combinedHeuristic.sector,
+
+      score:
+        combinedHeuristic.score,
+
+      reason:
+        combinedHeuristic.reason,
+    },
+  };
+
+  return {
+    sector,
+    sectorDetection,
+    jurisdictionRouting,
+    heuristic:
+      combinedHeuristic,
+  };
 }
 
 function inferCaseType(sector) {
@@ -2065,6 +2214,20 @@ app.get("/health", (req, res) => {
     time: new Date().toISOString(),
     freeAccessEnabled:
       FREE_ACCESS_ENABLED,
+
+    revision:
+      String(
+        process.env.K_REVISION ||
+        "local"
+      ),
+
+    institutionSectorPriorityVersion:
+      INSTITUTION_SECTOR_PRIORITY_VERSION,
+
+    jurisdictionEngineVersion:
+      getJurisdictionCapabilities(
+        []
+      ).engineVersion,
   });
 });
 
@@ -2138,6 +2301,82 @@ app.get(
       ok: true,
       ...capabilities,
     });
+  }
+);
+
+app.post(
+  "/routing/resolve",
+  async (req, res) => {
+    try {
+      const {
+        complaint = "",
+        petitioner = {},
+        disputeLocation = "",
+        issueLocation = "",
+        institutionName = "",
+        institutionLevel = "",
+        escalationStage = "",
+        priorComplaintReference = "",
+        country = "Nigeria",
+      } = req.body || {};
+
+      const resolvedIssueLocation =
+        String(
+          issueLocation ||
+          disputeLocation ||
+          ""
+        ).trim();
+
+      const result =
+        await resolveComplaintRouting({
+          complaint,
+
+          issueLocation:
+            resolvedIssueLocation,
+
+          petitionerAddress:
+            petitioner.address,
+
+          institutionName,
+          institutionLevel,
+          escalationStage,
+          priorComplaintReference,
+          country,
+        });
+
+      return res.json({
+        ok: true,
+
+        revision:
+          String(
+            process.env.K_REVISION ||
+            "local"
+          ),
+
+        sector:
+          result.sector,
+
+        sectorDetection:
+          result.sectorDetection,
+
+        routingDecision:
+          result.jurisdictionRouting,
+      });
+    } catch (error) {
+      console.error(
+        "Routing diagnostic error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          ok: false,
+
+          error:
+            "Routing diagnostic failed",
+        });
+    }
   }
 );
 
@@ -2270,75 +2509,26 @@ app.post("/generate-petition", async (req, res) => {
     METRICS.generated
   );
 
-  const preSectorRouting =
-    resolvePreSectorJurisdiction({
-      complaint,
-      issueLocation:
-        resolvedIssueLocation,
-      petitionerAddress:
-        petitioner.address,
-      institutionName,
-      institutionLevel,
-      escalationStage,
-      priorComplaintReference,
-      country,
-    });
+  const {
+    sector,
+    sectorDetection,
+    jurisdictionRouting,
+    heuristic,
+  } = await resolveComplaintRouting({
+    complaint,
 
-  const sectorDetectionText =
-    buildSectorDetectionText({
-      complaint,
-      institutionName,
-      issueLocation:
-        resolvedIssueLocation,
-    });
+    issueLocation:
+      resolvedIssueLocation,
 
-  const heuristic =
-    preSectorRouting.matched
-      ? {
-          sector:
-            preSectorRouting.sector ||
-            "civil_disputes",
-          score: 1000,
-          reason:
-            "jurisdiction_override",
-        }
-      : detectSectorHeuristic(
-          sectorDetectionText
-        );
+    petitionerAddress:
+      petitioner.address,
 
-  let sector =
-    preSectorRouting.matched
-      ? (
-          preSectorRouting.sector ||
-          "civil_disputes"
-        )
-      : await detectSectorSmart(
-          sectorDetectionText
-        );
-
-  if (
-    !sector ||
-    sector === "unknown"
-  ) {
-    sector = "general";
-  }
-
-  const jurisdictionRouting =
-    preSectorRouting.matched
-      ? preSectorRouting
-      : resolveJurisdictionRouting({
-          sector,
-          complaint,
-          issueLocation:
-            resolvedIssueLocation,
-          petitionerAddress:
-            petitioner.address,
-          institutionName,
-          institutionLevel,
-          escalationStage,
-          priorComplaintReference,
-          country,
-        });
+    institutionName,
+    institutionLevel,
+    escalationStage,
+    priorComplaintReference,
+    country,
+  });
 
   /*
    * Some matters must not be converted into
@@ -2722,6 +2912,9 @@ CRITICAL RULES:
       petition: petitionText,
       sector,
       caseType,
+
+      sectorDetection,
+
       subject,
       toInstitutions: finalToInstitutions,
       ccInstitutions:
@@ -2778,6 +2971,9 @@ CRITICAL RULES:
       preview,
       sector,
       caseType,
+
+      sectorDetection,
+
       emailRoutingAvailable,
 
       routingDecision:
