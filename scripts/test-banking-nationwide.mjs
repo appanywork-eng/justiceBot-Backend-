@@ -107,34 +107,60 @@ const storedProviderEmails =
         )
     );
 
-assert.equal(
-  storedProviderEmails.length,
-  1
-);
+const storedEmailsByProvider =
+  Object.fromEntries(
+    storedProviderEmails.map(
+      ({
+        provider,
+        email,
+      }) => [
+        provider.key,
+        email,
+      ]
+    )
+  );
 
 assert.equal(
-  storedProviderEmails[0]
-    .provider
-    .key,
-  "gtbank"
-);
-
-assert.equal(
-  storedProviderEmails[0]
-    .email,
+  storedEmailsByProvider.gtbank,
   "gtbankmailsupport@gtbank.com"
 );
 
 assert.equal(
-  storedProviderEmails[0]
-    .provider
-    .verification
-    .direct_email_verified,
-  true
+  storedEmailsByProvider.stanbic,
+  "CustomerCareNigeria@stanbicibtc.com"
 );
 
+for (
+  const {
+    provider,
+    email,
+  }
+  of storedProviderEmails
+) {
+  assert.equal(
+    provider
+      .verification
+      .direct_email_verified,
+    true,
+    `${provider.key}: stored email is not verified`
+  );
+
+  assert.ok(
+    provider
+      .verification
+      .source_urls
+      .length > 0,
+    `${provider.key}: official source is missing`
+  );
+
+  assert.match(
+    email,
+    /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+  );
+}
+
 console.log(
-  "✅ NO UNVERIFIED BANK EMAIL WAS RETAINED"
+  "✅ EVERY STORED BANK EMAIL HAS OFFICIAL VERIFICATION"
 );
 
 const cbnVerification =
@@ -578,7 +604,7 @@ const bankingData =
 
 assert.equal(
   bankingData.version,
-  "3.0.0"
+  "3.1.0"
 );
 
 assert.equal(

@@ -1,8 +1,8 @@
 {
   "sector": "banking",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "country": "Nigeria",
-  "last_updated": "2026-08-02",
+  "last_updated": "2026-08-04",
   "purpose": "Nationwide routing of complaints against Nigerian banks, microfinance institutions, payment-service banks, mobile-money operators and payment-service providers",
   "verification_policy": {
     "official_sources_only": true,
@@ -12,7 +12,7 @@
     "regulator_after_unresolved_provider_complaint": true,
     "nationwide_coverage": true,
     "safe_unlisted_provider_fallback": true,
-    "verified_on": "2026-08-02"
+    "verified_on": "2026-08-04"
   },
   "regulators": [
     {
@@ -440,15 +440,31 @@
       ],
       "category": "deposit_money_bank",
       "contact": {
-        "emails": []
+        "emails": [
+          "CustomerCareNigeria@stanbicibtc.com"
+        ],
+        "phones": [
+          "0201 2709 676",
+          "0201 4222 222",
+          "+234 700 909 9099"
+        ],
+        "website": "https://www.stanbicibtcbank.com/nigeriabank/personal/contact-us/contact-us-details",
+        "complaint_form": "https://www.stanbicibtcbank.com/nigeriabank/personal/help/General-FAQs/complaints-and-enquiries",
+        "address": "Stanbic IBTC Towers, Walter Carrington Crescent, Victoria Island, Lagos, Nigeria",
+        "app_guidance": "Complaints may also be submitted through the user-feedback feature in the Stanbic IBTC mobile application."
       },
       "verification": {
         "status": "VERIFIED_OFFICIAL_SOURCE",
-        "verified_on": "2026-08-02",
-        "scope": "provider_identity_and_routing_only",
-        "direct_email_verified": false,
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_direct_email_phone_address_and_complaint_form",
+        "direct_email_verified": true,
+        "phone_numbers_verified": true,
+        "complaint_form_verified": true,
+        "address_verified": true,
         "source_urls": [
-          "https://www.cbn.gov.ng/RSS/CircularsRSS.html"
+          "https://www.stanbicibtcbank.com/nigeriabank/personal/help/General-FAQs/complaints-and-enquiries",
+          "https://www.stanbicibtcbank.com/nigeriabank/personal/contact-us/contact-us-details",
+          "https://www.stanbicibtcbank.com/nigeriabank/personal/contact-us"
         ]
       }
     },
