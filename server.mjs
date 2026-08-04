@@ -983,6 +983,9 @@ async function resolveComplaintRouting({
   institutionLevel = "",
   escalationStage = "",
   priorComplaintReference = "",
+  priorComplaintDate = "",
+  bankingComplaintType = "",
+  providerResponseStatus = "",
   country = "Nigeria",
 } = {}) {
   const preSectorRouting =
@@ -994,6 +997,9 @@ async function resolveComplaintRouting({
       institutionLevel,
       escalationStage,
       priorComplaintReference,
+      priorComplaintDate,
+      bankingComplaintType,
+      providerResponseStatus,
       country,
     });
 
@@ -1074,6 +1080,9 @@ async function resolveComplaintRouting({
           institutionLevel,
           escalationStage,
           priorComplaintReference,
+          priorComplaintDate,
+          bankingComplaintType,
+          providerResponseStatus,
           country,
         });
 
@@ -2317,6 +2326,9 @@ app.post(
         institutionLevel = "",
         escalationStage = "",
         priorComplaintReference = "",
+        priorComplaintDate = "",
+        bankingComplaintType = "",
+        providerResponseStatus = "",
         country = "Nigeria",
       } = req.body || {};
 
@@ -2341,6 +2353,9 @@ app.post(
           institutionLevel,
           escalationStage,
           priorComplaintReference,
+          priorComplaintDate,
+          bankingComplaintType,
+          providerResponseStatus,
           country,
         });
 
@@ -2420,6 +2435,9 @@ app.post("/generate-petition", async (req, res) => {
     institutionLevel = "",
     escalationStage = "",
     priorComplaintReference = "",
+    priorComplaintDate = "",
+    bankingComplaintType = "",
+    providerResponseStatus = "",
     country = "Nigeria",
   } = req.body || {};
 
@@ -2527,6 +2545,9 @@ app.post("/generate-petition", async (req, res) => {
     institutionLevel,
     escalationStage,
     priorComplaintReference,
+    priorComplaintDate,
+    bankingComplaintType,
+    providerResponseStatus,
     country,
   });
 
@@ -2638,6 +2659,12 @@ app.post("/generate-petition", async (req, res) => {
       escalationStage,
 
       priorComplaintReference,
+
+      priorComplaintDate,
+
+      bankingComplaintType,
+
+      providerResponseStatus,
 
       country,
     });

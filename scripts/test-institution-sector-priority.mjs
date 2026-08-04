@@ -132,6 +132,12 @@ const unresolvedComplaint =
     escalationStage:
       "unresolved",
 
+    priorComplaintDate:
+      "2026-01-01",
+
+    bankingComplaintType:
+      "general_banking",
+
     priorComplaintReference:
       "TEST-REF-123",
 

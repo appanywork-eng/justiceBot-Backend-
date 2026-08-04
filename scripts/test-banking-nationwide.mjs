@@ -311,6 +311,12 @@ for (
       escalationStage:
         "unresolved",
 
+      priorComplaintDate:
+        "2026-01-01",
+
+      bankingComplaintType:
+        "general_banking",
+
       priorComplaintReference:
         `TEST-${String(input)
           .replace(
@@ -486,6 +492,12 @@ for (
 
       escalationStage:
         "unresolved",
+
+      priorComplaintDate:
+        "2026-01-01",
+
+      bankingComplaintType:
+        "general_banking",
 
       priorComplaintReference:
         "TEST-NATIONWIDE-12345",
