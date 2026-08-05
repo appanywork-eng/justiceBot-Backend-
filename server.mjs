@@ -202,7 +202,7 @@ const SUPPORT_ADMIN_URL =
       ""
     );
 
-const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 1050);
+const PETITION_PRICE_NGN = Number(process.env.PETITION_PRICE_NGN || 550);
 const PETITION_TTL_SECONDS = Number(process.env.PETITION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
 
 /*
