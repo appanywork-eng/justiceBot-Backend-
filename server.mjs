@@ -58,6 +58,7 @@ import { SupportNotifier } from "./lib/supportNotifier.mjs";
 import { createSupportRouter } from "./lib/supportRoutes.mjs";
 import {
   FirebaseIdentityError,
+  listFirebaseUsers,
   requireVerifiedFirebaseUser,
 } from "./lib/firebaseIdentity.mjs";
 import {
@@ -2155,6 +2156,428 @@ app.get("/admin/stats", async (req, res) => {
     res.json({ ok: true, stats });
   } catch {
     res.status(500).json({ ok: false, error: "Stats error" });
+  }
+});
+
+
+app.get("/admin/overview", async (req, res) => {
+  try {
+    const token =
+      String(
+        req.headers[
+          "x-admin-token"
+        ] || ""
+      );
+
+    const valid =
+      await isAdminTokenValid(
+        token
+      );
+
+    if (!valid) {
+      return res
+        .status(401)
+        .json({
+          ok: false,
+          error:
+            "Unauthorized",
+        });
+    }
+
+    const metrics = {
+      visits:
+        await redisGetInt(
+          METRICS.visits
+        ),
+
+      generated:
+        await redisGetInt(
+          METRICS.generated
+        ),
+
+      previewed:
+        await redisGetInt(
+          METRICS.previewed
+        ),
+
+      payment_initiated:
+        await redisGetInt(
+          METRICS
+            .paymentInitiated
+        ),
+
+      payment_success:
+        await redisGetInt(
+          METRICS
+            .paymentSuccess
+        ),
+
+      unlocked_paid:
+        await redisGetInt(
+          METRICS
+            .unlockedPaid
+        ),
+
+      unlocked_free:
+        await redisGetInt(
+          METRICS
+            .unlockedFree
+        ),
+
+      admin_sessions:
+        await redisGetInt(
+          METRICS
+            .adminSessions
+        ),
+
+      support_submitted:
+        await redisGetInt(
+          METRICS
+            .supportSubmitted
+        ),
+
+      unique_payinit_txrefs:
+        await redisSCard(
+          METRICS
+            .uniquePayInit
+        ),
+
+      unique_paysuccess_txrefs:
+        await redisSCard(
+          METRICS
+            .uniquePaySuccess
+        ),
+    };
+
+    const warnings = [];
+
+    let firebaseUsers = [];
+    let entitlementUsers = [];
+    let supportTickets = [];
+
+    try {
+      firebaseUsers =
+        await listFirebaseUsers({
+          maxResults: 5000,
+        });
+    } catch (error) {
+      console.error(
+        "Admin Firebase user list error:",
+        error
+      );
+
+      warnings.push(
+        "Firebase user list could not be loaded."
+      );
+    }
+
+    try {
+      entitlementUsers =
+        await freeEntitlementStore
+          .listUsers({
+            limit: 5000,
+          });
+    } catch (error) {
+      console.error(
+        "Admin entitlement list error:",
+        error
+      );
+
+      warnings.push(
+        "Free-petition entitlement records could not be loaded."
+      );
+    }
+
+    try {
+      supportTickets =
+        await supportStore.list({
+          limit: 100,
+        });
+    } catch (error) {
+      console.error(
+        "Admin support list error:",
+        error
+      );
+
+      warnings.push(
+        "Support records could not be loaded."
+      );
+    }
+
+    const entitlementByUid =
+      new Map(
+        entitlementUsers.map(
+          (record) => [
+            String(
+              record?.uid ||
+              ""
+            ),
+            record,
+          ]
+        )
+      );
+
+    const now =
+      Date.now();
+
+    const oneDayMs =
+      24 * 60 * 60 * 1000;
+
+    const thirtyDaysMs =
+      30 *
+      oneDayMs;
+
+    const dateMillis = (
+      value
+    ) => {
+      const parsed =
+        Date.parse(
+          String(
+            value ||
+            ""
+          )
+        );
+
+      return Number.isFinite(
+        parsed
+      )
+        ? parsed
+        : 0;
+    };
+
+    const users =
+      firebaseUsers
+        .map(
+          (user) => {
+            const entitlement =
+              entitlementByUid.get(
+                String(
+                  user.uid ||
+                  ""
+                )
+              ) || {};
+
+            const freeUsed =
+              Math.max(
+                Number(
+                  entitlement
+                    .freeUsed ||
+                  0
+                ),
+                0
+              );
+
+            const freeLimit =
+              Math.max(
+                Number(
+                  entitlement
+                    .freeLimit ??
+                  FREE_PETITION_LIMIT
+                ),
+                0
+              );
+
+            return {
+              uid:
+                String(
+                  user.uid ||
+                  ""
+                ),
+
+              email:
+                String(
+                  user.email ||
+                  ""
+                ),
+
+              emailVerified:
+                user.emailVerified ===
+                true,
+
+              displayName:
+                String(
+                  user.displayName ||
+                  ""
+                ),
+
+              disabled:
+                user.disabled ===
+                true,
+
+              createdAt:
+                String(
+                  user.createdAt ||
+                  ""
+                ),
+
+              lastSignInAt:
+                String(
+                  user.lastSignInAt ||
+                  ""
+                ),
+
+              freeLimit,
+
+              freeUsed,
+
+              freeRemaining:
+                Math.max(
+                  freeLimit -
+                    freeUsed,
+                  0
+                ),
+
+              requiresPayment:
+                freeUsed >=
+                freeLimit,
+
+              lastFreeUnlockAt:
+                String(
+                  entitlement
+                    .lastFreeUnlockAt ||
+                  ""
+                ),
+            };
+          }
+        )
+        .sort(
+          (a, b) =>
+            dateMillis(
+              b.createdAt
+            ) -
+            dateMillis(
+              a.createdAt
+            )
+        );
+
+    const registeredUsers =
+      users.length;
+
+    const verifiedUsers =
+      users.filter(
+        (user) =>
+          user.emailVerified
+      ).length;
+
+    const disabledUsers =
+      users.filter(
+        (user) =>
+          user.disabled
+      ).length;
+
+    const newUsers24h =
+      users.filter(
+        (user) =>
+          dateMillis(
+            user.createdAt
+          ) >=
+          now -
+            oneDayMs
+      ).length;
+
+    const newUsers30d =
+      users.filter(
+        (user) =>
+          dateMillis(
+            user.createdAt
+          ) >=
+          now -
+            thirtyDaysMs
+      ).length;
+
+    const recentSignIns24h =
+      users.filter(
+        (user) =>
+          dateMillis(
+            user.lastSignInAt
+          ) >=
+          now -
+            oneDayMs
+      ).length;
+
+    const freeUsers =
+      users.filter(
+        (user) =>
+          user.freeUsed > 0
+      ).length;
+
+    const freeLimitReached =
+      users.filter(
+        (user) =>
+          user.requiresPayment
+      ).length;
+
+    const freeRemainingUsers =
+      users.filter(
+        (user) =>
+          user.freeRemaining > 0
+      ).length;
+
+    return res.json({
+      ok: true,
+
+      generatedAt:
+        new Date()
+          .toISOString(),
+
+      metrics,
+
+      usersSummary: {
+        registered_users:
+          registeredUsers,
+
+        verified_users:
+          verifiedUsers,
+
+        unverified_users:
+          Math.max(
+            registeredUsers -
+              verifiedUsers,
+            0
+          ),
+
+        disabled_users:
+          disabledUsers,
+
+        new_users_24h:
+          newUsers24h,
+
+        new_users_30d:
+          newUsers30d,
+
+        recent_signins_24h:
+          recentSignIns24h,
+
+        users_with_free_usage:
+          freeUsers,
+
+        users_with_free_remaining:
+          freeRemainingUsers,
+
+        free_limit_reached:
+          freeLimitReached,
+      },
+
+      users,
+
+      recentSupport:
+        supportTickets,
+
+      warnings,
+    });
+  } catch (error) {
+    console.error(
+      "Admin overview error:",
+      error
+    );
+
+    return res
+      .status(500)
+      .json({
+        ok: false,
+        error:
+          "Admin overview error",
+      });
   }
 });
 
