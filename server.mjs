@@ -3332,21 +3332,23 @@ app.post("/generate-petition", async (req, res) => {
     }
   }
 
-  const generationLimit = await consumeGenerationLimit(
-    requestFingerprint(req, verifiedUser?.uid || req.body?.petitioner?.email || "")
-  );
+  if (!adminOk) {
+    const generationLimit = await consumeGenerationLimit(
+      requestFingerprint(req, verifiedUser?.uid || req.body?.petitioner?.email || "")
+    );
 
-  if (!generationLimit.ok) {
-    await redisIncr(METRICS.generationRateLimited);
-    res.setHeader("Retry-After", String(generationLimit.retryAfterSeconds));
+    if (!generationLimit.ok) {
+      await redisIncr(METRICS.generationRateLimited);
+      res.setHeader("Retry-After", String(generationLimit.retryAfterSeconds));
 
-    return res.status(429).json({
-      ok: false,
-      code: "generation_rate_limited",
-      error: "Too many petition requests. Please wait a moment before trying again.",
-      retryAfterSeconds: generationLimit.retryAfterSeconds,
-      requestId: req.requestId,
-    });
+      return res.status(429).json({
+        ok: false,
+        code: "generation_rate_limited",
+        error: "Too many petition requests. Please wait a moment before trying again.",
+        retryAfterSeconds: generationLimit.retryAfterSeconds,
+        requestId: req.requestId,
+      });
+    }
   }
 
   const {
@@ -4194,7 +4196,7 @@ app.post(
             ok: false,
 
             error:
-              "Your two free petitions have been used. Pay ₦1,050 to unlock this petition.",
+              `Your two free petitions have been used. Pay ₦${PETITION_PRICE_NGN.toLocaleString("en-NG")} to unlock this petition.`,
 
             needsPayment:
               true,
