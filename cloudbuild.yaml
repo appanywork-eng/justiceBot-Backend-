@@ -3,6 +3,10 @@ substitutions:
   _REPOSITORY: petitiondesk
   _IMAGE: petitiondesk-backend
   _SERVICE: petitiondesk-backend
+  _GEMINI_MODEL: gemini-3.7-flash
+  _PETITION_PRICE_NGN: '550'
+  _FREE_ACCESS_ENABLED: 'true'
+  _FREE_PETITION_LIMIT: '2'
 
 steps:
   - id: build-container
@@ -37,6 +41,7 @@ steps:
       - '--timeout=300'
       - '--min-instances=0'
       - '--max-instances=3'
+      - '--update-env-vars=FIRESTORE_ENABLED=true,FRONTEND_BASE_URL=https://petitiondesk.com,GEMINI_MODEL=${_GEMINI_MODEL},PETITION_PRICE_NGN=${_PETITION_PRICE_NGN},FREE_ACCESS_ENABLED=${_FREE_ACCESS_ENABLED},FREE_PETITION_LIMIT=${_FREE_PETITION_LIMIT}'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID'

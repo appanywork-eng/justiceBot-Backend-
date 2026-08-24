@@ -14,3 +14,11 @@ apply_*.sh
 update-*.sh
 *.log
 coverage
+*.bak.*
+*.backup
+*.backup.*
+*.snip
+backups/
+insert-*.sh
+patch*.sh
+update-email-routing.sh

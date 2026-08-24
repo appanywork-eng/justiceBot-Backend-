@@ -17,3 +17,11 @@ update-*.sh
 *.log
 coverage
 .DS_Store
+*.bak.*
+*.backup
+*.backup.*
+*.snip
+backups/
+insert-*.sh
+patch*.sh
+update-email-routing.sh

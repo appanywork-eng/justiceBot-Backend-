@@ -1,7 +1,17 @@
 // server.mjs
 import express from "express";
 import cors from "cors";
-import { generateGeminiText } from "./lib/geminiClient.mjs";
+import crypto from "node:crypto";
+import {
+  DEFAULT_GEMINI_FALLBACK_MODELS,
+  DEFAULT_GEMINI_MODEL,
+  generateGeminiText,
+} from "./lib/geminiClient.mjs";
+import {
+  createRequestLimiter,
+  requestFingerprint,
+  safeSecretEqual,
+} from "./lib/requestProtection.mjs";
 import {
   sanitizeLegalDraft,
 } from "./lib/legalDraftSafety.mjs";
@@ -53,7 +63,6 @@ import {
   NIGERIAN_URBAN_PLANNING_DETECTION_KEYWORDS,
 } from "./lib/nigeriaAdditionalSectorRegistry.mjs";
 import dotenv from "dotenv";
-import crypto from "node:crypto";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -67,6 +76,7 @@ import {
   FirebaseIdentityError,
   listFirebaseUsers,
   requireVerifiedFirebaseUser,
+  updateFirebaseUserStatus,
 } from "./lib/firebaseIdentity.mjs";
 import {
   FreeEntitlementStore,
@@ -97,6 +107,15 @@ dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 
+app.use((req, res, next) => {
+  const supplied = String(req.headers["x-request-id"] || "").trim();
+  req.requestId = /^[a-zA-Z0-9._-]{8,100}$/.test(supplied)
+    ? supplied
+    : crypto.randomUUID();
+  res.setHeader("x-request-id", req.requestId);
+  next();
+});
+
 /*
  * Firebase Hosting forwards the complete original path to Cloud Run.
  * This allows both direct routes such as /health and Firebase routes
@@ -121,8 +140,36 @@ const GEMINI_API_KEY = String(
 
 const GEMINI_MODEL = String(
   process.env.GEMINI_MODEL ||
-    "gemini-3.6-flash"
+    DEFAULT_GEMINI_MODEL
 ).trim();
+
+const GEMINI_FALLBACK_MODELS = String(
+  process.env.GEMINI_FALLBACK_MODELS ||
+    process.env.GEMINI_FALLBACK_MODEL ||
+    DEFAULT_GEMINI_FALLBACK_MODELS.join(",")
+)
+  .split(",")
+  .map((candidate) => candidate.trim())
+  .filter((candidate) => candidate && candidate !== GEMINI_MODEL);
+
+const GEMINI_TIMEOUT_MS = Math.max(
+  Number(process.env.GEMINI_TIMEOUT_MS || 30000),
+  1000
+);
+
+const GEMINI_TOTAL_TIMEOUT_MS = Math.max(
+  Number(process.env.GEMINI_TOTAL_TIMEOUT_MS || 110000),
+  GEMINI_TIMEOUT_MS
+);
+
+const GEMINI_MAX_RETRIES = Math.max(
+  Math.min(Number(process.env.GEMINI_MAX_RETRIES || 1), 4),
+  0
+);
+
+const IS_PRODUCTION =
+  process.env.NODE_ENV === "production" ||
+  Boolean(process.env.K_SERVICE);
 
 const FIRESTORE_COLLECTION = String(
   process.env.FIRESTORE_COLLECTION || "petitiondesk_runtime"
@@ -254,6 +301,18 @@ const FREE_ENTITLEMENT_COLLECTION =
 
 const ADMIN_UNLOCK_KEY = String(process.env.ADMIN_UNLOCK_KEY || "").trim();
 const ADMIN_SESSION_TTL_SECONDS = Number(process.env.ADMIN_SESSION_TTL_SECONDS || 2 * 60 * 60); // default 2 hours
+const ADMIN_LOGIN_RATE_LIMIT_MAX = Math.max(
+  Number(process.env.ADMIN_LOGIN_RATE_LIMIT_MAX || 8),
+  1
+);
+const GENERATION_RATE_LIMIT_MAX = Math.max(
+  Number(process.env.GENERATION_RATE_LIMIT_MAX || 12),
+  1
+);
+const SECURITY_RATE_LIMIT_WINDOW_MS = Math.max(
+  Number(process.env.SECURITY_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
+  60 * 1000
+);
 
 const FLW_TIMEOUT_MS = Number(process.env.FLW_TIMEOUT_MS || 20000); // default 20s
 const VERIFY_PENDING_WINDOW_MS = Number(process.env.VERIFY_PENDING_WINDOW_MS || 15 * 60 * 1000); // 15 mins
@@ -266,27 +325,32 @@ const DEBUG_PAYMENT = String(process.env.DEBUG_PAYMENT || "").toLowerCase() === 
 /* ======================================================
    MIDDLEWARE
 ====================================================== */
-const ALLOWED_ORIGINS = new Set(
-  String(
+const ALLOWED_ORIGINS = new Set([
+  FRONTEND_BASE_URL,
+  "https://petitiondesk.com",
+  "https://www.petitiondesk.com",
+  ...String(
     process.env.ALLOWED_ORIGINS ||
-      `${FRONTEND_BASE_URL},https://www.petitiondesk.com`
+      process.env.CORS_ALLOWED_ORIGINS ||
+      ""
   )
     .split(",")
     .map((origin) => origin.trim().replace(/\/+$/, ""))
-    .filter(Boolean)
-);
+    .filter(Boolean),
+  ...(!IS_PRODUCTION
+    ? ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173"]
+    : []),
+]);
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || ALLOWED_ORIGINS.has(String(origin).replace(/\/+$/, ""))) {
-        return callback(null, true);
-      }
-
-      return callback(null, false);
+      callback(null, !origin || ALLOWED_ORIGINS.has(String(origin).replace(/\/+$/, "")));
     },
     methods: ["GET", "POST", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-admin-token"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-admin-token", "x-request-id"],
+    exposedHeaders: ["x-request-id", "retry-after"],
+    maxAge: 600,
   })
 );
 
@@ -304,7 +368,7 @@ app.use(
    GEMINI AI CONFIGURATION
 ====================================================== */
 console.log(
-  `AI provider: Gemini | Model: ${GEMINI_MODEL}`
+  `AI provider: Gemini | Model: ${GEMINI_MODEL} | Fallbacks: ${GEMINI_FALLBACK_MODELS.join(", ") || "none"}`
 );
 
 /* ======================================================
@@ -390,35 +454,55 @@ const visitorAnalyticsStore =
 /* ======================================================
    FIRESTORE-COMPATIBLE HELPERS
 ====================================================== */
+const localMetricCounters = new Map();
+const localMetricSets = new Map();
+
 async function redisIncr(key) {
-  if (!redis) return;
-  try {
-    await redis.incr(key);
-  } catch {}
+  if (redis) {
+    try {
+      return await redis.incr(key);
+    } catch (error) {
+      console.warn("Metric persistence failed:", error?.message || error);
+    }
+  }
+
+  const value = Number(localMetricCounters.get(key) || 0) + 1;
+  localMetricCounters.set(key, value);
+  return value;
 }
 async function redisSAdd(key, value) {
-  if (!redis) return;
-  try {
-    await redis.sadd(key, value);
-  } catch {}
+  if (redis) {
+    try {
+      return await redis.sadd(key, value);
+    } catch (error) {
+      console.warn("Set metric persistence failed:", error?.message || error);
+    }
+  }
+
+  const values = localMetricSets.get(key) || new Set();
+  values.add(String(value));
+  localMetricSets.set(key, values);
+  return values.size;
 }
 async function redisGetInt(key) {
-  if (!redis) return 0;
-  try {
-    const v = await redis.get(key);
-    return Number(v || 0);
-  } catch {
-    return 0;
+  if (redis) {
+    try {
+      const value = await redis.get(key);
+      return Number(value || 0);
+    } catch {}
   }
+
+  return Number(localMetricCounters.get(key) || 0);
 }
 async function redisSCard(key) {
-  if (!redis) return 0;
-  try {
-    const v = await redis.scard(key);
-    return Number(v || 0);
-  } catch {
-    return 0;
+  if (redis) {
+    try {
+      const value = await redis.scard(key);
+      return Number(value || 0);
+    } catch {}
   }
+
+  return Number(localMetricSets.get(key)?.size || 0);
 }
 
 function anonymousVisitorHash(value) {
@@ -464,9 +548,76 @@ const METRICS = {
   adminSessions: "pd:metrics:admin_sessions",
   supportSubmitted:
     "pd:metrics:support_submitted",
+  generationFailed: "pd:metrics:generation_failed",
+  generationRateLimited: "pd:metrics:generation_rate_limited",
+  aiAttempts: "pd:metrics:ai_attempts",
+  aiFallbacks: "pd:metrics:ai_fallbacks",
+  adminLoginFailed: "pd:metrics:admin_login_failed",
+  webhookRejected: "pd:metrics:webhook_rejected",
   uniquePayInit: "pd:set:payinit_txrefs",
   uniquePaySuccess: "pd:set:paysuccess_txrefs",
 };
+
+const runtimeDiagnostics = {
+  startedAt: new Date().toISOString(),
+  lastAiAttemptAt: null,
+  lastAiSuccessAt: null,
+  lastAiFailureAt: null,
+  lastAiModel: null,
+  lastAiErrorCode: null,
+  lastAiErrorStatus: null,
+};
+
+function recordAiAttempt(event) {
+  const timestamp = new Date().toISOString();
+
+  if (event.type === "attempt") {
+    runtimeDiagnostics.lastAiAttemptAt = timestamp;
+    runtimeDiagnostics.lastAiModel = event.model;
+    void redisIncr(METRICS.aiAttempts);
+  } else if (event.type === "fallback") {
+    void redisIncr(METRICS.aiFallbacks);
+    console.warn("Gemini fallback activated", {
+      model: event.model,
+      previousModel: event.previousModel,
+    });
+  } else if (event.type === "success") {
+    runtimeDiagnostics.lastAiSuccessAt = timestamp;
+    runtimeDiagnostics.lastAiModel = event.model;
+  } else if (event.type === "failure") {
+    runtimeDiagnostics.lastAiFailureAt = timestamp;
+    runtimeDiagnostics.lastAiErrorCode = event.code;
+    runtimeDiagnostics.lastAiErrorStatus = event.status;
+  }
+}
+
+function logRateLimitStoreError(error) {
+  console.warn("Shared rate-limit storage unavailable; using local protection:", error?.message || error);
+}
+
+const consumeAdminLoginLimit = createRequestLimiter({
+  namespace: "admin_login",
+  maximum: ADMIN_LOGIN_RATE_LIMIT_MAX,
+  windowMilliseconds: SECURITY_RATE_LIMIT_WINDOW_MS,
+  store: redis,
+  onStoreError: logRateLimitStoreError,
+});
+
+const consumeGenerationLimit = createRequestLimiter({
+  namespace: "petition_generation",
+  maximum: GENERATION_RATE_LIMIT_MAX,
+  windowMilliseconds: SECURITY_RATE_LIMIT_WINDOW_MS,
+  store: redis,
+  onStoreError: logRateLimitStoreError,
+});
+
+const consumeSupportLimit = createRequestLimiter({
+  namespace: "support",
+  maximum: SUPPORT_RATE_LIMIT_MAX,
+  windowMilliseconds: SUPPORT_RATE_LIMIT_WINDOW_MS,
+  store: redis,
+  onStoreError: logRateLimitStoreError,
+});
 
 /* ======================================================
    OVERSIGHT EMAILS (ENV)
@@ -1019,6 +1170,11 @@ async function detectSectorAI(text) {
       await generateGeminiText({
         apiKey: GEMINI_API_KEY,
         model: GEMINI_MODEL,
+        fallbackModels: GEMINI_FALLBACK_MODELS,
+        timeoutMs: GEMINI_TIMEOUT_MS,
+        totalTimeoutMs: GEMINI_TOTAL_TIMEOUT_MS,
+        maxRetries: GEMINI_MAX_RETRIES,
+        onAttempt: recordAiAttempt,
 
         systemInstruction:
           `You are a strict classifier. ` +
@@ -2208,6 +2364,8 @@ app.use(
       SUPPORT_RATE_LIMIT_MAX,
     rateLimitWindowMs:
       SUPPORT_RATE_LIMIT_WINDOW_MS,
+    consumeSharedRateLimit:
+      consumeSupportLimit,
   })
 );
 
@@ -2218,7 +2376,23 @@ app.post("/admin/session", async (req, res) => {
   try {
     const key = String(req.body?.key || "");
     if (!ADMIN_UNLOCK_KEY) return res.status(500).json({ ok: false, error: "ADMIN_UNLOCK_KEY not configured" });
-    if (!key || key !== ADMIN_UNLOCK_KEY) return res.status(401).json({ ok: false, error: "Invalid admin key" });
+
+    const limit = await consumeAdminLoginLimit(requestFingerprint(req));
+
+    if (!limit.ok) {
+      res.setHeader("Retry-After", String(limit.retryAfterSeconds));
+      return res.status(429).json({
+        ok: false,
+        code: "admin_login_rate_limited",
+        error: "Too many administrator login attempts. Please try again later.",
+        retryAfterSeconds: limit.retryAfterSeconds,
+      });
+    }
+
+    if (!safeSecretEqual(key, ADMIN_UNLOCK_KEY)) {
+      await redisIncr(METRICS.adminLoginFailed);
+      return res.status(401).json({ ok: false, error: "Invalid admin key" });
+    }
 
     const token = await createAdminSession();
     await redisIncr(METRICS.adminSessions);
@@ -2257,6 +2431,12 @@ app.get("/admin/stats", async (req, res) => {
         await redisGetInt(
           METRICS.supportSubmitted
         ),
+      generation_failed: await redisGetInt(METRICS.generationFailed),
+      generation_rate_limited: await redisGetInt(METRICS.generationRateLimited),
+      ai_attempts: await redisGetInt(METRICS.aiAttempts),
+      ai_fallbacks: await redisGetInt(METRICS.aiFallbacks),
+      admin_login_failed: await redisGetInt(METRICS.adminLoginFailed),
+      webhook_rejected: await redisGetInt(METRICS.webhookRejected),
       unique_payinit_txrefs: await redisSCard(METRICS.uniquePayInit),
       unique_paysuccess_txrefs: await redisSCard(METRICS.uniquePaySuccess),
       ...visitorStats,
@@ -2345,6 +2525,24 @@ app.get("/admin/overview", async (req, res) => {
             .supportSubmitted
         ),
 
+      generation_failed:
+        await redisGetInt(METRICS.generationFailed),
+
+      generation_rate_limited:
+        await redisGetInt(METRICS.generationRateLimited),
+
+      ai_attempts:
+        await redisGetInt(METRICS.aiAttempts),
+
+      ai_fallbacks:
+        await redisGetInt(METRICS.aiFallbacks),
+
+      admin_login_failed:
+        await redisGetInt(METRICS.adminLoginFailed),
+
+      webhook_rejected:
+        await redisGetInt(METRICS.webhookRejected),
+
       unique_payinit_txrefs:
         await redisSCard(
           METRICS
@@ -2356,6 +2554,8 @@ app.get("/admin/overview", async (req, res) => {
           METRICS
             .uniquePaySuccess
         ),
+
+      ...await getAnonymousVisitorStats(),
     };
 
     const warnings = [];
@@ -2690,6 +2890,100 @@ app.get("/admin/overview", async (req, res) => {
   }
 });
 
+app.get("/admin/diagnostics", async (req, res) => {
+  try {
+    const token = String(req.headers["x-admin-token"] || "");
+
+    if (!await isAdminTokenValid(token)) {
+      return res.status(401).json({ ok: false, error: "Unauthorized" });
+    }
+
+    return res.json({
+      ok: true,
+      generatedAt: new Date().toISOString(),
+      revision: String(process.env.K_REVISION || "local"),
+      environment: IS_PRODUCTION ? "production" : "development",
+      ai: {
+        provider: "gemini",
+        configured: Boolean(GEMINI_API_KEY),
+        model: GEMINI_MODEL,
+        fallbackModels: GEMINI_FALLBACK_MODELS,
+        maxRetries: GEMINI_MAX_RETRIES,
+        timeoutMs: GEMINI_TIMEOUT_MS,
+        totalTimeoutMs: GEMINI_TOTAL_TIMEOUT_MS,
+        attempts: await redisGetInt(METRICS.aiAttempts),
+        fallbacks: await redisGetInt(METRICS.aiFallbacks),
+        failedGenerations: await redisGetInt(METRICS.generationFailed),
+        ...runtimeDiagnostics,
+      },
+      payments: {
+        provider: "flutterwave",
+        configured: Boolean(FLW_SECRET_KEY),
+        webhookConfigured: Boolean(FLW_WEBHOOK_HASH),
+        webhookStrict: IS_PRODUCTION,
+        amountNgn: PETITION_PRICE_NGN,
+        attempts: await redisGetInt(METRICS.paymentInitiated),
+        successful: await redisGetInt(METRICS.paymentSuccess),
+        rejectedWebhooks: await redisGetInt(METRICS.webhookRejected),
+      },
+      access: {
+        freeAccessEnabled: FREE_ACCESS_ENABLED,
+        freePetitionLimit: FREE_PETITION_LIMIT,
+        generationRateLimitMax: GENERATION_RATE_LIMIT_MAX,
+        adminLoginRateLimitMax: ADMIN_LOGIN_RATE_LIMIT_MAX,
+        rateLimitWindowMs: SECURITY_RATE_LIMIT_WINDOW_MS,
+      },
+      storage: {
+        firestoreEnabled: FIRESTORE_ENABLED,
+        firestoreAvailable: Boolean(redis),
+        sharedRateLimiting: typeof redis?.consumeRateLimit === "function",
+      },
+      support: {
+        email: SUPPORT_EMAIL,
+        alertsEnabled: SUPPORT_ALERT_ENABLED,
+        alertsConfigured: supportNotifier.isConfigured(),
+      },
+    });
+  } catch (error) {
+    console.error("Admin diagnostics error:", error?.message || error);
+    return res.status(500).json({ ok: false, error: "Could not load system diagnostics." });
+  }
+});
+
+app.patch("/admin/users/:uid/status", async (req, res) => {
+  try {
+    const token = String(req.headers["x-admin-token"] || "");
+
+    if (!await isAdminTokenValid(token)) {
+      return res.status(401).json({ ok: false, error: "Unauthorized" });
+    }
+
+    if (typeof req.body?.disabled !== "boolean") {
+      return res.status(400).json({ ok: false, error: "The disabled setting must be true or false." });
+    }
+
+    const user = await updateFirebaseUserStatus({
+      uid: req.params.uid,
+      disabled: req.body.disabled,
+    });
+
+    console.info("Administrator updated Firebase account status", {
+      requestId: req.requestId,
+      uid: user.uid,
+      disabled: user.disabled,
+    });
+
+    return res.json({ ok: true, user });
+  } catch (error) {
+    const status = error instanceof FirebaseIdentityError ? error.status : 500;
+    console.error("Admin user-status update error:", error?.message || error);
+    return res.status(status).json({
+      ok: false,
+      error: status < 500 ? error.message : "Could not update the user account.",
+    });
+  }
+});
+
 // ✅ Reload sector keyword index + catalogs without restarting server
 app.post("/admin/reload-sectors", async (req, res) => {
   try {
@@ -2719,19 +3013,21 @@ app.post("/flw-webhook", async (req, res) => {
   try {
     const headerHash = String(req.headers["verif-hash"] || "").trim();
 
-    // Never trust payment-completion payloads without a configured webhook secret.
+    // Never accept payment notifications without a verified webhook secret.
     if (!FLW_WEBHOOK_HASH) {
-      console.error("Rejected Flutterwave webhook: FLW_WEBHOOK_HASH is not configured.");
-      return res.status(503).end();
+      await redisIncr(METRICS.webhookRejected);
+      console.error("Flutterwave webhook rejected because FLW_WEBHOOK_HASH is not configured", {
+        requestId: req.requestId,
+      });
+      return res.status(503).json({
+        ok: false,
+        code: "webhook_secret_not_configured",
+        error: "Payment webhook verification is not configured.",
+      });
     }
 
-    const suppliedHash = Buffer.from(headerHash);
-    const expectedHash = Buffer.from(FLW_WEBHOOK_HASH);
-
-    if (
-      suppliedHash.length !== expectedHash.length ||
-      !crypto.timingSafeEqual(suppliedHash, expectedHash)
-    ) {
+    if (!safeSecretEqual(headerHash, FLW_WEBHOOK_HASH)) {
+      await redisIncr(METRICS.webhookRejected);
       return res.status(401).end();
     }
 
@@ -2750,10 +3046,14 @@ app.post("/flw-webhook", async (req, res) => {
         const currency = String(d?.currency || "").toUpperCase();
 
         if (tx_ref?.startsWith("pd_") && currency === "NGN" && amount >= PETITION_PRICE_NGN) {
+          const alreadyPaid = await isTxPaid(tx_ref);
           await markTxPaid(tx_ref);
-          await redisIncr(METRICS.paymentSuccess);
-          await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
-          console.log(`✅ Payment confirmed via webhook: ${tx_ref}`);
+
+          if (!alreadyPaid) {
+            await redisIncr(METRICS.paymentSuccess);
+            await redisSAdd(METRICS.uniquePaySuccess, tx_ref);
+            console.log(`✅ Payment confirmed via webhook: ${tx_ref}`);
+          }
         }
       }
     }
@@ -2790,6 +3090,30 @@ app.get("/health", (req, res) => {
     time: new Date().toISOString(),
     freeAccessEnabled:
       FREE_ACCESS_ENABLED,
+
+    freePetitionLimit:
+      FREE_PETITION_LIMIT,
+
+    petitionPriceNgn:
+      PETITION_PRICE_NGN,
+
+    aiProvider:
+      "gemini",
+
+    aiModel:
+      GEMINI_MODEL,
+
+    aiConfigured:
+      Boolean(GEMINI_API_KEY),
+
+    firestoreEnabled:
+      FIRESTORE_ENABLED,
+
+    paymentConfigured:
+      Boolean(FLW_SECRET_KEY),
+
+    webhookConfigured:
+      Boolean(FLW_WEBHOOK_HASH),
 
     revision:
       String(
@@ -3006,6 +3330,23 @@ app.post("/generate-petition", async (req, res) => {
         error
       );
     }
+  }
+
+  const generationLimit = await consumeGenerationLimit(
+    requestFingerprint(req, verifiedUser?.uid || req.body?.petitioner?.email || "")
+  );
+
+  if (!generationLimit.ok) {
+    await redisIncr(METRICS.generationRateLimited);
+    res.setHeader("Retry-After", String(generationLimit.retryAfterSeconds));
+
+    return res.status(429).json({
+      ok: false,
+      code: "generation_rate_limited",
+      error: "Too many petition requests. Please wait a moment before trying again.",
+      retryAfterSeconds: generationLimit.retryAfterSeconds,
+      requestId: req.requestId,
+    });
   }
 
   const {
@@ -3256,6 +3597,11 @@ app.post("/generate-petition", async (req, res) => {
       await generateGeminiText({
         apiKey: GEMINI_API_KEY,
         model: GEMINI_MODEL,
+        fallbackModels: GEMINI_FALLBACK_MODELS,
+        timeoutMs: GEMINI_TIMEOUT_MS,
+        totalTimeoutMs: GEMINI_TOTAL_TIMEOUT_MS,
+        maxRetries: GEMINI_MAX_RETRIES,
+        onAttempt: recordAiAttempt,
 
         systemInstruction: `You are a top-tier Nigerian legal draftsman writing a SAN-grade petition/complaint.
 
@@ -3600,26 +3946,39 @@ CRITICAL RULES:
           .submissionRoute,
     });
   } catch (err) {
-    const requestId =
-      String(req.headers["x-request-id"] || "").trim() ||
-      `pdreq_${randomToken(12)}`;
+    await redisIncr(METRICS.generationFailed);
 
-    console.error("Generation error:", {
-      requestId,
-      message: err?.message || String(err),
-      code: err?.code || "PETITION_GENERATION_ERROR",
-      status: Number(err?.status) || 0,
+    const providerStatus = Number(err?.status || 0);
+    const temporarilyUnavailable =
+      err?.retryable === true ||
+      [408, 429, 500, 502, 503, 504].includes(providerStatus);
+    const responseStatus = providerStatus === 429
+      ? 429
+      : temporarilyUnavailable
+        ? 503
+        : 500;
+
+    console.error("Petition generation failed", {
+      requestId: req.requestId,
+      code: err?.code || "petition_generation_failed",
+      providerStatus,
       model: err?.model || GEMINI_MODEL,
-      attemptedModels: err?.attemptedModels || [],
+      attempts: Number(err?.attempts || 0),
+      message: err?.message || "Unknown generation error",
     });
 
-    return res.status(503).json({
+    if (temporarilyUnavailable) {
+      res.setHeader("Retry-After", "15");
+    }
+
+    return res.status(responseStatus).json({
       ok: false,
-      error:
-        "Petition generation is temporarily unavailable. Please wait a moment and try again.",
-      code: "PETITION_GENERATION_UNAVAILABLE",
-      requestId,
-      retryable: true,
+      code: err?.code || "petition_generation_failed",
+      error: temporarilyUnavailable
+        ? "The petition-writing service is temporarily busy. Please try again shortly."
+        : "We could not generate your petition. Please try again or contact support.",
+      retryable: temporarilyUnavailable,
+      requestId: req.requestId,
     });
   }
 });
@@ -4788,7 +5147,11 @@ app.listen(PORT, "0.0.0.0", () => {
   }
 
   if (!FLW_WEBHOOK_HASH) {
-    console.log("⚠️ FLW_WEBHOOK_HASH not set — store the Flutterwave webhook hash in Secret Manager and attach it to Cloud Run.");
+    console.log(
+      IS_PRODUCTION
+        ? "❌ FLW_WEBHOOK_HASH is not set — production webhooks will be rejected until the secret is configured."
+        : "⚠️ FLW_WEBHOOK_HASH is not set — configure it before deploying to production."
+    );
   }
   if (!GEMINI_API_KEY) {
     console.log("⚠️ GOOGLE_API_KEY not set — petition generation will fail.");
