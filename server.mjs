@@ -158,12 +158,12 @@ const GEMINI_TIMEOUT_MS = Math.max(
 );
 
 const GEMINI_TOTAL_TIMEOUT_MS = Math.max(
-  Number(process.env.GEMINI_TOTAL_TIMEOUT_MS || 110000),
+  Number(process.env.GEMINI_TOTAL_TIMEOUT_MS || 45000),
   GEMINI_TIMEOUT_MS
 );
 
 const GEMINI_MAX_RETRIES = Math.max(
-  Math.min(Number(process.env.GEMINI_MAX_RETRIES || 1), 4),
+  Math.min(Number(process.env.GEMINI_MAX_RETRIES ?? 0), 4),
   0
 );
 

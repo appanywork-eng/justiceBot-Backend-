@@ -92,6 +92,9 @@ try {
       retryBaseDelayMs:
         1,
 
+      maxRetries:
+        1,
+
       timeoutMs:
         1000,
     });
