@@ -16,14 +16,14 @@ import {
 
 assert.equal(
   NIGERIAN_BANKING_PROVIDERS.length,
-  41
+  42
 );
 
 assert.equal(
   Object.keys(
     VERIFIED_BANKING_CHANNELS
   ).length,
-  38
+  39
 );
 
 
@@ -151,7 +151,7 @@ const catalogue =
 
 assert.equal(
   catalogue.players.length,
-  41
+  42
 );
 
 
@@ -225,11 +225,11 @@ assert.equal(
 
 
 console.log(
-  "✅ 41 BANKING AND PAYMENT PROVIDERS ARE ROUTABLE"
+  "✅ 42 BANKING, LENDING AND PAYMENT PROVIDERS ARE ROUTABLE"
 );
 
 console.log(
-  "✅ ALL 41 PROVIDERS EXPOSE VERIFIED DIRECT EMAIL ROUTES"
+  "✅ ALL 42 PROVIDERS EXPOSE VERIFIED DIRECT EMAIL ROUTES"
 );
 
 console.log(

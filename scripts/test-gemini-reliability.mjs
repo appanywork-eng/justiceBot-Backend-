@@ -201,10 +201,60 @@ await assert.rejects(
   (error) => error instanceof GeminiRequestError && error.code === "GEMINI_RESPONSE_BLOCKED"
 );
 
+{
+  const requestedModels = [];
+
+  const text = await generateGeminiText({
+    apiKey: "test-key",
+    prompt: "Draft a complete petition",
+    fetchImpl: async (url) => {
+      const model = url.match(/models\/([^:]+)/)?.[1];
+      requestedModels.push(model);
+
+      if (model === "gemini-3.6-flash") {
+        return response(200, {
+          candidates: [{
+            finishReason: "MAX_TOKENS",
+            content: {
+              parts: [{ text: "FACTS: The petition stopped mid sentence" }],
+            },
+          }],
+        });
+      }
+
+      return success("A completed petition with its conclusion and signature");
+    },
+  });
+
+  assert.equal(text, "A completed petition with its conclusion and signature");
+  assert.deepEqual(requestedModels, [
+    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
+  ]);
+}
+
+await assert.rejects(
+  () => generateGeminiText({
+    apiKey: "test-key",
+    prompt: "Draft a complete petition",
+    fallbackModels: [],
+    fetchImpl: async () => response(200, {
+      candidates: [{
+        finishReason: "MAX_TOKENS",
+        content: {
+          parts: [{ text: "An unfinished petition" }],
+        },
+      }],
+    }),
+  }),
+  (error) => error instanceof GeminiRequestError && error.code === "GEMINI_RESPONSE_TRUNCATED"
+);
+
 console.log("✅ THE OBSERVED WORKING GEMINI 3.6 FLASH MODEL IS PRIMARY");
 console.log("✅ TEMPORARY 503 FAILURES RETRY WITH EXPONENTIAL BACKOFF");
 console.log("✅ PROVIDER 429 RETRY-AFTER IS RESPECTED");
 console.log("✅ OVERLOADED OR MISSING MODELS FALL BACK AUTOMATICALLY");
 console.log("✅ PRODUCTION FALLBACK HAPPENS IMMEDIATELY WITHOUT A DUPLICATE SLOW ATTEMPT");
 console.log("✅ INVALID API KEYS AND SAFETY BLOCKS DO NOT RETRY");
+console.log("✅ GEMINI TOKEN-TRUNCATED PETITIONS ARE NEVER ACCEPTED AS COMPLETE");
 console.log("✅ GEMINI PRODUCTION RELIABILITY CONTRACT PASSED");

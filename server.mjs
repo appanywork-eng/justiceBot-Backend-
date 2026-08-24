@@ -16,6 +16,9 @@ import {
   sanitizeLegalDraft,
 } from "./lib/legalDraftSafety.mjs";
 import {
+  completePetitionDraft,
+} from "./lib/petitionDraftQuality.mjs";
+import {
   buildSectorDetectionText,
 } from "./lib/sectorDetectionContext.mjs";
 import {
@@ -3671,13 +3674,51 @@ CRITICAL RULES:
 - Do not state that a bank owes a fiduciary duty unless an identified and applicable authority clearly establishes it.
 - Do not invent facts, dates, evidence, laws, court decisions, institutions, addresses, or allegations.
 - Clearly distinguish the petitioner's allegations from established facts.
+- The respondent is the institution responsible for the disputed product, deduction or decision; do not treat a bank that merely issued an account statement as the respondent.
+- Preserve every supplied material amount, date, repayment reference, mandate reference, institution and item of supporting evidence accurately.
+- Finish every mandatory section, the demands, notice, attachments and the petitioner's full closing signature before ending your response.
 - Under 950 words.`,
 
         prompt:
           `Draft the petition using only the structured facts below. Do not omit a supplied institution, issue location, complaint stage or previous complaint reference.\n\n${structuredComplaintPrompt}`,
 
-        maxOutputTokens: 4096,
+        maxOutputTokens: 12288,
       });
+
+    const completedDraft =
+      completePetitionDraft(
+        petitionText,
+        {
+          complaint,
+          sector,
+          primaryInstitution:
+            jurisdictionRouting
+              .primaryInstitution,
+          ccInstitutions:
+            jurisdictionRouting
+              .ccInstitutions,
+          petitioner,
+        }
+      );
+
+    petitionText =
+      completedDraft.text;
+
+    if (
+      completedDraft.repaired
+    ) {
+      console.warn(
+        "Recovered incomplete petition structure",
+        {
+          sector,
+          missingSections:
+            completedDraft
+              .missingHeadings,
+          requestId:
+            req.requestId,
+        }
+      );
+    }
 
     petitionText =
       sanitizeLegalDraft(
