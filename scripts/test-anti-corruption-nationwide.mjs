@@ -208,6 +208,29 @@ console.log(
   "✅ FINANCIAL CRIME REMAINS PRIMARY WHILE BPP IS INCLUDED ONLY WHEN RELEVANT"
 );
 
+const developmentControlBribery =
+  resolveAntiCorruptionRouting({
+    institutionName:
+      "Abuja Development Control Department",
+
+    complaint:
+      "Officers allegedly collected bribes to allow illegal structures to remain.",
+  });
+
+assert.equal(
+  developmentControlBribery.routeKey,
+  "icpc_corrupt_practices_petition"
+);
+
+assert.equal(
+  developmentControlBribery.primaryInstitution,
+  ICPC_CORRUPTION_PETITIONS.name
+);
+
+console.log(
+  "✅ COLLECTED-BRIBES WORDING ROUTES TO ICPC"
+);
+
 const emergency =
   resolveAntiCorruptionRouting({
     complaint:

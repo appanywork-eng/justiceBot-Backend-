@@ -47,12 +47,19 @@ import {
 import {
   NIGERIAN_INTERNATIONAL_ESCALATION_DETECTION_KEYWORDS,
 } from "./lib/nigeriaInternationalEscalationRegistry.mjs";
+import {
+  NIGERIAN_INSURANCE_DETECTION_KEYWORDS,
+  NIGERIAN_PENSION_DETECTION_KEYWORDS,
+  NIGERIAN_URBAN_PLANNING_DETECTION_KEYWORDS,
+} from "./lib/nigeriaAdditionalSectorRegistry.mjs";
 import dotenv from "dotenv";
+import crypto from "node:crypto";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
 import { FirestoreRedisCompat } from "./lib/firestoreRedisCompat.mjs";
+import { VisitorAnalyticsStore } from "./lib/visitorAnalyticsStore.mjs";
 import { SupportStore } from "./lib/supportStore.mjs";
 import { SupportNotifier } from "./lib/supportNotifier.mjs";
 import { createSupportRouter } from "./lib/supportRoutes.mjs";
@@ -81,6 +88,9 @@ import {
   detectInstitutionSector,
   INSTITUTION_SECTOR_PRIORITY_VERSION,
 } from "./lib/institutionSectorPriority.mjs";
+import {
+  assessElectionViolenceRisk,
+} from "./lib/electionViolenceEligibility.mjs";
 
 dotenv.config();
 
@@ -256,9 +266,25 @@ const DEBUG_PAYMENT = String(process.env.DEBUG_PAYMENT || "").toLowerCase() === 
 /* ======================================================
    MIDDLEWARE
 ====================================================== */
+const ALLOWED_ORIGINS = new Set(
+  String(
+    process.env.ALLOWED_ORIGINS ||
+      `${FRONTEND_BASE_URL},https://www.petitiondesk.com`
+  )
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter(Boolean)
+);
+
 app.use(
   cors({
-    origin: "*",
+    origin(origin, callback) {
+      if (!origin || ALLOWED_ORIGINS.has(String(origin).replace(/\/+$/, ""))) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
     methods: ["GET", "POST", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-admin-token"],
   })
@@ -353,6 +379,14 @@ const freeEntitlementStore =
       FREE_PETITION_LIMIT,
   });
 
+const visitorAnalyticsStore =
+  new VisitorAnalyticsStore({
+    enabled: FIRESTORE_ENABLED,
+    collection:
+      process.env.VISITOR_ANALYTICS_COLLECTION ||
+      "petitiondesk_visitors",
+  });
+
 /* ======================================================
    FIRESTORE-COMPATIBLE HELPERS
 ====================================================== */
@@ -385,6 +419,35 @@ async function redisSCard(key) {
   } catch {
     return 0;
   }
+}
+
+function anonymousVisitorHash(value) {
+  const clean = String(value || "").trim();
+
+  if (!/^[a-zA-Z0-9_-]{16,128}$/.test(clean)) {
+    return "";
+  }
+
+  return crypto
+    .createHash("sha256")
+    .update(clean)
+    .digest("hex");
+}
+
+async function recordAnonymousVisit(visitorId) {
+  const visitorHash = anonymousVisitorHash(visitorId);
+
+  if (!visitorHash) {
+    return { tracked: false, isNew: false };
+  }
+
+  return visitorAnalyticsStore.record(
+    visitorHash
+  );
+}
+
+async function getAnonymousVisitorStats() {
+  return visitorAnalyticsStore.stats();
 }
 
 /* ======================================================
@@ -487,8 +550,16 @@ function validateGenerateBody(body) {
 }
 function validateTxRef(body) {
   const tx_ref = String(body?.tx_ref || "").trim();
-  if (!tx_ref || tx_ref.length < 6) return { ok: false, error: "Missing tx_ref" };
+  if (!/^pd_\d{10,20}_[A-Za-z0-9_-]{8,80}$/.test(tx_ref)) {
+    return { ok: false, error: "Invalid tx_ref" };
+  }
+
   const transaction_id = body?.transaction_id != null ? String(body.transaction_id).trim() : "";
+
+  if (transaction_id && !/^\d{1,30}$/.test(transaction_id)) {
+    return { ok: false, error: "Invalid transaction_id" };
+  }
+
   return { ok: true, tx_ref, transaction_id };
 }
 
@@ -587,15 +658,14 @@ function publicUnlockedPayload(
 /* ======================================================
    ADMIN SESSION
 ====================================================== */
-function randomToken(len = 48) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let out = "";
-  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
-  return out;
+function randomToken(bytes = 32) {
+  return crypto
+    .randomBytes(Math.max(16, Number(bytes) || 32))
+    .toString("base64url");
 }
 
 async function createAdminSession() {
-  const token = `pdadm_${Date.now()}_${randomToken(24)}`;
+  const token = `pdadm_${randomToken(32)}`;
 
   if (redis) {
     await redis.set(`pd:admin:${token}`, "1", "EX", ADMIN_SESSION_TTL_SECONDS);
@@ -795,6 +865,12 @@ let SECTOR_KEYWORDS_INDEX = buildSectorKeywordsIndex();
 
 function builtInKeywordMap() {
   return {
+    pensions:
+      NIGERIAN_PENSION_DETECTION_KEYWORDS,
+    insurance:
+      NIGERIAN_INSURANCE_DETECTION_KEYWORDS,
+    urban_planning:
+      NIGERIAN_URBAN_PLANNING_DETECTION_KEYWORDS,
     power:
       NIGERIAN_POWER_DETECTION_KEYWORDS,
     aviation:
@@ -1024,6 +1100,16 @@ async function resolveComplaintRouting({
       institutionName
     );
 
+  const complaintPriority =
+    detectSectorHeuristic(
+      complaint
+    );
+
+  const electionViolencePriority =
+    assessElectionViolenceRisk(
+      sectorDetectionText
+    );
+
   const combinedHeuristic =
     preSectorRouting.matched
       ? {
@@ -1043,13 +1129,29 @@ async function resolveComplaintRouting({
   let sector = "";
   let source = "";
 
-  if (preSectorRouting.matched) {
+  if (electionViolencePriority.matched) {
+    sector =
+      electionViolencePriority.sector;
+
+    source =
+      "election_violence_safety_priority";
+  } else if (preSectorRouting.matched) {
     sector =
       preSectorRouting.sector ||
       "civil_disputes";
 
     source =
       "pre_sector_jurisdiction";
+  } else if (
+    complaintPriority.sector ===
+      "anti_corruption" &&
+    complaintPriority.score > 0
+  ) {
+    sector =
+      "anti_corruption";
+
+    source =
+      "complaint_anti_corruption_priority";
   } else if (
     institutionPriority.matched
   ) {
@@ -1086,7 +1188,8 @@ async function resolveComplaintRouting({
   }
 
   const jurisdictionRouting =
-    preSectorRouting.matched
+    preSectorRouting.matched &&
+    !electionViolencePriority.matched
       ? preSectorRouting
       : resolveJurisdictionRouting({
           sector,
@@ -1127,6 +1230,8 @@ async function resolveComplaintRouting({
       version:
         institutionPriority.version,
     },
+
+    electionViolencePriority,
 
     combinedHeuristic: {
       sector:
@@ -2130,6 +2235,9 @@ app.get("/admin/stats", async (req, res) => {
     const valid = await isAdminTokenValid(token);
     if (!valid) return res.status(401).json({ ok: false, error: "Unauthorized" });
 
+    const visitorStats =
+      await getAnonymousVisitorStats();
+
     const stats = {
       visits: await redisGetInt(METRICS.visits),
       generated: await redisGetInt(METRICS.generated),
@@ -2151,6 +2259,7 @@ app.get("/admin/stats", async (req, res) => {
         ),
       unique_payinit_txrefs: await redisSCard(METRICS.uniquePayInit),
       unique_paysuccess_txrefs: await redisSCard(METRICS.uniquePaySuccess),
+      ...visitorStats,
     };
 
     res.json({ ok: true, stats });
@@ -2610,14 +2719,20 @@ app.post("/flw-webhook", async (req, res) => {
   try {
     const headerHash = String(req.headers["verif-hash"] || "").trim();
 
-    // If FLW_WEBHOOK_HASH is configured, enforce it
-    if (FLW_WEBHOOK_HASH) {
-      if (!headerHash || headerHash !== FLW_WEBHOOK_HASH) return res.status(401).end();
-    } else {
-      // Accept to avoid breaking unlock, but warn strongly
-      if (!headerHash) {
-        console.warn("⚠️ Webhook received without verif-hash. Store FLW_WEBHOOK_HASH in Google Secret Manager and attach it to Cloud Run.");
-      }
+    // Never trust payment-completion payloads without a configured webhook secret.
+    if (!FLW_WEBHOOK_HASH) {
+      console.error("Rejected Flutterwave webhook: FLW_WEBHOOK_HASH is not configured.");
+      return res.status(503).end();
+    }
+
+    const suppliedHash = Buffer.from(headerHash);
+    const expectedHash = Buffer.from(FLW_WEBHOOK_HASH);
+
+    if (
+      suppliedHash.length !== expectedHash.length ||
+      !crypto.timingSafeEqual(suppliedHash, expectedHash)
+    ) {
+      return res.status(401).end();
     }
 
     const payload = req.rawBody ? JSON.parse(req.rawBody) : req.body;
@@ -2655,7 +2770,17 @@ app.post("/flw-webhook", async (req, res) => {
 ====================================================== */
 app.post("/track/visit", async (req, res) => {
   await redisIncr(METRICS.visits);
-  res.json({ ok: true });
+
+  const visitor =
+    await recordAnonymousVisit(
+      req.body?.visitorId
+    );
+
+  res.json({
+    ok: true,
+    tracked: visitor.tracked,
+    isNew: visitor.isNew,
+  });
 });
 
 app.get("/health", (req, res) => {
@@ -2671,6 +2796,12 @@ app.get("/health", (req, res) => {
         process.env.K_REVISION ||
         "local"
       ),
+
+    generationConfigured:
+      Boolean(GEMINI_API_KEY),
+
+    generationModel:
+      GEMINI_MODEL,
 
     institutionSectorPriorityVersion:
       INSTITUTION_SECTOR_PRIORITY_VERSION,
@@ -2846,10 +2977,17 @@ app.post("/generate-petition", async (req, res) => {
   const v = validateGenerateBody(req.body || {});
   if (!v.ok) return res.status(400).json(v);
 
+  const adminToken = String(
+    req.headers["x-admin-token"] || ""
+  ).trim();
+
+  const adminOk =
+    await isAdminTokenValid(adminToken);
+
   let verifiedUser = null;
   let accessStatus = null;
 
-  if (FREE_ACCESS_ENABLED) {
+  if (FREE_ACCESS_ENABLED && !adminOk) {
     try {
       verifiedUser =
         await requireVerifiedFirebaseUser(
@@ -3371,13 +3509,15 @@ CRITICAL RULES:
         .emailRoutingAvailable;
 
     const unlockMode =
-      FREE_ACCESS_ENABLED &&
-      accessStatus
-        ?.freeRemaining > 0
+      adminOk
+        ? "admin"
+        : FREE_ACCESS_ENABLED &&
+          accessStatus
+            ?.freeRemaining > 0
         ? "free"
         : "paid";
 
-    const tx_ref = `pd_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    const tx_ref = `pd_${Date.now()}_${randomToken(18)}`;
 
     await storePetition(tx_ref, {
       petition: petitionText,
@@ -3438,6 +3578,9 @@ CRITICAL RULES:
       access:
         accessStatus,
 
+      admin:
+        adminOk,
+
       tx_ref,
       preview,
       sector,
@@ -3457,8 +3600,27 @@ CRITICAL RULES:
           .submissionRoute,
     });
   } catch (err) {
-    console.error("Generation error:", err);
-    return res.status(500).json({ ok: false, error: "Failed to generate petition" });
+    const requestId =
+      String(req.headers["x-request-id"] || "").trim() ||
+      `pdreq_${randomToken(12)}`;
+
+    console.error("Generation error:", {
+      requestId,
+      message: err?.message || String(err),
+      code: err?.code || "PETITION_GENERATION_ERROR",
+      status: Number(err?.status) || 0,
+      model: err?.model || GEMINI_MODEL,
+      attemptedModels: err?.attemptedModels || [],
+    });
+
+    return res.status(503).json({
+      ok: false,
+      error:
+        "Petition generation is temporarily unavailable. Please wait a moment and try again.",
+      code: "PETITION_GENERATION_UNAVAILABLE",
+      requestId,
+      retryable: true,
+    });
   }
 });
 
@@ -4564,10 +4726,14 @@ app.post("/unlock-petition", async (req, res) => {
 /* ======================================================
    PDF DOWNLOAD
 ====================================================== */
-app.get("/download-pdf", (req, res) => {
+app.post("/download-pdf", (req, res) => {
   try {
-    const text = decodeURIComponent(String(req.query.text || ""));
+    const text = String(req.body?.text || "").trim();
     if (!text) return res.status(400).send("Missing text");
+
+    if (text.length > 100_000) {
+      return res.status(413).send("Petition is too large");
+    }
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", 'attachment; filename="petition.pdf"');
