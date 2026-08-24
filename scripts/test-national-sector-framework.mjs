@@ -24,25 +24,25 @@ const dataDir =
 
 assert.equal(
   NATIONAL_SECTOR_POLICIES.length,
-  13
+  16
 );
 
 assert.equal(
   new Set(
     NATIONAL_SECTOR_KEYS
   ).size,
-  13
+  16
 );
 
 assert.equal(
   new Set(
     NATIONAL_SECTOR_DATA_FILES
   ).size,
-  13
+  16
 );
 
 console.log(
-  "✅ ALL 13 ACTIVE SECTORS ARE IN THE NATIONAL POLICY REGISTRY"
+  "✅ ALL 16 ACTIVE SECTORS ARE IN THE NATIONAL POLICY REGISTRY"
 );
 
 const activeJsonFiles =
@@ -510,7 +510,7 @@ console.log(
 );
 
 console.log(
-  "✅ ALL 13 SECTORS USE THE SAME NATIONAL SAFETY FOUNDATION"
+  "✅ ALL 16 SECTORS USE THE SAME NATIONAL SAFETY FOUNDATION"
 );
 
 console.log(

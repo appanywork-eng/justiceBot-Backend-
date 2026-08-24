@@ -1,0 +1,48 @@
+{
+  "sector": "pensions",
+  "country": "Nigeria",
+  "version": "1.0.0",
+  "last_updated": "2026-08-06",
+  "verification_policy": { "official_sources_only": true, "block_unverified_direct_contacts": true },
+  "authorities": [
+    {
+      "key": "pencom_pension_complaints",
+      "name": "National Pension Commission (PenCom)",
+      "aliases": ["PenCom", "National Pension Commission"],
+      "contact": {
+        "emails": ["complaints@pencom.gov.ng"],
+        "address": "174 Adetokunbo Ademola Crescent, Wuse 2, Abuja, Nigeria",
+        "website": "https://www.pencom.gov.ng/",
+        "complaint_form": "https://www.pencom.gov.ng/home-page-test/home-page/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-06",
+        "direct_email_verified": true,
+        "source_urls": ["https://www.pencom.gov.ng/home-page-test/home-page/contact-us/"]
+      }
+    },
+    {
+      "key": "ptad_defined_benefit_complaints",
+      "name": "Pension Transitional Arrangement Directorate (PTAD)",
+      "aliases": ["PTAD", "Pension Transitional Arrangement Directorate"],
+      "contact": {
+        "emails": ["complaints@ptad.gov.ng"],
+        "address": "22 Katsina Ala Crescent, Off Yedseram Street, Maitama, Abuja, Nigeria",
+        "website": "https://www.ptad.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-06",
+        "direct_email_verified": true,
+        "source_urls": ["https://www.pencom.gov.ng/pension-transitional-arrangement-directorate/"]
+      }
+    }
+  ],
+  "routing_keywords": [
+    "pension", "pensions", "pension fund administrator", "PFA", "PenCom", "PTAD",
+    "retirement savings account", "RSA", "retirement benefit", "pension deduction",
+    "pension contribution", "unremitted pension", "non remittance of pension",
+    "annuity", "programmed withdrawal", "accrued rights", "pension verification"
+  ]
+}

@@ -9,6 +9,8 @@ import {
   EU_DROI_HUMAN_RIGHTS_ADVOCACY,
   EU_DELEGATION_NIGERIA_HUMAN_RIGHTS,
   CANADA_GLOBAL_AFFAIRS_ADVOCACY,
+  FRANCE_EMBASSY_NIGERIA_ADVOCACY,
+  INEC_ELECTION_INCIDENT_REPORTING,
   ICC_OTP_ARTICLE_15_SUBMISSIONS,
   OHCHR_SPECIAL_PROCEDURES,
   OHCHR_TREATY_BODY_COMPLAINTS,
@@ -29,7 +31,7 @@ import {
 
 assert.equal(
   NIGERIAN_INTERNATIONAL_ESCALATION_AUTHORITIES.length,
-  13
+  15
 );
 
 assert.equal(
@@ -38,7 +40,7 @@ assert.equal(
       authority => authority.key
     )
   ).size,
-  13
+  15
 );
 
 for (
@@ -63,7 +65,7 @@ assert.equal(
       authority.verification
         .direct_email_verified
   ).length,
-  8
+  10
 );
 
 assert.equal(
@@ -82,6 +84,7 @@ assert.deepEqual(
     "european_union",
     "international_criminal_court",
     "canada",
+    "france",
     "united_nations",
     "african_union",
     "ecowas",
@@ -89,11 +92,11 @@ assert.deepEqual(
 );
 
 console.log(
-  "✅ THIRTEEN VERIFIED INTERNATIONAL-ESCALATION AUTHORITIES ARE REGISTERED"
+  "✅ FIFTEEN VERIFIED INTERNATIONAL-ESCALATION AUTHORITIES ARE REGISTERED"
 );
 
 console.log(
-  "✅ EIGHT DIRECT-CONTACT AND FIVE FORMAL PORTAL ROUTES ARE ENFORCED"
+  "✅ TEN DIRECT-CONTACT AND FIVE FORMAL PORTAL ROUTES ARE ENFORCED"
 );
 
 /* ======================================================

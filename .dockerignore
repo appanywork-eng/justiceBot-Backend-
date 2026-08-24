@@ -7,6 +7,13 @@ npm-debug.log*
 !.env.example
 server.mjs.before-*
 *.bak
+*.bak*
+*.patch
+patch*.js
+fix-*.sh
+fix_*.sh
+apply_*.sh
+update-*.sh
 *.log
 coverage
 .DS_Store

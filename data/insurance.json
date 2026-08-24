@@ -1,0 +1,35 @@
+{
+  "sector": "insurance",
+  "country": "Nigeria",
+  "version": "1.0.0",
+  "last_updated": "2026-08-06",
+  "verification_policy": { "official_sources_only": true, "block_unverified_direct_contacts": true },
+  "authorities": [
+    {
+      "key": "naicom_insurance_complaints",
+      "name": "National Insurance Commission (NAICOM)",
+      "aliases": ["NAICOM", "National Insurance Commission"],
+      "contact": {
+        "emails": ["info@naicom.gov.ng"],
+        "address": "Plot 1239, Ladoke Akintola Boulevard, Garki II, Abuja, Nigeria",
+        "website": "https://www.naicom.gov.ng/",
+        "complaint_portal": "https://complaints.naicom.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-06",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://complaints.naicom.gov.ng/",
+          "https://portal.naicom.gov.ng/Public/Public_Consumers.aspx"
+        ]
+      }
+    }
+  ],
+  "routing_keywords": [
+    "National Insurance Commission", "insurance claim", "insurer", "insurance company", "insurance policy", "policyholder",
+    "premium", "underwriter", "NAICOM", "motor insurance", "life insurance",
+    "property insurance", "travel insurance", "marine insurance", "claim repudiation",
+    "claim settlement", "unpaid insurance claim", "insurance broker", "loss adjuster"
+  ]
+}
