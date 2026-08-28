@@ -19,6 +19,9 @@ import {
   completePetitionDraft,
 } from "./lib/petitionDraftQuality.mjs";
 import {
+  assertPetitionSemanticQuality,
+} from "./lib/petitionSemanticQuality.mjs";
+import {
   buildSectorDetectionText,
 } from "./lib/sectorDetectionContext.mjs";
 import {
@@ -104,6 +107,17 @@ import {
 import {
   assessElectionViolenceRisk,
 } from "./lib/electionViolenceEligibility.mjs";
+import {
+  analyzeComplexComplaint,
+  formatComplexityForPrompt,
+} from "./lib/complexComplaintAnalysis.mjs";
+import {
+  applyOversightRecipientPolicy,
+  applyStrictPrimaryRecipientPolicy,
+  assessRoutingDecisionSafety,
+  matchInstitutionSafely,
+  removeRecipientDuplicates,
+} from "./lib/routingSafety.mjs";
 
 dotenv.config();
 
@@ -116,6 +130,30 @@ app.use((req, res, next) => {
     ? supplied
     : crypto.randomUUID();
   res.setHeader("x-request-id", req.requestId);
+  next();
+});
+
+app.use((req, res, next) => {
+  res.setHeader(
+    "X-Content-Type-Options",
+    "nosniff"
+  );
+  res.setHeader(
+    "X-Frame-Options",
+    "DENY"
+  );
+  res.setHeader(
+    "Referrer-Policy",
+    "strict-origin-when-cross-origin"
+  );
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(self)"
+  );
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+  );
   next();
 });
 
@@ -310,6 +348,10 @@ const ADMIN_LOGIN_RATE_LIMIT_MAX = Math.max(
 );
 const GENERATION_RATE_LIMIT_MAX = Math.max(
   Number(process.env.GENERATION_RATE_LIMIT_MAX || 12),
+  1
+);
+const PDF_RATE_LIMIT_MAX = Math.max(
+  Number(process.env.PDF_RATE_LIMIT_MAX || 20),
   1
 );
 const SECURITY_RATE_LIMIT_WINDOW_MS = Math.max(
@@ -555,6 +597,10 @@ const METRICS = {
   generationRateLimited: "pd:metrics:generation_rate_limited",
   aiAttempts: "pd:metrics:ai_attempts",
   aiFallbacks: "pd:metrics:ai_fallbacks",
+  criticalCases: "pd:metrics:critical_cases",
+  routingClarifications: "pd:metrics:routing_clarifications",
+  routingConfirmations: "pd:metrics:routing_confirmations",
+  semanticQualityFailures: "pd:metrics:semantic_quality_failures",
   adminLoginFailed: "pd:metrics:admin_login_failed",
   webhookRejected: "pd:metrics:webhook_rejected",
   uniquePayInit: "pd:set:payinit_txrefs",
@@ -609,6 +655,14 @@ const consumeAdminLoginLimit = createRequestLimiter({
 const consumeGenerationLimit = createRequestLimiter({
   namespace: "petition_generation",
   maximum: GENERATION_RATE_LIMIT_MAX,
+  windowMilliseconds: SECURITY_RATE_LIMIT_WINDOW_MS,
+  store: redis,
+  onStoreError: logRateLimitStoreError,
+});
+
+const consumePdfLimit = createRequestLimiter({
+  namespace: "petition_pdf",
+  maximum: PDF_RATE_LIMIT_MAX,
   windowMilliseconds: SECURITY_RATE_LIMIT_WINDOW_MS,
   store: redis,
   onStoreError: logRateLimitStoreError,
@@ -687,17 +741,35 @@ function validateGenerateBody(body) {
   const petitioner = body?.petitioner || {};
   if (!isNonEmptyString(complaint, 3, 10000)) return bad("Complaint is required (3-10000 chars).");
 
-  const providedAny =
-    isNonEmptyString(petitioner?.fullName, 1, 120) ||
-    isNonEmptyString(petitioner?.address, 1, 250) ||
-    isNonEmptyString(petitioner?.email, 1, 200) ||
-    isNonEmptyString(petitioner?.phone, 1, 40);
+  const issueLocation = String(
+    body?.issueLocation ||
+    body?.disputeLocation ||
+    ""
+  ).trim();
 
-  if (providedAny) {
-    if (!isNonEmptyString(petitioner?.fullName, 2, 120)) return bad("Petitioner fullName is required (2-120).");
-    if (!isNonEmptyString(petitioner?.address, 5, 250)) return bad("Petitioner address is required (5-250).");
-    if (!isEmail(String(petitioner?.email || ""))) return bad("Petitioner email is required and must be valid.");
-    if (!isNonEmptyString(petitioner?.phone, 5, 40)) return bad("Petitioner phone is required (5-40).");
+  if (!isNonEmptyString(issueLocation, 2, 300)) {
+    return bad("Issue location is required so PetitionDesk can determine jurisdiction.");
+  }
+
+  if (!isNonEmptyString(body?.institutionName, 2, 300)) {
+    return bad("The exact organisation, company, agency or institution complained against is required for safe routing.");
+  }
+
+  if (!["initial", "unresolved"].includes(String(body?.escalationStage || "").trim())) {
+    return bad("Select whether this is a first complaint or an unresolved earlier complaint.");
+  }
+
+  if (!isNonEmptyString(petitioner?.fullName, 2, 120)) return bad("Petitioner fullName is required (2-120).");
+  if (!isNonEmptyString(petitioner?.address, 5, 250)) return bad("Petitioner address is required (5-250).");
+  if (!isEmail(String(petitioner?.email || ""))) return bad("Petitioner email is required and must be valid.");
+  if (!isNonEmptyString(petitioner?.phone, 5, 40)) return bad("Petitioner phone is required (5-40).");
+
+  if (body?.supportingEvidence != null && !isNonEmptyString(body.supportingEvidence, 0, 4000)) {
+    return bad("Supporting evidence description must not exceed 4000 characters.");
+  }
+
+  if (body?.desiredOutcome != null && !isNonEmptyString(body.desiredOutcome, 0, 2000)) {
+    return bad("Desired outcome must not exceed 2000 characters.");
   }
 
   return { ok: true };
@@ -1225,6 +1297,15 @@ async function resolveComplaintRouting({
   providerResponseStatus = "",
   country = "Nigeria",
 } = {}) {
+  const complexityProfile =
+    analyzeComplexComplaint({
+      complaint,
+      institutionName,
+      issueLocation,
+      escalationStage,
+      priorComplaintReference,
+    });
+
   const requestedSector =
     String(requestedSectorInput || "")
       .trim()
@@ -1346,7 +1427,7 @@ async function resolveComplaintRouting({
       "general_fallback";
   }
 
-  const jurisdictionRouting =
+  const rawJurisdictionRouting =
     preSectorRouting.matched &&
     !electionViolencePriority.matched
       ? preSectorRouting
@@ -1364,6 +1445,24 @@ async function resolveComplaintRouting({
           providerResponseStatus,
           country,
         });
+
+  const strictPrimaryRouting =
+    applyStrictPrimaryRecipientPolicy({
+      routingDecision:
+        rawJurisdictionRouting,
+      institutionName,
+      complaint,
+      complexityProfile,
+    });
+
+  const jurisdictionRouting =
+    applyOversightRecipientPolicy({
+      routingDecision:
+        strictPrimaryRouting,
+      sector,
+      country,
+      complexityProfile,
+    });
 
   const sectorDetection = {
     source,
@@ -1408,6 +1507,7 @@ async function resolveComplaintRouting({
     sector,
     sectorDetection,
     jurisdictionRouting,
+    complexityProfile,
     heuristic:
       combinedHeuristic,
   };
@@ -1920,43 +2020,10 @@ function buildInstitutionCatalog(sectorJson) {
 }
 
 function matchInstitutionNameToCatalogWithScore(name, catalog) {
-  const q = normalizeName(name);
-  const qShort = stripCorporateSuffixes(name);
-  if (!q) return { item: null, score: 0 };
-
-  let best = null;
-  let bestScore = 0;
-
-  const qTokens = new Set(q.split(" ").filter((w) => w.length > 2));
-  const qShortTokens = new Set(qShort.split(" ").filter((w) => w.length > 2));
-
-  for (const item of catalog) {
-    if (!item?.norm) continue;
-
-    let score = 0;
-
-    if (q === item.norm || (qShort && qShort === item.shortNorm)) score += 100;
-    if (item.aliasNorms.includes(q) || (qShort && item.shortAliasNorms.includes(qShort))) score += 90;
-
-    if (q.includes(item.norm) || item.norm.includes(q)) score += 40;
-    if (qShort && (qShort.includes(item.shortNorm) || item.shortNorm.includes(qShort))) score += 35;
-
-    let overlap = 0;
-    for (const t of item.shortNorm.split(" ")) {
-      if (qTokens.has(t) || qShortTokens.has(t)) overlap++;
-    }
-    if (overlap >= 2) score += overlap * 10;
-
-    if (overlap >= 1 && qTokens.size >= 6) score += 8;
-
-    if (score > bestScore) {
-      bestScore = score;
-      best = item;
-    }
-  }
-
-  if (bestScore < 30) return { item: null, score: 0 };
-  return { item: best, score: bestScore };
+  return matchInstitutionSafely(
+    name,
+    catalog
+  );
 }
 
 function matchInstitutionNameToCatalog(name, catalog) {
@@ -1991,20 +2058,10 @@ primeGlobalCatalog();
 
 function matchInstitutionAcrossAllSectors(name, preferredSector) {
   const preferredCatalog = getCatalogForSector(preferredSector);
-  const hit1 = matchInstitutionNameToCatalog(name, preferredCatalog);
-  if (hit1) return hit1;
-
-  let best = null;
-  let bestScore = 0;
-  for (const catalog of GLOBAL_CATALOG_BY_SECTOR.values()) {
-    const { item, score } = matchInstitutionNameToCatalogWithScore(name, catalog);
-    if (!item) continue;
-    if (score > bestScore) {
-      bestScore = score;
-      best = item;
-    }
-  }
-  return bestScore >= 30 ? best : null;
+  return matchInstitutionNameToCatalog(
+    name,
+    preferredCatalog
+  );
 }
 
 function enforceRoutingHeaders(
@@ -2438,6 +2495,10 @@ app.get("/admin/stats", async (req, res) => {
       generation_rate_limited: await redisGetInt(METRICS.generationRateLimited),
       ai_attempts: await redisGetInt(METRICS.aiAttempts),
       ai_fallbacks: await redisGetInt(METRICS.aiFallbacks),
+      critical_cases: await redisGetInt(METRICS.criticalCases),
+      routing_clarifications: await redisGetInt(METRICS.routingClarifications),
+      routing_confirmations: await redisGetInt(METRICS.routingConfirmations),
+      semantic_quality_failures: await redisGetInt(METRICS.semanticQualityFailures),
       admin_login_failed: await redisGetInt(METRICS.adminLoginFailed),
       webhook_rejected: await redisGetInt(METRICS.webhookRejected),
       unique_payinit_txrefs: await redisSCard(METRICS.uniquePayInit),
@@ -2539,6 +2600,18 @@ app.get("/admin/overview", async (req, res) => {
 
       ai_fallbacks:
         await redisGetInt(METRICS.aiFallbacks),
+
+      critical_cases:
+        await redisGetInt(METRICS.criticalCases),
+
+      routing_clarifications:
+        await redisGetInt(METRICS.routingClarifications),
+
+      routing_confirmations:
+        await redisGetInt(METRICS.routingConfirmations),
+
+      semantic_quality_failures:
+        await redisGetInt(METRICS.semanticQualityFailures),
 
       admin_login_failed:
         await redisGetInt(METRICS.adminLoginFailed),
@@ -2919,6 +2992,12 @@ app.get("/admin/diagnostics", async (req, res) => {
         failedGenerations: await redisGetInt(METRICS.generationFailed),
         ...runtimeDiagnostics,
       },
+      routing: {
+        criticalCases: await redisGetInt(METRICS.criticalCases),
+        clarificationBlocks: await redisGetInt(METRICS.routingClarifications),
+        confirmationBlocks: await redisGetInt(METRICS.routingConfirmations),
+        semanticQualityFailures: await redisGetInt(METRICS.semanticQualityFailures),
+      },
       payments: {
         provider: "flutterwave",
         configured: Boolean(FLW_SECRET_KEY),
@@ -3278,6 +3357,9 @@ app.post(
 
         routingDecision:
           result.jurisdictionRouting,
+
+        complexityProfile:
+          result.complexityProfile,
       });
     } catch (error) {
       console.error(
@@ -3366,7 +3448,10 @@ app.post("/generate-petition", async (req, res) => {
     priorComplaintDate = "",
     bankingComplaintType = "",
     providerResponseStatus = "",
+    supportingEvidence = "",
+    desiredOutcome = "",
     country = "Nigeria",
+    confirmSuggestedRoute = false,
   } = req.body || {};
 
   /*
@@ -3459,6 +3544,7 @@ app.post("/generate-petition", async (req, res) => {
     sector,
     sectorDetection,
     jurisdictionRouting,
+    complexityProfile,
     heuristic,
   } = await resolveComplaintRouting({
     complaint,
@@ -3479,6 +3565,22 @@ app.post("/generate-petition", async (req, res) => {
     country,
   });
 
+  const routingSafety =
+    assessRoutingDecisionSafety({
+      routingDecision:
+        jurisdictionRouting,
+      complaint,
+      institutionName,
+      complexityProfile,
+      confirmSuggestedRoute:
+        confirmSuggestedRoute ===
+        true,
+    });
+
+  if (complexityProfile?.critical === true) {
+    await redisIncr(METRICS.criticalCases);
+  }
+
   /*
    * Some matters must not be converted into
    * an ordinary petition. Examples include an
@@ -3498,6 +3600,64 @@ app.post("/generate-petition", async (req, res) => {
       routingDecision:
         jurisdictionRouting,
     });
+  }
+
+  if (!routingSafety.safeToDraft) {
+    const questions =
+      Array.isArray(
+        complexityProfile
+          ?.clarificationQuestions
+      )
+        ? complexityProfile
+            .clarificationQuestions
+        : [];
+
+    const requiresConfirmation =
+      routingSafety
+        .requiresRecipientConfirmation ===
+      true;
+
+    await redisIncr(
+      requiresConfirmation
+        ? METRICS.routingConfirmations
+        : METRICS.routingClarifications
+    );
+
+    const userMessage =
+      requiresConfirmation
+        ? `PetitionDesk identified ${jurisdictionRouting.primaryInstitution} as a possible escalation recipient. Confirm this route before it is placed in the TO section.`
+        : "PetitionDesk could not verify a safe recipient from the information supplied. Provide the missing details before drafting.";
+
+    return res
+      .status(
+        requiresConfirmation
+          ? 409
+          : 422
+      )
+      .json({
+        ok: false,
+        code:
+          routingSafety.code,
+        error:
+          userMessage,
+        sector,
+        complexityProfile,
+        routingSafety,
+        routingDecision: {
+          ...jurisdictionRouting,
+          blockGeneration:
+            true,
+          requiresRecipientConfirmation:
+            requiresConfirmation,
+          confirmationField:
+            requiresConfirmation
+              ? "confirmSuggestedRoute"
+              : "",
+          userMessage,
+          clarificationQuestions:
+            questions,
+        },
+      });
   }
 
   if (DEBUG_SECTOR) {
@@ -3594,8 +3754,17 @@ app.post("/generate-petition", async (req, res) => {
 
       providerResponseStatus,
 
+      supportingEvidence,
+
+      desiredOutcome,
+
       country,
     });
+
+  const complexityPrompt =
+    formatComplexityForPrompt(
+      complexityProfile
+    );
 
   try {
     let petitionText =
@@ -3609,6 +3778,8 @@ app.post("/generate-petition", async (req, res) => {
         onAttempt: recordAiAttempt,
 
         systemInstruction: `You are a top-tier Nigerian legal draftsman writing a SAN-grade petition/complaint.
+
+Before drafting, silently build a case map containing the parties, institutions, chronology, disputed and undisputed facts, amounts, references, evidence mentioned, procedural stage, issue dimensions and requested remedies. Do not reveal private chain-of-thought or the hidden case map. Use it only to ensure the final petition is complete, precise and internally consistent.
 
 MANDATORY STRUCTURE (use exactly this format, no deviations):
 
@@ -3661,6 +3832,9 @@ ${pEmail}
 CRITICAL RULES:
 - Document purpose: ${documentPurpose}
 - Sector: ${sector} | Case Type: ${caseType}
+- Routing confidence: ${routingSafety.confidence}
+- This complaint may contain several legal or administrative dimensions. Preserve each identified dimension, but do not merge separate criminal, court, professional-discipline, consumer and administrative processes into a false single procedure.
+- The TO and CC recipients above are system-controlled. Do not introduce, substitute, recommend or mention another recipient in the TO or CC blocks.
 - NEVER include any email addresses, phone numbers, or invented contacts for institutions.
 - For landlord-tenant disputes, do not state that a rent increase is unlawful merely because the percentage is high.
 - Do not describe the matter as constructive eviction unless the supplied facts independently support that allegation.
@@ -3673,14 +3847,17 @@ CRITICAL RULES:
 - Regulatory penalties are discretionary. Request appropriate regulatory action; never describe a sanction as mandatory.
 - Do not state that a bank owes a fiduciary duty unless an identified and applicable authority clearly establishes it.
 - Do not invent facts, dates, evidence, laws, court decisions, institutions, addresses, or allegations.
+- No verified legal citation pack was supplied for this generation. Do not state section numbers, reported cases, statute years or criminal-code provisions as authoritative law. Describe the applicable legal and regulatory principles cautiously and request the competent authority to determine the governing provision from verified sources.
 - Clearly distinguish the petitioner's allegations from established facts.
+- Do not state or imply that the petition establishes guilt, criminal responsibility, professional liability or the outcome of an active court process.
+- Where death, serious injury, prosecution or an active case is mentioned, state clearly that the petition seeks administrative or regulatory accountability and does not replace a criminal report, court filing, appeal or legal representation.
 - The respondent is the institution responsible for the disputed product, deduction or decision; do not treat a bank that merely issued an account statement as the respondent.
 - Preserve every supplied material amount, date, repayment reference, mandate reference, institution and item of supporting evidence accurately.
 - Finish every mandatory section, the demands, notice, attachments and the petitioner's full closing signature before ending your response.
 - Under 950 words.`,
 
         prompt:
-          `Draft the petition using only the structured facts below. Do not omit a supplied institution, issue location, complaint stage or previous complaint reference.\n\n${structuredComplaintPrompt}`,
+          `Draft the petition using only the structured facts below. Do not omit a supplied institution, issue location, complaint stage or previous complaint reference.\n\n${complexityPrompt}\n\n${structuredComplaintPrompt}`,
 
         maxOutputTokens: 12288,
       });
@@ -3742,9 +3919,32 @@ CRITICAL RULES:
 
     const sectorJson = loadSectorJson(sector);
     const sectorCatalog = buildInstitutionCatalog(sectorJson);
+    const generalOversightCatalog =
+      getCatalogForSector(
+        "general"
+      );
+    const internationalOversightCatalog =
+      getCatalogForSector(
+        "international_escalation"
+      );
 
-    const toNames = extractSectionInstitutionNames(petitionText, "TO");
-    const ccNames = extractSectionInstitutionNames(petitionText, "CC");
+    /*
+     * Recipient identities are never read back from AI prose.
+     * They come only from the deterministic jurisdiction decision.
+     */
+    const toNames = [
+      jurisdictionRouting
+        .primaryInstitution,
+    ].filter(Boolean);
+
+    const ccNames =
+      Array.isArray(
+        jurisdictionRouting
+          .ccInstitutions
+      )
+        ? jurisdictionRouting
+            .ccInstitutions
+        : [];
 
     const catalogToItems = safeUniq(
       toNames
@@ -3754,9 +3954,13 @@ CRITICAL RULES:
               name,
               sectorCatalog
             ) ||
-            matchInstitutionAcrossAllSectors(
+            matchInstitutionNameToCatalog(
               name,
-              sector
+              generalOversightCatalog
+            ) ||
+            matchInstitutionNameToCatalog(
+              name,
+              internationalOversightCatalog
             )
         )
         .filter(Boolean)
@@ -3770,13 +3974,23 @@ CRITICAL RULES:
               name,
               sectorCatalog
             ) ||
-            matchInstitutionAcrossAllSectors(
+            matchInstitutionNameToCatalog(
               name,
-              sector
+              generalOversightCatalog
+            ) ||
+            matchInstitutionNameToCatalog(
+              name,
+              internationalOversightCatalog
             )
         )
         .filter(Boolean)
     );
+
+    const disjointCatalogCcItems =
+      removeRecipientDuplicates(
+        catalogToItems,
+        catalogCcItems
+      );
 
     const adminCC =
       jurisdictionRouting.matched
@@ -3848,14 +4062,15 @@ CRITICAL RULES:
 
         catalogToItems,
 
-        catalogCcItems,
+        catalogCcItems:
+          disjointCatalogCcItems,
 
         legacyToEmails,
 
         legacyToInstitutions,
 
         legacyCcInstitutions:
-          catalogCcItems.map(
+          disjointCatalogCcItems.map(
             item =>
               item.name
           ),
@@ -3872,12 +4087,47 @@ CRITICAL RULES:
           ]
         : catalogToItems;
 
+    const documentCcItems =
+      removeRecipientDuplicates(
+        documentToItems,
+        ccNames.map(name =>
+          catalogCcItems.find(
+            item =>
+              normalizeName(
+                item?.name
+              ) ===
+              normalizeName(
+                name
+              )
+          ) || {
+            name,
+            emails: [],
+            addresses: [],
+            primaryAddress: "",
+          }
+        )
+      );
+
     petitionText =
       injectInstitutionAddressesIntoPetition(
         petitionText,
         documentToItems,
-        catalogCcItems
+        documentCcItems
       );
+
+    const semanticQuality =
+      assertPetitionSemanticQuality({
+        petitionText,
+        complaint,
+        institutionName,
+        priorComplaintReference,
+        primaryInstitution:
+          jurisdictionRouting
+            .primaryInstitution,
+        ccInstitutions:
+          jurisdictionRouting
+            .ccInstitutions,
+      });
 
     const finalToEmails =
       deliveryPlan.toEmails;
@@ -3926,6 +4176,12 @@ CRITICAL RULES:
         jurisdictionRouting.matched
           ? jurisdictionRouting
           : null,
+
+      complexityProfile,
+
+      routingSafety,
+
+      semanticQuality,
 
       submissionRoute:
         deliveryPlan
@@ -3984,12 +4240,20 @@ CRITICAL RULES:
           ? jurisdictionRouting
           : null,
 
+      complexityProfile,
+
+      routingSafety,
+
       submissionRoute:
         deliveryPlan
           .submissionRoute,
     });
   } catch (err) {
     await redisIncr(METRICS.generationFailed);
+
+    if (err?.code === "PETITION_SEMANTIC_QUALITY_FAILED") {
+      await redisIncr(METRICS.semanticQualityFailures);
+    }
 
     const providerStatus = Number(err?.status || 0);
     const temporarilyUnavailable =
@@ -4175,6 +4439,9 @@ app.post(
       const basePayload = {
         ok: true,
         unlocked: true,
+
+        _ownerUid:
+          user.uid,
 
         unlockMethod:
           "free",
@@ -5128,13 +5395,136 @@ app.post("/unlock-petition", async (req, res) => {
 /* ======================================================
    PDF DOWNLOAD
 ====================================================== */
-app.post("/download-pdf", (req, res) => {
+app.post("/download-pdf", async (req, res) => {
   try {
-    const text = String(req.body?.text || "").trim();
-    if (!text) return res.status(400).send("Missing text");
+    const validation =
+      validateTxRef(
+        req.body || {}
+      );
+
+    if (!validation.ok) {
+      return res
+        .status(400)
+        .json(validation);
+    }
+
+    const pdfLimit =
+      await consumePdfLimit(
+        requestFingerprint(
+          req,
+          validation.tx_ref
+        )
+      );
+
+    if (!pdfLimit.ok) {
+      res.setHeader(
+        "Retry-After",
+        String(
+          pdfLimit
+            .retryAfterSeconds
+        )
+      );
+
+      return res
+        .status(429)
+        .json({
+          ok: false,
+          code:
+            "pdf_rate_limited",
+          error:
+            "Too many PDF requests. Please wait before trying again.",
+          retryAfterSeconds:
+            pdfLimit
+              .retryAfterSeconds,
+        });
+    }
+
+    const adminToken = String(
+      req.headers[
+        "x-admin-token"
+      ] || ""
+    ).trim();
+
+    const adminOk =
+      await isAdminTokenValid(
+        adminToken
+      );
+
+    let unlocked =
+      await getUnlocked(
+        validation.tx_ref
+      );
+
+    if (!adminOk) {
+      let user;
+
+      try {
+        user =
+          await requireVerifiedFirebaseUser(
+            req
+          );
+      } catch (error) {
+        return sendFirebaseIdentityError(
+          res,
+          error
+        );
+      }
+
+      if (
+        unlocked?._ownerUid ===
+        user.uid
+      ) {
+        // Ownership already verified by the durable unlock payload.
+      } else {
+        const claimedUnlock =
+          await freeEntitlementStore
+            .getClaimedUnlock({
+              uid: user.uid,
+              txRef:
+                validation.tx_ref,
+            });
+
+        if (!claimedUnlock) {
+          return res
+            .status(403)
+            .json({
+              ok: false,
+              code:
+                "petition_pdf_forbidden",
+              error:
+                "This unlocked petition is not available to your account.",
+            });
+        }
+
+        unlocked =
+          claimedUnlock;
+      }
+    }
+
+    const text = String(
+      unlocked?.petition || ""
+    ).trim();
+
+    if (!text) {
+      return res
+        .status(404)
+        .json({
+          ok: false,
+          code:
+            "unlocked_petition_not_found",
+          error:
+            "Unlock this petition before downloading its PDF.",
+        });
+    }
 
     if (text.length > 100_000) {
-      return res.status(413).send("Petition is too large");
+      return res
+        .status(413)
+        .json({
+          ok: false,
+          error:
+            "Petition is too large",
+        });
     }
 
     res.setHeader("Content-Type", "application/pdf");
@@ -5152,7 +5542,13 @@ app.post("/download-pdf", (req, res) => {
     pdf.end();
   } catch (err) {
     console.error("PDF error:", err);
-    res.status(500).send("PDF generation failed");
+    res
+      .status(500)
+      .json({
+        ok: false,
+        error:
+          "PDF generation failed",
+      });
   }
 });
 

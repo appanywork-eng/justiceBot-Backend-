@@ -36,6 +36,12 @@ const draftingPrompt =
     priorComplaintReference:
       "GTB-45879",
 
+    supportingEvidence:
+      "Transfer receipt and account statement",
+
+    desiredOutcome:
+      "Reverse the failed transfer and provide a written explanation",
+
     country:
       "Nigeria",
   });
@@ -58,6 +64,16 @@ assert.match(
 assert.match(
   draftingPrompt,
   /GTB-45879/
+);
+
+assert.match(
+  draftingPrompt,
+  /Transfer receipt and account statement/
+);
+
+assert.match(
+  draftingPrompt,
+  /Reverse the failed transfer and provide a written explanation/
 );
 
 const bankDecision =

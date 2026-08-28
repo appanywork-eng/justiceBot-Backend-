@@ -93,6 +93,52 @@ assert.match(
   /₦4 was deducted/
 );
 
+const ungroundedCriminalDraft = `
+LEGAL FRAMEWORK & GROUNDS:
+- The Constitutional Right to Life guaranteed under Section 33 of the Constitution of the Federal Republic of Nigeria 1999 (as amended).
+- The Criminal Code Law / Penal Code Law applicable in Kogi State prohibits the alleged conduct.
+- The matter requires an evidence-led and procedurally fair investigation.
+DEMANDS / RELIEFS SOUGHT:
+1. Conduct a lawful investigation.
+`;
+
+const ungroundedCriminalResult =
+  sanitizeLegalDraft(
+    ungroundedCriminalDraft,
+    "education"
+  );
+
+assert.doesNotMatch(
+  ungroundedCriminalResult,
+  /Section 33/i
+);
+
+assert.doesNotMatch(
+  ungroundedCriminalResult,
+  /Criminal Code Law\s*\/\s*Penal Code Law/i
+);
+
+assert.match(
+  ungroundedCriminalResult,
+  /No unverified statutory citation or legal conclusion is relied upon/i
+);
+
+const verifiedCitationResult =
+  sanitizeLegalDraft(
+    ungroundedCriminalDraft,
+    "education",
+    {
+      verifiedLegalContext: [
+        "Section 33 of the Constitution of the Federal Republic of Nigeria 1999 (as amended)",
+      ],
+    }
+  );
+
+assert.match(
+  verifiedCitationResult,
+  /Section 33/i
+);
+
 console.log(
   "✅ USER-SUPPLIED DISPUTED AMOUNT IS PRESERVED"
 );
@@ -111,4 +157,12 @@ console.log(
 
 console.log(
   "✅ NON-BANKING FACTS ARE NOT OVER-SANITISED"
+);
+
+console.log(
+  "✅ UNVERIFIED STATUTORY CITATIONS ARE REMOVED"
+);
+
+console.log(
+  "✅ CURATED VERIFIED LEGAL CONTEXT MAY BE PRESERVED"
 );
