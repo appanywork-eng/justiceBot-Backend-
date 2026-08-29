@@ -25,6 +25,7 @@ import {
   buildSectorDetectionText,
 } from "./lib/sectorDetectionContext.mjs";
 import {
+  extractNarrativeComplaintHistory,
   evaluateComplaintStageConsistency,
 } from "./lib/complaintStageConsistency.mjs";
 import {
@@ -1297,13 +1298,33 @@ async function resolveComplaintRouting({
   providerResponseStatus = "",
   country = "Nigeria",
 } = {}) {
+  const narrativeComplaintHistory =
+    extractNarrativeComplaintHistory(
+      complaint
+    );
+
+  const effectivePriorComplaintReference =
+    String(
+      priorComplaintReference ||
+      narrativeComplaintHistory.reference ||
+      ""
+    ).trim();
+
+  const effectivePriorComplaintDate =
+    String(
+      priorComplaintDate ||
+      narrativeComplaintHistory.date ||
+      ""
+    ).trim();
+
   const complexityProfile =
     analyzeComplexComplaint({
       complaint,
       institutionName,
       issueLocation,
       escalationStage,
-      priorComplaintReference,
+      priorComplaintReference:
+        effectivePriorComplaintReference,
     });
 
   const requestedSector =
@@ -1321,8 +1342,10 @@ async function resolveComplaintRouting({
       institutionName,
       institutionLevel,
       escalationStage,
-      priorComplaintReference,
-      priorComplaintDate,
+      priorComplaintReference:
+        effectivePriorComplaintReference,
+      priorComplaintDate:
+        effectivePriorComplaintDate,
       bankingComplaintType,
       providerResponseStatus,
       country,
@@ -1439,8 +1462,10 @@ async function resolveComplaintRouting({
           institutionName,
           institutionLevel,
           escalationStage,
-          priorComplaintReference,
-          priorComplaintDate,
+          priorComplaintReference:
+            effectivePriorComplaintReference,
+          priorComplaintDate:
+            effectivePriorComplaintDate,
           bankingComplaintType,
           providerResponseStatus,
           country,
@@ -3466,11 +3491,31 @@ app.post("/generate-petition", async (req, res) => {
       ""
     ).trim();
 
+  const narrativeComplaintHistory =
+    extractNarrativeComplaintHistory(
+      complaint
+    );
+
+  const resolvedPriorComplaintReference =
+    String(
+      priorComplaintReference ||
+      narrativeComplaintHistory.reference ||
+      ""
+    ).trim();
+
+  const resolvedPriorComplaintDate =
+    String(
+      priorComplaintDate ||
+      narrativeComplaintHistory.date ||
+      ""
+    ).trim();
+
   const complaintStageCheck =
     evaluateComplaintStageConsistency({
       complaint,
       escalationStage,
-      priorComplaintReference,
+      priorComplaintReference:
+        resolvedPriorComplaintReference,
     });
 
   if (
@@ -3558,8 +3603,10 @@ app.post("/generate-petition", async (req, res) => {
     institutionName,
     institutionLevel,
     escalationStage,
-    priorComplaintReference,
-    priorComplaintDate,
+    priorComplaintReference:
+      resolvedPriorComplaintReference,
+    priorComplaintDate:
+      resolvedPriorComplaintDate,
     bankingComplaintType,
     providerResponseStatus,
     country,
@@ -3746,9 +3793,11 @@ app.post("/generate-petition", async (req, res) => {
 
       escalationStage,
 
-      priorComplaintReference,
+      priorComplaintReference:
+        resolvedPriorComplaintReference,
 
-      priorComplaintDate,
+      priorComplaintDate:
+        resolvedPriorComplaintDate,
 
       bankingComplaintType,
 
@@ -4120,7 +4169,8 @@ CRITICAL RULES:
         petitionText,
         complaint,
         institutionName,
-        priorComplaintReference,
+        priorComplaintReference:
+          resolvedPriorComplaintReference,
         primaryInstitution:
           jurisdictionRouting
             .primaryInstitution,
@@ -4271,6 +4321,10 @@ CRITICAL RULES:
       providerStatus,
       model: err?.model || GEMINI_MODEL,
       attempts: Number(err?.attempts || 0),
+      missingMaterialFacts:
+        err?.assessment?.missingMaterialFacts || [],
+      routingErrors:
+        err?.assessment?.routingErrors || [],
       message: err?.message || "Unknown generation error",
     });
 

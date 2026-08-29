@@ -112,8 +112,39 @@ assert.equal(
   true
 );
 
+const multiLineCcDraft = safeDraft.replace(
+  "CC: Remita, Public Complaints Commission (PCC)",
+  [
+    "CC: Remita",
+    "Address: Plot 123, Test Avenue, Abuja",
+    "CC: Public Complaints Commission (PCC)",
+    "Address: Headquarters, Abuja",
+    "CC: Nigeria Data Protection Commission (NDPC)",
+  ].join("\n")
+);
+
+assert.deepEqual(
+  inspectPetitionSemanticQuality({
+    petitionText: multiLineCcDraft,
+    complaint,
+    institutionName: "VeendHQ",
+    primaryInstitution: "VeendHQ",
+    ccInstitutions: [
+      "Remita",
+      "Public Complaints Commission (PCC)",
+      "Nigeria Data Protection Commission (NDPC)",
+    ],
+  }),
+  {
+    complete: true,
+    missingMaterialFacts: [],
+    routingErrors: [],
+  }
+);
+
 console.log("✅ MATERIAL AMOUNTS MUST SURVIVE THE FINAL DRAFT");
 console.log("✅ THE NAMED INSTITUTION MUST APPEAR IN THE PETITION");
 console.log("✅ FINAL TO MUST MATCH THE DETERMINISTIC PRIMARY RECIPIENT");
 console.log("✅ TO AND CC DUPLICATION FAILS THE FINAL QUALITY GATE");
+console.log("✅ MULTI-LINE COMPLEX-CASE CC RECIPIENTS ALL PASS VALIDATION");
 console.log("✅ PETITION SEMANTIC QUALITY CONTRACT PASSED");

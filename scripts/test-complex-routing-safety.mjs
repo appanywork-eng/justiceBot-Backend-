@@ -5,6 +5,9 @@ import {
   formatComplexityForPrompt,
 } from "../lib/complexComplaintAnalysis.mjs";
 import {
+  extractNarrativeComplaintHistory,
+} from "../lib/complaintStageConsistency.mjs";
+import {
   applyOversightRecipientPolicy,
   applyStrictPrimaryRecipientPolicy,
   assessRoutingDecisionSafety,
@@ -163,6 +166,114 @@ const providerRoute = assessRoutingDecisionSafety({
 assert.equal(providerRoute.safeToDraft, true);
 assert.equal(providerRoute.confidence, "high");
 
+const financialCourtComplaint = `
+  I obtained a payroll-backed loan from SamplePay Credit Ltd, funded through
+  ExampleTrust Microfinance Bank Ltd and processed through Remita. A third-party
+  debt collector disclosed my financial information and filed Suit No.
+  CV/TEST/2026 before the Magistrates Court Wuse. I filed a preliminary objection
+  and the case remains pending. I complained to SamplePay on 15 May 2026 under
+  reference SP/TEST/150526. I request escalation to CBN, FCCPC, NDPC and PCC.
+`;
+
+const financialCourtHistory =
+  extractNarrativeComplaintHistory(
+    financialCourtComplaint
+  );
+
+assert.deepEqual(
+  financialCourtHistory,
+  {
+    reference: "SP/TEST/150526",
+    date: "2026-05-15",
+    inferredFromNarrative: true,
+  }
+);
+
+const financialCourtProfile =
+  analyzeComplexComplaint({
+    complaint:
+      financialCourtComplaint,
+    institutionName:
+      "SamplePay Credit Ltd, ExampleTrust Microfinance Bank Ltd, Remita, and the Payroll Unit of the Federal Ministry of Works",
+    issueLocation:
+      "FCT Abuja",
+    escalationStage:
+      "unresolved",
+    priorComplaintReference:
+      financialCourtHistory.reference,
+  });
+
+assert.equal(
+  financialCourtProfile.activeCourtProcess,
+  true
+);
+assert.ok(
+  financialCourtProfile.issueIds.includes(
+    "data_privacy"
+  )
+);
+assert.ok(
+  financialCourtProfile.issueIds.includes(
+    "debt_collection"
+  )
+);
+assert.deepEqual(
+  financialCourtProfile.clarificationQuestions,
+  []
+);
+
+const financialCourtPolicy =
+  applyOversightRecipientPolicy({
+    routingDecision: {
+      matched: true,
+      primaryInstitution:
+        "Central Bank of Nigeria (CBN)",
+      ccInstitutions: [
+        "Remita Payment Service Limited",
+      ],
+    },
+    sector:
+      "banking",
+    complexityProfile:
+      financialCourtProfile,
+  });
+
+assert.deepEqual(
+  financialCourtPolicy.ccInstitutions,
+  [
+    "Remita Payment Service Limited",
+    "Public Complaints Commission (PCC)",
+    "Federal Competition and Consumer Protection Commission (FCCPC)",
+    "Nigeria Data Protection Commission (NDPC)",
+  ]
+);
+
+const suppliedCbnRoute =
+  assessRoutingDecisionSafety({
+    routingDecision: {
+      matched: true,
+      jurisdiction:
+        "national_financial_regulator",
+      primaryInstitution:
+        "Central Bank of Nigeria (CBN)",
+    },
+    complaint:
+      financialCourtComplaint,
+    institutionName:
+      "SamplePay Credit Ltd, ExampleTrust Microfinance Bank Ltd, Remita, and the Payroll Unit of the Federal Ministry of Works",
+    complexityProfile:
+      financialCourtProfile,
+  });
+
+assert.equal(
+  suppliedCbnRoute.safeToDraft,
+  true
+);
+assert.equal(
+  suppliedCbnRoute.confidence,
+  "high"
+);
+
 assert.equal(
   recipientNamesAreDisjoint(["VeendHQ"], ["Remita", "VeendHQ"]),
   false
@@ -220,4 +331,6 @@ console.log("✅ INFERRED REGULATORS REQUIRE EXPLICIT USER CONFIRMATION");
 console.log("✅ UNMATCHED ROUTES CANNOT REACH AI GENERATION");
 console.log("✅ TO AND CC RECIPIENTS ARE DISJOINT");
 console.log("✅ USER-APPROVED PCC, NHRC AND DOMESTIC OVERSIGHT POLICY IS ENFORCED");
+console.log("✅ FINANCIAL, PRIVACY, DEBT-COLLECTION AND ACTIVE-COURT DIMENSIONS ARE PRESERVED");
+console.log("✅ NARRATIVE COMPLAINT REFERENCES AND DATES ARE RECOVERED SAFELY");
 console.log("✅ COMPLEX ROUTING SAFETY CONTRACT PASSED");
