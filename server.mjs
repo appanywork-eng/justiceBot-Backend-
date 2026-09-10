@@ -20,6 +20,7 @@ import {
 } from "./lib/petitionDraftQuality.mjs";
 import {
   assertPetitionSemanticQuality,
+  repairPetitionSemanticFacts,
 } from "./lib/petitionSemanticQuality.mjs";
 import {
   buildSectorDetectionText,
@@ -4170,20 +4171,67 @@ CRITICAL RULES:
         documentCcItems
       );
 
-    const semanticQuality =
-      assertPetitionSemanticQuality({
-        petitionText,
-        complaint,
-        institutionName,
-        priorComplaintReference:
-          resolvedPriorComplaintReference,
-        primaryInstitution:
-          jurisdictionRouting
-            .primaryInstitution,
-        ccInstitutions:
-          jurisdictionRouting
-            .ccInstitutions,
-      });
+    const semanticQualityInput = {
+      petitionText,
+      complaint,
+      institutionName,
+      priorComplaintReference:
+        resolvedPriorComplaintReference,
+      primaryInstitution:
+        jurisdictionRouting
+          .primaryInstitution,
+      ccInstitutions:
+        jurisdictionRouting
+          .ccInstitutions,
+    };
+
+    let semanticQuality;
+
+    try {
+      semanticQuality =
+        assertPetitionSemanticQuality(
+          semanticQualityInput
+        );
+    } catch (qualityError) {
+      if (
+        qualityError?.code !==
+          "PETITION_SEMANTIC_QUALITY_FAILED" ||
+        (
+          qualityError?.assessment
+            ?.routingErrors || []
+        ).length > 0
+      ) {
+        throw qualityError;
+      }
+
+      const semanticRepair =
+        repairPetitionSemanticFacts(
+          semanticQualityInput
+        );
+
+      if (!semanticRepair.repaired) {
+        throw qualityError;
+      }
+
+      petitionText =
+        semanticRepair.text;
+
+      semanticQuality =
+        assertPetitionSemanticQuality({
+          ...semanticQualityInput,
+          petitionText,
+        });
+
+      console.warn(
+        "Recovered omitted petition material facts",
+        {
+          requestId: req.requestId,
+          sector,
+          recoveredFacts:
+            semanticRepair.recoveredFacts,
+        }
+      );
+    }
 
     const finalToEmails =
       deliveryPlan.toEmails;
@@ -4312,14 +4360,32 @@ CRITICAL RULES:
     }
 
     const providerStatus = Number(err?.status || 0);
+    const generationCode =
+      String(
+        err?.code ||
+        "petition_generation_failed"
+      );
+    const internalQualityFailure =
+      [
+        "PETITION_SEMANTIC_QUALITY_FAILED",
+        "PETITION_INCOMPLETE",
+      ].includes(
+        generationCode
+      );
     const temporarilyUnavailable =
-      err?.retryable === true ||
-      [408, 429, 500, 502, 503, 504].includes(providerStatus);
-    const responseStatus = providerStatus === 429
-      ? 429
-      : temporarilyUnavailable
-        ? 503
-        : 500;
+      !internalQualityFailure &&
+      (
+        err?.retryable === true ||
+        [408, 429, 500, 502, 503, 504].includes(
+          providerStatus
+        )
+      );
+    const responseStatus =
+      providerStatus === 429
+        ? 429
+        : temporarilyUnavailable
+          ? 503
+          : 500;
 
     console.error("Petition generation failed", {
       requestId: req.requestId,
@@ -4343,8 +4409,11 @@ CRITICAL RULES:
       code: err?.code || "petition_generation_failed",
       error: temporarilyUnavailable
         ? "The petition-writing service is temporarily busy. Please try again shortly."
-        : "We could not generate your petition. Please try again or contact support.",
-      retryable: temporarilyUnavailable,
+        : internalQualityFailure
+          ? "The draft could not safely preserve every material fact supplied. Please try again or contact support with this reference."
+          : "We could not generate your petition. Please try again or contact support.",
+      retryable:
+        temporarilyUnavailable,
       requestId: req.requestId,
     });
   }
