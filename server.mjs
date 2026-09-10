@@ -1398,26 +1398,13 @@ async function resolveComplaintRouting({
 
     source =
       "election_violence_safety_priority";
-  } else if (preSectorRouting.matched) {
-    sector =
-      preSectorRouting.sector ||
-      "civil_disputes";
-
-    source =
-      "pre_sector_jurisdiction";
-  } else if (
-    complaintPriority.sector ===
-      "anti_corruption" &&
-    complaintPriority.score > 0
-  ) {
-    sector =
-      "anti_corruption";
-
-    source =
-      "complaint_anti_corruption_priority";
   } else if (
     institutionPriority.matched
   ) {
+    /*
+     * A named/recognised institution is stronger evidence than generic
+     * narrative words such as "fraud", "loan", "debt" or "dispute".
+     */
     sector =
       institutionPriority.sector;
 
@@ -1431,6 +1418,25 @@ async function resolveComplaintRouting({
 
     source =
       "explicit_sector";
+  } else if (
+    complaintPriority.sector ===
+      "anti_corruption" &&
+    complaintPriority.score > 0
+  ) {
+    sector =
+      "anti_corruption";
+
+    source =
+      "complaint_anti_corruption_priority";
+  } else if (
+    preSectorRouting.matched
+  ) {
+    sector =
+      preSectorRouting.sector ||
+      "civil_disputes";
+
+    source =
+      "pre_sector_jurisdiction";
   } else {
     sector =
       await detectSectorSmart(
@@ -1451,8 +1457,8 @@ async function resolveComplaintRouting({
   }
 
   const rawJurisdictionRouting =
-    preSectorRouting.matched &&
-    !electionViolencePriority.matched
+    source ===
+      "pre_sector_jurisdiction"
       ? preSectorRouting
       : resolveJurisdictionRouting({
           sector,

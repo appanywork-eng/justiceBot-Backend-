@@ -16,14 +16,14 @@ import {
 
 assert.equal(
   NIGERIAN_BANKING_PROVIDERS.length,
-  42
+  43
 );
 
 assert.equal(
   Object.keys(
     VERIFIED_BANKING_CHANNELS
   ).length,
-  39
+  40
 );
 
 
@@ -151,7 +151,7 @@ const catalogue =
 
 assert.equal(
   catalogue.players.length,
-  42
+  43
 );
 
 

@@ -2,8 +2,8 @@
   "sector": "banking",
   "version": "3.2.0",
   "country": "Nigeria",
-  "last_updated": "2026-08-24",
-  "purpose": "Nationwide routing of complaints against Nigerian banks, microfinance institutions, payment-service banks, mobile-money operators and payment-service providers",
+  "last_updated": "2026-09-10",
+  "purpose": "Nationwide routing of complaints against Nigerian banks, microfinance institutions, payment-service banks, mobile-money operators, payment-service providers and non-bank digital lenders",
   "verification_policy": {
     "official_sources_only": true,
     "no_invented_contacts": true,
@@ -1258,6 +1258,47 @@
           "https://nomba.com/credit-terms-of-service"
         ],
         "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "giasun_tloan",
+      "name": "GIASUN TECHNOLOGY NIGERIA LIMITED",
+      "aliases": [
+        "GIASUN TECHNOLOGY NIGERIA LIMITED",
+        "GIASUN",
+        "Giasun Technology Nigeria Limited",
+        "Tloan",
+        "Tloan App",
+        "Tloan online app",
+        "NiceNaira",
+        "NiceNaira App",
+        "TCredit",
+        "TCredit App",
+        "PalmCash",
+        "PalmCash App",
+        "GreenCredit",
+        "GreenCredit App"
+      ],
+      "category": "digital_lender",
+      "contact": {
+        "emails": [
+          "GiasunTechnology@gmail.com",
+          "tingoserviceng@gmail.com"
+        ],
+        "website": "https://www.giasuntech.com/",
+        "complaint_portal": "https://www.giasuntech.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-09-10",
+        "scope": "provider_identity_direct_contact_and_fccpc_digital_lender_registration",
+        "direct_email_verified": true,
+        "complaint_form_verified": true,
+        "source_urls": [
+          "https://play.google.com/store/apps/details?id=com.tingo.credit.money.nigeria",
+          "https://apps.apple.com/ng/app/tloan/id6755294951",
+          "https://fccpc.gov.ng/registration-of-digital-money-lenders/"
+        ]
       }
     }
   ],
