@@ -33,7 +33,9 @@ READY_STATUS="$(
     --project="$PROJECT_ID" \
     --region="$REGION" \
     --platform=managed \
-    --format="value(status.conditions[?type='Ready'].status)"
+    --flatten='status.conditions[]' \
+    --format='value(status.conditions.type,status.conditions.status)' \
+    | bash scripts/select-cloud-run-traffic.sh condition Ready
 )"
 
 if [[ "$READY_STATUS" != "True" ]]; then

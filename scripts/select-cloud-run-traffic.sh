@@ -5,9 +5,9 @@ mode="${1:-}"
 target="${2:-}"
 
 case "$mode" in
-  tag|percent) ;;
+  tag|percent|condition) ;;
   *)
-    echo "usage: select-cloud-run-traffic.sh {tag|percent} VALUE" >&2
+    echo "usage: select-cloud-run-traffic.sh {tag|percent|condition} VALUE" >&2
     exit 2
     ;;
 esac
@@ -24,7 +24,7 @@ awk -F '\t' -v mode="$mode" -v target="$target" '
       found = 1
       exit
     }
-    if (mode == "percent" && $2 != "") {
+    if ((mode == "percent" || mode == "condition") && $2 != "") {
       print $2
       found = 1
       exit

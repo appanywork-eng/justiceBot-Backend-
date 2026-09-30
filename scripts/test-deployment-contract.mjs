@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 const cloudBuild = fs.readFileSync("cloudbuild.yaml", "utf8");
 const smoke = fs.readFileSync("scripts/smoke-release.mjs", "utf8");
@@ -55,6 +57,92 @@ const percentRecord = spawnSync(
 );
 assert.equal(percentRecord.status, 0, percentRecord.stderr);
 assert.equal(percentRecord.stdout.trim(), "petitiondesk-backend-00014-yud");
+
+const readyCondition = spawnSync(
+  "bash",
+  ["scripts/select-cloud-run-traffic.sh", "condition", "Ready"],
+  {
+    encoding: "utf8",
+    input: [
+      "ConfigurationsReady\tTrue",
+      "Ready\tTrue",
+      "RoutesReady\tTrue",
+    ].join("\n"),
+  }
+);
+assert.equal(readyCondition.status, 0, readyCondition.stderr);
+assert.equal(readyCondition.stdout.trim(), "True");
+
+const promotionTestRoot = fs.mkdtempSync(
+  path.join(os.tmpdir(), "petitiondesk-promotion-")
+);
+try {
+  const fakeBin = path.join(promotionTestRoot, "bin");
+  const commandLog = path.join(promotionTestRoot, "commands.log");
+  const trafficState = path.join(promotionTestRoot, "candidate-serving");
+  fs.mkdirSync(fakeBin);
+  fs.writeFileSync(
+    path.join(fakeBin, "gcloud"),
+    `#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "$*" >> "$PROMOTION_TEST_LOG"
+
+if [[ "$*" == *"run revisions describe"* ]]; then
+  if [[ "$*" == *"--flatten=status.conditions[]"* ]]; then
+    printf 'ConfigurationsReady\\tTrue\\nReady\\tTrue\\nRoutesReady\\tTrue\\n'
+  fi
+elif [[ "$*" == *"run services describe"* && "$*" == *"status.traffic.percent"* ]]; then
+  if [[ -f "$PROMOTION_TEST_STATE" ]]; then
+    printf '100\\tpetitiondesk-backend-00059-soc\\n'
+  else
+    printf '100\\tpetitiondesk-backend-00014-yud\\n'
+  fi
+elif [[ "$*" == *"run services describe"* && "$*" == *"value(status.url)"* ]]; then
+  printf 'https://petitiondesk.example.run.app\\n'
+elif [[ "$*" == *"run services update-traffic"* ]]; then
+  touch "$PROMOTION_TEST_STATE"
+else
+  printf 'Unexpected gcloud command: %s\\n' "$*" >&2
+  exit 3
+fi
+`,
+    { mode: 0o755 }
+  );
+  fs.writeFileSync(
+    path.join(fakeBin, "node"),
+    `#!/usr/bin/env bash
+set -euo pipefail
+printf 'node %s\\n' "$*" >> "$PROMOTION_TEST_LOG"
+`,
+    { mode: 0o755 }
+  );
+
+  const promotionResult = spawnSync(
+    "bash",
+    ["scripts/promote-cloud-run.sh"],
+    {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PATH: `${fakeBin}:${process.env.PATH}`,
+        PROJECT_ID: "petitiondesk-backend",
+        REGION: "europe-west1",
+        SERVICE: "petitiondesk-backend",
+        CANDIDATE_REVISION: "petitiondesk-backend-00059-soc",
+        CANDIDATE_URL: "https://candidate.example.run.app",
+        PROMOTION_TEST_LOG: commandLog,
+        PROMOTION_TEST_STATE: trafficState,
+      },
+    }
+  );
+  assert.equal(promotionResult.status, 0, promotionResult.stderr);
+  assert.match(
+    promotionResult.stdout,
+    /Final traffic revision: petitiondesk-backend-00059-soc/
+  );
+} finally {
+  fs.rmSync(promotionTestRoot, { recursive: true, force: true });
+}
 
 assert.match(cloudBuild, /node:22-bookworm/);
 assert.match(cloudBuild, /npm ci --ignore-scripts/);
