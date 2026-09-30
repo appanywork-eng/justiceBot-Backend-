@@ -1,9 +1,27 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 
 const cloudBuild = fs.readFileSync("cloudbuild.yaml", "utf8");
 const smoke = fs.readFileSync("scripts/smoke-release.mjs", "utf8");
 const promotion = fs.readFileSync("scripts/promote-cloud-run.sh", "utf8");
+
+const candidateTag = execFileSync(
+  "bash",
+  [
+    "scripts/cloud-run-candidate-tag.sh",
+    "petitiondesk-backend",
+    "61de1745-c83a-44e5-9b8d-620127d8fb33",
+  ],
+  { encoding: "utf8" }
+).trim();
+
+assert.equal(candidateTag, "candidate-61de1745c83a");
+assert.ok(
+  "petitiondesk-backend".length + candidateTag.length <= 63,
+  "Cloud Run service name and traffic tag must fit the platform limit."
+);
+assert.match(candidateTag, /^[a-z][a-z0-9-]*[a-z0-9]$/);
 
 assert.match(cloudBuild, /node:22-bookworm/);
 assert.match(cloudBuild, /npm ci --ignore-scripts/);
@@ -12,7 +30,8 @@ assert.match(cloudBuild, /npm audit --omit=dev/);
 assert.match(cloudBuild, /image_summary\.digest/);
 assert.match(cloudBuild, /@sha256:/);
 assert.match(cloudBuild, /--no-traffic/);
-assert.match(cloudBuild, /--tag=candidate-/);
+assert.match(cloudBuild, /cloud-run-candidate-tag\.sh/);
+assert.match(cloudBuild, /--tag="\$\$CANDIDATE_TAG"/);
 assert.match(cloudBuild, /latestCreatedRevisionName/);
 assert.match(cloudBuild, /candidate-url/);
 assert.match(cloudBuild, /EXPECTED_REVISION/);
@@ -53,5 +72,6 @@ assert.match(promotion, /Rollback completed/);
 console.log("✅ CLOUD BUILD VERIFIES INSTALL, TESTS AND PRODUCTION AUDIT BEFORE BUILD");
 console.log("✅ CANDIDATE DEPLOYS BY IMMUTABLE DIGEST WITH ZERO TRAFFIC");
 console.log("✅ CANDIDATE REVISION AND URL ARE CAPTURED AND SMOKED");
+console.log("✅ CANDIDATE TAGS FIT THE CLOUD RUN COMBINED-NAME LIMIT");
 console.log("✅ CLOUD BUILD CONTAINS NO PRODUCTION TRAFFIC MUTATION OR INLINE SECRETS");
 console.log("✅ PETITIONDESK DEPLOYMENT CONTRACT PASSED");

@@ -61,6 +61,7 @@ steps:
       - -ceu
       - |
         IMAGE_URI="$$(cat /workspace/image-uri)"
+        CANDIDATE_TAG="$$(bash scripts/cloud-run-candidate-tag.sh '${_SERVICE}' '$BUILD_ID')"
         gcloud run deploy '${_SERVICE}' \
           --image="$$IMAGE_URI" \
           --region='${_REGION}' \
@@ -74,11 +75,11 @@ steps:
           --min-instances=0 \
           --max-instances=3 \
           --no-traffic \
-          --tag=candidate-$BUILD_ID \
+          --tag="$$CANDIDATE_TAG" \
           --update-env-vars='FIRESTORE_ENABLED=true,FRONTEND_BASE_URL=https://petitiondesk.com,GEMINI_MODEL=${_GEMINI_MODEL},GEMINI_TIMEOUT_MS=${_GEMINI_TIMEOUT_MS},GEMINI_TOTAL_TIMEOUT_MS=${_GEMINI_TOTAL_TIMEOUT_MS},GEMINI_MAX_RETRIES=${_GEMINI_MAX_RETRIES},AI_SECTOR_CLASSIFY=false,PETITION_PRICE_NGN=${_PETITION_PRICE_NGN},FREE_ACCESS_ENABLED=${_FREE_ACCESS_ENABLED},FREE_PETITION_LIMIT=${_FREE_PETITION_LIMIT}'
 
         REVISION="$$(gcloud run services describe '${_SERVICE}' --region='${_REGION}' --format='value(status.latestCreatedRevisionName)')"
-        CANDIDATE_URL="$$(gcloud run services describe '${_SERVICE}' --region='${_REGION}' --format="value(status.traffic[?tag='candidate-$BUILD_ID'].url)")"
+        CANDIDATE_URL="$$(gcloud run services describe '${_SERVICE}' --region='${_REGION}' --format="value(status.traffic[?tag='$$CANDIDATE_TAG'].url)")"
         test -n "$$REVISION"
         test -n "$$CANDIDATE_URL"
         printf '%s' "$$REVISION" > /workspace/candidate-revision
