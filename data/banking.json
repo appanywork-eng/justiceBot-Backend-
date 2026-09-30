@@ -1,0 +1,1596 @@
+{
+  "sector": "banking",
+  "version": "3.2.0",
+  "country": "Nigeria",
+  "last_updated": "2026-09-10",
+  "purpose": "Nationwide routing of complaints against Nigerian banks, microfinance institutions, payment-service banks, mobile-money operators, payment-service providers and non-bank digital lenders",
+  "verification_policy": {
+    "official_sources_only": true,
+    "no_invented_contacts": true,
+    "unverified_email_routing_disabled": true,
+    "provider_first": true,
+    "regulator_after_unresolved_provider_complaint": true,
+    "nationwide_coverage": true,
+    "safe_unlisted_provider_fallback": true,
+    "verified_on": "2026-08-04"
+  },
+  "regulators": [
+    {
+      "key": "cbn_consumer_protection",
+      "name": "Central Bank of Nigeria (CBN)",
+      "aliases": [
+        "CBN",
+        "Central Bank of Nigeria",
+        "Consumer Protection Department",
+        "CBN Consumer Protection Department",
+        "Consumer Protection Department of the CBN",
+        "CPD"
+      ],
+      "contact": {
+        "emails": [
+          "cpd@cbn.gov.ng"
+        ],
+        "address": "Central Bank of Nigeria, Plot 33, Abubakar Tafawa Balewa Way, Central Business District, Cadastral Zone, Abuja, Federal Capital Territory, Nigeria",
+        "website": "https://www.cbn.gov.ng/supervision/cpdcomgt.html",
+        "complaint_guide": "https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html",
+        "complaint_portal": "https://complaintsportal.cbn.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "source_urls": [
+          "https://www.cbn.gov.ng/supervision/cpdcomgt.html",
+          "https://www.cbn.gov.ng/FinInc/FinLit/LodgeComplaint.html",
+          "https://www.cbn.gov.ng/Contacts/"
+        ]
+      }
+    }
+  ],
+  "players": [
+    {
+      "key": "access",
+      "name": "Access Bank PLC",
+      "aliases": [
+        "Access Bank PLC",
+        "Access Bank"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "contactcenter@accessbankplc.com"
+        ],
+        "escalation_emails": [
+          "cc-ombudsman@accessbankplc.com"
+        ],
+        "phones": [
+          "0700 300 0000",
+          "0201 280 2500",
+          "0201 271 2005",
+          "0201 227 3000"
+        ],
+        "website": "https://www.accessbankplc.com/help/complaint-channels",
+        "complaint_form": "https://www.accessbankplc.com/help/complaint-channels",
+        "escalation_page": "https://www.accessbankplc.com/contact-us/we-care",
+        "address": "Access Bank PLC Head Office, 14/15 Prince Alaba Abiodun, Oniru Road, Victoria Island, Lagos, Nigeria",
+        "app_guidance": "Complaints may also be submitted through Access Bank's official mobile applications, WhatsApp banking or any Access Bank branch."
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_direct_email_phone_address_complaint_channel_and_internal_ombudsman",
+        "direct_email_verified": true,
+        "escalation_email_verified": true,
+        "phone_numbers_verified": true,
+        "complaint_form_verified": true,
+        "address_verified": true,
+        "source_urls": [
+          "https://www.accessbankplc.com/help/complaint-channels",
+          "https://www.accessbankplc.com/contact-us/we-care"
+        ]
+      }
+    },
+    {
+      "key": "citibank",
+      "name": "Citibank Nigeria Limited",
+      "aliases": [
+        "Citibank Nigeria Limited",
+        "Citibank",
+        "Citi Nigeria",
+        "Citi"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "complaints.nigeria@citi.com"
+        ],
+        "website": "https://www.citigroup.com/global/about-us/global-presence/nigeria",
+        "complaint_portal": "https://www.citigroup.com/global/about-us/global-presence/nigeria"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.citigroup.com/global/about-us/global-presence/nigeria"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "ecobank",
+      "name": "Ecobank Nigeria Limited",
+      "aliases": [
+        "Ecobank Nigeria Limited",
+        "Ecobank",
+        "Ecobank Nigeria"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "ENGContactCentre@ecobank.com"
+        ],
+        "website": "https://www.ecobank.com/ng/personal-banking/contact-us",
+        "complaint_portal": "https://www.ecobank.com/ng/personal-banking/contact-us"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.ecobank.com/ng/personal-banking/contact-us",
+          "https://ecobank.com/ng/personal-banking/ways-to-bank/internet-banking"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "fidelity",
+      "name": "Fidelity Bank PLC",
+      "aliases": [
+        "Fidelity Bank PLC",
+        "Fidelity Bank"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "trueserve@fidelitybank.ng"
+        ],
+        "website": "https://www.fidelitybank.ng/contact-us/",
+        "complaint_portal": "https://www.fidelitybank.ng/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.fidelitybank.ng/contact-us/",
+          "https://fidelitybank.ng/fidelity-card/credit-card/fidelity-visa-platinum-credit-card/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "firstbank",
+      "name": "First Bank of Nigeria Limited",
+      "aliases": [
+        "First Bank of Nigeria Limited",
+        "FirstBank",
+        "First Bank",
+        "FBN"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "firstcontactcomplaints@firstbankgroup.com",
+          "complaints@firstbankgroup.com"
+        ],
+        "website": "https://complaints.firstbanknigeria.com",
+        "complaint_portal": "https://complaints.firstbanknigeria.com"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://complaints.firstbanknigeria.com",
+          "https://www.firstbanknigeria.com/contact/feedback-complaints/",
+          "https://www.firstbanknigeria.com/contact/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "fcmb",
+      "name": "First City Monument Bank Limited",
+      "aliases": [
+        "First City Monument Bank Limited",
+        "FCMB",
+        "First City Monument Bank",
+        "First City Monument Bank PLC"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "customerservice@fcmb.com"
+        ],
+        "website": "https://www.fcmb.com/customer-service.php",
+        "complaint_portal": "https://www.fcmb.com/customer-service.php"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.fcmb.com/customer-service.php"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "globus",
+      "name": "Globus Bank Limited",
+      "aliases": [
+        "Globus Bank Limited",
+        "Globus Bank"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "contactcenter@globusbank.com"
+        ],
+        "website": "https://www.globusbank.com/contact_us.html",
+        "complaint_portal": "https://www.globusbank.com/contact_us.html"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.globusbank.com/contact_us.html"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "gtbank",
+      "name": "Guaranty Trust Bank Limited",
+      "aliases": [
+        "Guaranty Trust Bank Limited",
+        "GTBank",
+        "GTB",
+        "Guaranty Trust Bank",
+        "Guaranty Trust Bank PLC"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "gtbankmailsupport@gtbank.com"
+        ],
+        "website": "https://www.gtbank.com/help-centre/complaints-enquiries",
+        "complaint_portal": "https://www.gtbank.com/help-centre"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.gtbank.com/help-centre/complaints-enquiries",
+          "https://www.gtbank.com/complaints-handling-policy"
+        ]
+      }
+    },
+    {
+      "key": "jaiz",
+      "name": "Jaiz Bank PLC",
+      "aliases": [
+        "Jaiz Bank PLC",
+        "Jaiz",
+        "Jaiz Bank"
+      ],
+      "category": "non_interest_bank",
+      "contact": {
+        "emails": [
+          "contactcentre@jaizbankplc.com"
+        ],
+        "website": "https://jaizonline.jaizbankplc.com/login",
+        "complaint_portal": "https://jaizonline.jaizbankplc.com/login"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://jaizonline.jaizbankplc.com/login"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "keystone",
+      "name": "Keystone Bank Limited",
+      "aliases": [
+        "Keystone Bank Limited",
+        "Keystone Bank"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "contactcentre@keystonebankng.com"
+        ],
+        "website": "https://www.keystonebankng.com/help-desk/complaints-channel/",
+        "complaint_portal": "https://www.keystonebankng.com/help-desk/complaints-channel/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.keystonebankng.com/help-desk/complaints-channel/",
+          "https://www.keystonebankng.com/help-desk/customer-protection-information/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "lotus",
+      "name": "Lotus Bank Limited",
+      "aliases": [
+        "Lotus Bank Limited",
+        "Lotus",
+        "Lotus Bank"
+      ],
+      "category": "non_interest_bank",
+      "contact": {
+        "emails": [
+          "complaints@lotusbank.com",
+          "support@lotusbank.com"
+        ],
+        "website": "https://www.lotusbank.com/customer-support",
+        "complaint_portal": "https://www.lotusbank.com/customer-support"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.lotusbank.com/customer-support"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "nova",
+      "name": "NOVA Bank Limited",
+      "aliases": [
+        "NOVA Bank Limited",
+        "NOVA Bank",
+        "Nova Bank",
+        "Nova Merchant Bank",
+        "Nova Merchant Bank Limited"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "support@novabank.ng",
+          "info@novabank.ng"
+        ],
+        "website": "https://www.novabank.ng/contact/",
+        "complaint_portal": "https://www.novabank.ng/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.novabank.ng/contact/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "optimus",
+      "name": "Optimus Bank Limited",
+      "aliases": [
+        "Optimus Bank Limited",
+        "Optimus Bank"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "opticonnect@optimusbank.com"
+        ],
+        "website": "https://ibank.optimusbank.com/support",
+        "complaint_portal": "https://ibank.optimusbank.com/support"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://ibank.optimusbank.com/support",
+          "https://www.optimusbank.com/security-center"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "parallex",
+      "name": "Parallex Bank Limited",
+      "aliases": [
+        "Parallex Bank Limited",
+        "Parallex Bank",
+        "Parallex"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "customercare@parallexbank.com",
+          "info@parallexbank.com"
+        ],
+        "website": "https://www.parallexbank.com/help",
+        "complaint_portal": "https://www.parallexbank.com/help"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.parallexbank.com/help"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "polaris",
+      "name": "Polaris Bank Limited",
+      "aliases": [
+        "Polaris Bank Limited",
+        "Polaris Bank"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "yescenter@polarisbanklimited.com"
+        ],
+        "website": "https://www.polarisbanklimited.com/",
+        "complaint_portal": "https://www.polarisbanklimited.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.polarisbanklimited.com/",
+          "https://portal.polarisbanklimited.com/bvn-nin-account-linking/initiate-process"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "premiumtrust",
+      "name": "PremiumTrust Bank Limited",
+      "aliases": [
+        "PremiumTrust Bank Limited",
+        "PremiumTrust Bank",
+        "Premium Trust Bank",
+        "PremiumTrust"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "contactpremium@premiumtrustbank.com"
+        ],
+        "website": "https://premiumtrustbank.com/faq/",
+        "complaint_portal": "https://premiumtrustbank.com/faq/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://premiumtrustbank.com/faq/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "providus",
+      "name": "Providus Bank Limited",
+      "aliases": [
+        "Providus Bank Limited",
+        "Providus Bank",
+        "Providus"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "businessconcierge@providusbank.com"
+        ],
+        "website": "https://www.providusbank.com/complaints",
+        "complaint_portal": "https://www.providusbank.com/complaints"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.providusbank.com/complaints"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "stanbic",
+      "name": "Stanbic IBTC Bank Limited",
+      "aliases": [
+        "Stanbic IBTC Bank Limited",
+        "Stanbic IBTC",
+        "Stanbic",
+        "Stanbic IBTC Bank PLC"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "CustomerCareNigeria@stanbicibtc.com"
+        ],
+        "phones": [
+          "0201 2709 676",
+          "0201 4222 222",
+          "+234 700 909 9099"
+        ],
+        "website": "https://www.stanbicibtcbank.com/nigeriabank/personal/contact-us/contact-us-details",
+        "complaint_form": "https://www.stanbicibtcbank.com/nigeriabank/personal/help/General-FAQs/complaints-and-enquiries",
+        "address": "Stanbic IBTC Towers, Walter Carrington Crescent, Victoria Island, Lagos, Nigeria",
+        "app_guidance": "Complaints may also be submitted through the user-feedback feature in the Stanbic IBTC mobile application."
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_direct_email_phone_address_and_complaint_form",
+        "direct_email_verified": true,
+        "phone_numbers_verified": true,
+        "complaint_form_verified": true,
+        "address_verified": true,
+        "source_urls": [
+          "https://www.stanbicibtcbank.com/nigeriabank/personal/help/General-FAQs/complaints-and-enquiries",
+          "https://www.stanbicibtcbank.com/nigeriabank/personal/contact-us/contact-us-details",
+          "https://www.stanbicibtcbank.com/nigeriabank/personal/contact-us"
+        ]
+      }
+    },
+    {
+      "key": "standard_chartered",
+      "name": "Standard Chartered Bank Nigeria Limited",
+      "aliases": [
+        "Standard Chartered Bank Nigeria Limited",
+        "Standard Chartered",
+        "Standard Chartered Nigeria",
+        "SCB"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "clientcare.ng@sc.com"
+        ],
+        "website": "https://www.sc.com/ng/contact-us/",
+        "complaint_portal": "https://www.sc.com/ng/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.sc.com/ng/contact-us/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "sterling",
+      "name": "Sterling Bank Limited",
+      "aliases": [
+        "Sterling Bank Limited",
+        "Sterling Bank",
+        "Sterling Bank PLC"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "customercare@sterling.ng"
+        ],
+        "website": "https://sterling.ng/complaint/",
+        "complaint_portal": "https://sterling.ng/complaint/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://sterling.ng/complaint/",
+          "https://sterling.ng/support/contact-us/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "suntrust",
+      "name": "SunTrust Bank Nigeria Limited",
+      "aliases": [
+        "SunTrust Bank Nigeria Limited",
+        "SunTrust Bank",
+        "SunTrust"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "helpdesk@suntrustng.com"
+        ],
+        "website": "https://suntrustng.com/contact-us/",
+        "complaint_portal": "https://suntrustng.com/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://suntrustng.com/contact-us/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "tajbank",
+      "name": "TAJBank Limited",
+      "aliases": [
+        "TAJBank Limited",
+        "TAJBank",
+        "TAJ Bank"
+      ],
+      "category": "non_interest_bank",
+      "contact": {
+        "emails": [
+          "tajconnect@tajbank.com"
+        ],
+        "website": "https://tajbank.com/contact/",
+        "complaint_portal": "https://tajbank.com/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://tajbank.com/contact/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "alternative_bank",
+      "name": "The Alternative Bank Limited",
+      "aliases": [
+        "The Alternative Bank Limited",
+        "The Alternative Bank",
+        "Alternative Bank",
+        "AltBank",
+        "Alt Bank"
+      ],
+      "category": "non_interest_bank",
+      "contact": {
+        "emails": [
+          "customercare@altbank.ng"
+        ],
+        "website": "https://altbank.ng/complaints/",
+        "complaint_portal": "https://altbank.ng/complaints/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://altbank.ng/complaints/",
+          "https://altmobile.altbank.ng/contact",
+          "https://altbank.ng/contact-us/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "titan",
+      "name": "Titan Trust Bank Limited",
+      "aliases": [
+        "Titan Trust Bank Limited",
+        "Titan Trust Bank",
+        "Titan Bank",
+        "Titan"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "Contactcentre@titantrustbank.com"
+        ],
+        "website": "https://titantrustbank.com/contact-us/",
+        "complaint_portal": "https://titantrustbank.com/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://titantrustbank.com/contact-us/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "union",
+      "name": "Union Bank of Nigeria PLC",
+      "aliases": [
+        "Union Bank of Nigeria PLC",
+        "Union Bank",
+        "Union Bank Nigeria"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "customerservice@unionbankng.com"
+        ],
+        "website": "https://unionbankng.com/support/",
+        "complaint_portal": "https://unionbankng.com/support/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://unionbankng.com/support/",
+          "https://unionbankng.com/contact-us/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "unity",
+      "name": "Unity Bank PLC",
+      "aliases": [
+        "Unity Bank PLC",
+        "Unity Bank"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "we_care@unitybankng.com"
+        ],
+        "website": "https://www.unitybankng.com/contact",
+        "complaint_portal": "https://www.unitybankng.com/contact"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.unitybankng.com/contact"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "uba",
+      "name": "United Bank for Africa PLC",
+      "aliases": [
+        "United Bank for Africa PLC",
+        "UBA",
+        "United Bank for Africa",
+        "UBA Nigeria"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "cfc@ubagroup.com"
+        ],
+        "website": "https://www.ubagroup.com/nigeria/help/contact-us/",
+        "complaint_portal": "https://www.ubagroup.com/nigeria/help/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.ubagroup.com/nigeria/help/contact-us/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "wema",
+      "name": "Wema Bank PLC",
+      "aliases": [
+        "Wema Bank PLC",
+        "Wema Bank",
+        "ALAT",
+        "ALAT by Wema"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "purpleconnect@wemabank.com"
+        ],
+        "website": "https://www.wemabank.com/contact-us",
+        "complaint_portal": "https://www.wemabank.com/contact-us"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.wemabank.com/contact-us"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "zenith",
+      "name": "Zenith Bank PLC",
+      "aliases": [
+        "Zenith Bank PLC",
+        "Zenith Bank",
+        "Zenith"
+      ],
+      "category": "deposit_money_bank",
+      "contact": {
+        "emails": [
+          "zenithdirect@zenithbank.com"
+        ],
+        "website": "https://www.zenithbank.com/",
+        "complaint_portal": "https://www.zenithbank.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.zenithbank.com/",
+          "https://www.zenithbank.com/corporate-banking/loans-investment"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "9psb",
+      "name": "9 Payment Service Bank (9PSB)",
+      "aliases": [
+        "9 Payment Service Bank (9PSB)",
+        "9PSB",
+        "9 Payment Service Bank"
+      ],
+      "category": "payment_service_bank",
+      "contact": {
+        "emails": [
+          "hello@9psb.com.ng"
+        ],
+        "website": "https://9psb.com.ng/contact/",
+        "complaint_portal": "https://9psb.com.ng/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://9psb.com.ng/contact/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "hope_psb",
+      "name": "Hope Payment Service Bank",
+      "aliases": [
+        "Hope Payment Service Bank",
+        "Hope PSB",
+        "Hopepsbank"
+      ],
+      "category": "payment_service_bank",
+      "contact": {
+        "emails": [
+          "customercare@hopepsbank.com",
+          "info@hopepsbank.com"
+        ],
+        "website": "https://support.hopepsbank.com/",
+        "complaint_portal": "https://support.hopepsbank.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://support.hopepsbank.com/",
+          "https://hopepsbank.com/contact"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "smartcash",
+      "name": "SmartCash Payment Service Bank",
+      "aliases": [
+        "SmartCash Payment Service Bank",
+        "SmartCash",
+        "SmartCash PSB",
+        "Smart Cash"
+      ],
+      "category": "payment_service_bank",
+      "contact": {
+        "emails": [
+          "customerservice@smartcashpsb.ng"
+        ],
+        "website": "https://smartcashpsb.ng/",
+        "complaint_portal": "https://smartcashpsb.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://smartcashpsb.ng/"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "opay",
+      "name": "OPay Digital Services Limited",
+      "aliases": [
+        "OPay Digital Services Limited",
+        "OPay",
+        "O Pay",
+        "Paycom Nigeria",
+        "Paycom Nigeria Limited"
+      ],
+      "category": "mobile_money_operator",
+      "contact": {
+        "emails": [
+          "customerservice@opay-inc.com"
+        ],
+        "website": "https://play.google.com/store/apps/details?id=team.opay.pay",
+        "complaint_portal": "https://play.google.com/store/apps/details?id=team.opay.pay"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://play.google.com/store/apps/details?id=team.opay.pay"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "palmpay",
+      "name": "PalmPay Limited",
+      "aliases": [
+        "PalmPay Limited",
+        "PalmPay",
+        "Palm Pay",
+        "PalmPay Nigeria"
+      ],
+      "category": "mobile_money_operator",
+      "contact": {
+        "emails": [
+          "support@palmpay.com"
+        ],
+        "website": "https://www.palmpay.com/company/contact/",
+        "complaint_portal": "https://www.palmpay.com/company/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.palmpay.com/company/contact/",
+          "https://play.google.com/store/apps/details?id=com.transsnet.palmpay",
+          "https://h5.palmpay.app/h5/conditions/ng/palmpay"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "paga",
+      "name": "Pagatech Limited (Paga)",
+      "aliases": [
+        "Pagatech Limited (Paga)",
+        "Paga",
+        "myPaga",
+        "Paga Nigeria",
+        "Pagatech",
+        "Pagatech Limited"
+      ],
+      "category": "mobile_money_operator",
+      "contact": {
+        "emails": [
+          "help@paga.com"
+        ],
+        "website": "https://help.paga.com/support/solutions/articles/35000283460-how-do-i-contact-customer-support-for-card-related-issues-",
+        "complaint_portal": "https://help.paga.com/support/solutions/articles/35000283460-how-do-i-contact-customer-support-for-card-related-issues-"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://help.paga.com/support/solutions/articles/35000283460-how-do-i-contact-customer-support-for-card-related-issues-"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "moniepoint",
+      "name": "Moniepoint Microfinance Bank Limited",
+      "aliases": [
+        "Moniepoint Microfinance Bank Limited",
+        "Moniepoint",
+        "Moniepoint MFB",
+        "TeamApt",
+        "TeamApt Limited"
+      ],
+      "category": "microfinance_and_payment_services",
+      "contact": {
+        "emails": [
+          "support@moniepoint.com"
+        ],
+        "website": "https://moniepoint.com/ng/contact",
+        "complaint_portal": "https://moniepoint.com/ng/contact"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://moniepoint.com/ng/contact"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "flutterwave",
+      "name": "Flutterwave Technology Solutions Limited",
+      "aliases": [
+        "Flutterwave Technology Solutions Limited",
+        "Flutterwave",
+        "Flutter Wave"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": [
+          "hi@flutterwavego.com"
+        ],
+        "website": "https://flutterwave.com/ng/support/submit-request",
+        "complaint_portal": "https://flutterwave.com/ng/support/submit-request"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://flutterwave.com/ng/support/submit-request",
+          "https://flutterwave.com/ng/payment-protection-promise",
+          "https://flutterwave.com/ng/contact-sales"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "paystack",
+      "name": "Paystack Payment Limited",
+      "aliases": [
+        "Paystack Payment Limited",
+        "Paystack",
+        "Paystack Payments",
+        "Paystack Nigeria"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": [
+          "support@paystack.com"
+        ],
+        "website": "https://paystack.com/contact/support",
+        "complaint_portal": "https://paystack.com/contact/support"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://paystack.com/contact/support",
+          "https://support.paystack.com/en/articles/2127554"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "interswitch",
+      "name": "Interswitch Limited",
+      "aliases": [
+        "Interswitch Limited",
+        "Interswitch",
+        "Quickteller",
+        "Quick Teller"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": [
+          "support@interswitchgroup.com"
+        ],
+        "website": "https://help.interswitchgroup.com/",
+        "complaint_portal": "https://help.interswitchgroup.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://help.interswitchgroup.com/",
+          "https://selfservice.interswitchgroup.com/support/solutions/articles/48001210990-i-want-reversal-i-have-not-gotten-my-funds-back-i-have-not-gotten-reversal"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "remita",
+      "name": "Remita Payment Service Limited",
+      "aliases": [
+        "Remita Payment Service Limited",
+        "Remita",
+        "SystemSpecs Remita"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": [
+          "support@remita.net"
+        ],
+        "website": "https://support.remita.net/portal/en/home",
+        "complaint_portal": "https://support.remita.net/portal/en/home"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://support.remita.net/portal/en/home"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "veendhq",
+      "name": "VeendHQ Limited",
+      "aliases": [
+        "VeendHQ Limited",
+        "VeendHQ",
+        "Veend HQ",
+        "Veend",
+        "VeendHQ Remita Payroll Loan",
+        "Veend Remita Payroll Loan"
+      ],
+      "category": "digital_lender",
+      "contact": {
+        "emails": [
+          "support@veendhq.com"
+        ],
+        "website": "https://veendhq.com/about",
+        "complaint_portal": "https://veendhq.com/about"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-24",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://veendhq.com/about",
+          "https://veendhq.com/products/remita-payroll-loan",
+          "https://veendhq.com/resources/faq"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "nomba",
+      "name": "Nomba Financial Services Limited",
+      "aliases": [
+        "Nomba Financial Services Limited",
+        "Nomba",
+        "Nomba Financial Services",
+        "Kudi",
+        "Kudi Nigeria"
+      ],
+      "category": "payment_service_provider",
+      "contact": {
+        "emails": [
+          "support@nomba.com"
+        ],
+        "website": "https://nomba.com/",
+        "complaint_portal": "https://nomba.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-04",
+        "scope": "provider_identity_and_direct_complaint_contact",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://nomba.com/",
+          "https://nomba.com/credit-terms-of-service"
+        ],
+        "complaint_form_verified": true
+      }
+    },
+    {
+      "key": "giasun_tloan",
+      "name": "GIASUN TECHNOLOGY NIGERIA LIMITED",
+      "aliases": [
+        "GIASUN TECHNOLOGY NIGERIA LIMITED",
+        "GIASUN",
+        "Giasun Technology Nigeria Limited",
+        "Tloan",
+        "Tloan App",
+        "Tloan online app",
+        "NiceNaira",
+        "NiceNaira App",
+        "TCredit",
+        "TCredit App",
+        "PalmCash",
+        "PalmCash App",
+        "GreenCredit",
+        "GreenCredit App"
+      ],
+      "category": "digital_lender",
+      "contact": {
+        "emails": [
+          "GiasunTechnology@gmail.com",
+          "tingoserviceng@gmail.com"
+        ],
+        "website": "https://www.giasuntech.com/",
+        "complaint_portal": "https://www.giasuntech.com/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-09-10",
+        "scope": "provider_identity_direct_contact_and_fccpc_digital_lender_registration",
+        "direct_email_verified": true,
+        "complaint_form_verified": true,
+        "source_urls": [
+          "https://play.google.com/store/apps/details?id=com.tingo.credit.money.nigeria",
+          "https://apps.apple.com/ng/app/tloan/id6755294951",
+          "https://fccpc.gov.ng/registration-of-digital-money-lenders/"
+        ]
+      }
+    }
+  ],
+  "routing_rules": {
+    "first_complaint": {
+      "recipient": "The responsible bank or financial-service provider",
+      "delivery": "The provider's official complaints unit, branch, application support, website or verified complaint email",
+      "requirement": "Obtain and retain the institution's complaint reference, ticket or written acknowledgement."
+    },
+    "unresolved_complaint": {
+      "recipient": "Central Bank of Nigeria Consumer Protection Department",
+      "also_notify": "The responsible financial institution",
+      "delivery": "Verified CBN complaint email, official complaint portal or written filing through a CBN branch",
+      "applicable_timeline": "Generally two weeks after first complaining to the institution; certain excess-charge and loan complaints may have an applicable thirty-day resolution period.",
+      "requirement": "Include evidence of the earlier complaint, its reference, the disputed amount and relevant supporting documents."
+    },
+    "unknown_institution": {
+      "rule": "A financial institution not explicitly listed may still be routed safely using the organisation name supplied by the complainant.",
+      "direct_email_rule": "No email may be invented or inferred for an unlisted institution."
+    },
+    "restricted_routes": [
+      "EFCC and the Nigeria Police are not automatically copied on ordinary banking service disputes.",
+      "FCCPC, SERVICOM and NHRC are not automatically copied where the complaint falls within the CBN consumer-redress process.",
+      "A claim of fraud does not justify inventing criminal liability or declaring a person guilty.",
+      "The petition must not contain a PIN, password, one-time password, full card security code or internet-banking credential."
+    ]
+  },
+  "routing_keywords": [
+    "bank",
+    "banking",
+    "bank account",
+    "financial institution",
+    "microfinance bank",
+    "mfb",
+    "payment service bank",
+    "psb",
+    "mobile money",
+    "mobile wallet",
+    "fintech",
+    "payment provider",
+    "payment processor",
+    "account balance",
+    "account restriction",
+    "account freeze",
+    "frozen account",
+    "blocked account",
+    "unauthorised debit",
+    "unauthorized debit",
+    "unauthorised transaction",
+    "unauthorized transaction",
+    "failed transfer",
+    "pending transfer",
+    "transfer reversal",
+    "reversal",
+    "duplicate debit",
+    "wrong debit",
+    "atm debit",
+    "atm dispute",
+    "pos debit",
+    "pos dispute",
+    "card fraud",
+    "card transaction",
+    "chargeback",
+    "merchant dispute",
+    "ussd debit",
+    "mobile app debit",
+    "internet banking",
+    "loan complaint",
+    "loan harassment",
+    "excess charge",
+    "bank charge",
+    "interest charge",
+    "credit facility",
+    "kyc",
+    "bvn",
+    "nin linkage",
+    "phishing",
+    "banking fraud",
+    "wallet fraud",
+    "scam transfer",
+    "cbn",
+    "consumer protection department",
+    "cpd",
+    "kuda",
+    "fairmoney",
+    "fair money",
+    "carbon",
+    "carbon finance",
+    "central bank of nigeria (cbn)",
+    "central bank of nigeria",
+    "cbn consumer protection department",
+    "consumer protection department of the cbn",
+    "access bank plc",
+    "access bank",
+    "citibank nigeria limited",
+    "citibank",
+    "citi nigeria",
+    "citi",
+    "ecobank nigeria limited",
+    "ecobank",
+    "ecobank nigeria",
+    "fidelity bank plc",
+    "fidelity bank",
+    "first bank of nigeria limited",
+    "firstbank",
+    "first bank",
+    "fbn",
+    "first city monument bank limited",
+    "fcmb",
+    "first city monument bank",
+    "first city monument bank plc",
+    "globus bank limited",
+    "globus bank",
+    "guaranty trust bank limited",
+    "gtbank",
+    "gtb",
+    "guaranty trust bank",
+    "guaranty trust bank plc",
+    "jaiz bank plc",
+    "jaiz",
+    "jaiz bank",
+    "keystone bank limited",
+    "keystone bank",
+    "lotus bank limited",
+    "lotus",
+    "lotus bank",
+    "nova bank limited",
+    "nova bank",
+    "nova merchant bank",
+    "nova merchant bank limited",
+    "optimus bank limited",
+    "optimus bank",
+    "parallex bank limited",
+    "parallex bank",
+    "parallex",
+    "polaris bank limited",
+    "polaris bank",
+    "premiumtrust bank limited",
+    "premiumtrust bank",
+    "premium trust bank",
+    "premiumtrust",
+    "providus bank limited",
+    "providus bank",
+    "providus",
+    "stanbic ibtc bank limited",
+    "stanbic ibtc",
+    "stanbic",
+    "stanbic ibtc bank plc",
+    "standard chartered bank nigeria limited",
+    "standard chartered",
+    "standard chartered nigeria",
+    "scb",
+    "sterling bank limited",
+    "sterling bank",
+    "sterling bank plc",
+    "suntrust bank nigeria limited",
+    "suntrust bank",
+    "suntrust",
+    "tajbank limited",
+    "tajbank",
+    "taj bank",
+    "the alternative bank limited",
+    "the alternative bank",
+    "alternative bank",
+    "altbank",
+    "alt bank",
+    "titan trust bank limited",
+    "titan trust bank",
+    "titan bank",
+    "titan",
+    "union bank of nigeria plc",
+    "union bank",
+    "union bank nigeria",
+    "unity bank plc",
+    "unity bank",
+    "united bank for africa plc",
+    "uba",
+    "united bank for africa",
+    "uba nigeria",
+    "wema bank plc",
+    "wema bank",
+    "alat",
+    "alat by wema",
+    "zenith bank plc",
+    "zenith bank",
+    "zenith",
+    "9 payment service bank (9psb)",
+    "9psb",
+    "9 payment service bank",
+    "hope payment service bank",
+    "hope psb",
+    "hopepsbank",
+    "smartcash payment service bank",
+    "smartcash",
+    "smartcash psb",
+    "smart cash",
+    "opay digital services limited",
+    "opay",
+    "o pay",
+    "paycom nigeria",
+    "paycom nigeria limited",
+    "palmpay limited",
+    "palmpay",
+    "palm pay",
+    "palmpay nigeria",
+    "pagatech limited (paga)",
+    "paga",
+    "mypaga",
+    "paga nigeria",
+    "pagatech",
+    "pagatech limited",
+    "moniepoint microfinance bank limited",
+    "moniepoint",
+    "moniepoint mfb",
+    "teamapt",
+    "teamapt limited",
+    "flutterwave technology solutions limited",
+    "flutterwave",
+    "flutter wave",
+    "paystack payment limited",
+    "paystack",
+    "paystack payments",
+    "paystack nigeria",
+    "interswitch limited",
+    "interswitch",
+    "quickteller",
+    "quick teller",
+    "remita payment service limited",
+    "remita",
+    "systemspecs remita",
+    "nomba financial services limited",
+    "nomba",
+    "nomba financial services",
+    "kudi",
+    "kudi nigeria",
+    "veendhq limited",
+    "veendhq",
+    "veend hq",
+    "veend",
+    "veendhq remita payroll loan",
+    "veend remita payroll loan"
+  ],
+  "evidence_keywords": [
+    "financial institution name",
+    "account number",
+    "masked card number",
+    "transaction reference",
+    "complaint reference",
+    "transaction date",
+    "transaction amount",
+    "statement of account",
+    "transfer receipt",
+    "pos receipt",
+    "atm receipt",
+    "screenshots",
+    "loan agreement",
+    "charge schedule",
+    "correspondence"
+  ],
+  "evidence_checklist": [
+    "Name of the financial institution",
+    "Account or wallet identifier, safely masked where appropriate",
+    "Date, amount and reference of the disputed transaction",
+    "Institution complaint ticket or reference",
+    "Evidence showing that the institution was contacted first",
+    "Relevant statement, receipt or screenshot",
+    "Clear timeline of events",
+    "Relief requested",
+    "Never include a PIN, password, OTP or full card security code"
+  ],
+  "nationwide_routing_notes": [
+    "The banking complaint process applies throughout all 36 states and the Federal Capital Territory.",
+    "The customer should normally complain to the financial institution first.",
+    "Unresolved complaints against institutions within the CBN's regulatory purview may be escalated to the CBN Consumer Protection Department.",
+    "CBN written complaints may be filed through CBN branches nationwide.",
+    "Only official-source-verified direct contact details may be exposed.",
+    "Unlisted banks, microfinance banks and financial providers remain routable by their supplied organisation names without inventing email addresses."
+  ],
+  "security_rules": {
+    "prevent_double_unlock": true,
+    "no_unverified_contact_route": true,
+    "no_premature_regulatory_escalation": true,
+    "complaint_stage_consistency_required": true,
+    "preserve_user_amounts": true,
+    "remove_unsupported_rates_and_penalties": true,
+    "forbid_sensitive_credentials": [
+      "PIN",
+      "password",
+      "OTP",
+      "CVV",
+      "full card number",
+      "internet banking credential"
+    ]
+  }
+}

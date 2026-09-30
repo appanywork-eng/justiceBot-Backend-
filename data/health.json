@@ -1,0 +1,379 @@
+{
+  "sector": "health",
+  "country": "Nigeria",
+  "last_updated": "2026-08-02",
+  "version": "2.0.0",
+  "verification_policy": {
+    "official_sources_only": true,
+    "block_unverified_direct_contacts": true,
+    "direct_contact_requires_verification": true
+  },
+  "keywords": [
+    "health",
+    "healthcare",
+    "hospital",
+    "clinic",
+    "medical centre",
+    "medical center",
+    "doctor",
+    "dentist",
+    "nurse",
+    "midwife",
+    "pharmacist",
+    "pharmacy",
+    "laboratory",
+    "medical laboratory",
+    "HMO",
+    "health insurance",
+    "NHIA",
+    "NHIS",
+    "medical negligence",
+    "treatment refusal",
+    "emergency care refusal",
+    "patient detained",
+    "hospital bill",
+    "counterfeit drug",
+    "fake medicine",
+    "expired drug",
+    "adverse drug reaction",
+    "unlicensed doctor",
+    "unlicensed hospital",
+    "unlicensed pharmacy",
+    "unlicensed laboratory",
+    "medical report",
+    "lab result",
+    "ambulance",
+    "diagnosis",
+    "surgery",
+    "prescription",
+    "enrollee",
+    "capitation",
+    "referral authorization",
+    "referral authorisation",
+    "National Health Insurance Authority (NHIA)",
+    "National Health Insurance",
+    "National Health Insurance Scheme",
+    "National Health Insurance Authority",
+    "Medical and Dental Council of Nigeria (MDCN)",
+    "MDCN",
+    "Medical and Dental Council",
+    "Medical and Dental Council of Nigeria",
+    "Doctors Licensing Nigeria",
+    "Nursing and Midwifery Council of Nigeria (NMCN)",
+    "NMCN",
+    "Nursing and Midwifery Council",
+    "Nursing and Midwifery Council of Nigeria",
+    "Nurses Licensing Nigeria",
+    "Pharmacy Council of Nigeria (PCN)",
+    "PCN",
+    "Pharmacy Council",
+    "Pharmacy Council of Nigeria",
+    "Pharmacists Council of Nigeria",
+    "Pharmacists Licensing Nigeria",
+    "Medical Laboratory Science Council of Nigeria (MLSCN)",
+    "MLSCN",
+    "Medical Laboratory Science Council",
+    "Medical Laboratory Science Council of Nigeria",
+    "Lab Licensing Nigeria",
+    "National Agency for Food and Drug Administration and Control (NAFDAC)",
+    "NAFDAC",
+    "National Agency for Food and Drug Administration and Control",
+    "Food and Drug Administration Nigeria",
+    "National Human Rights Commission (NHRC)",
+    "NHRC",
+    "National Human Rights Commission",
+    "National Human Rights Commission Nigeria",
+    "Federal Competition and Consumer Protection Commission (FCCPC)",
+    "FCCPC",
+    "Federal Competition and Consumer Protection Commission",
+    "Consumer Protection Commission"
+  ],
+  "routing_policy": {
+    "provider_first": true,
+    "first_stage": "Send the complaint first to the responsible hospital, clinic, HMO, pharmacy, laboratory or healthcare provider.",
+    "unresolved_health_insurance": "National Health Insurance Authority (NHIA)",
+    "doctor_or_dentist_misconduct": "Medical and Dental Council of Nigeria (MDCN)",
+    "nursing_or_midwifery_misconduct": "Nursing and Midwifery Council of Nigeria (NMCN)",
+    "pharmacy_misconduct": "Pharmacy Council of Nigeria (PCN)",
+    "laboratory_misconduct": "Medical Laboratory Science Council of Nigeria (MLSCN)",
+    "unsafe_or_falsified_medical_products": "National Agency for Food and Drug Administration and Control (NAFDAC)",
+    "serious_healthcare_rights_violation": "National Human Rights Commission (NHRC)",
+    "unresolved_consumer_service_complaint": "Federal Competition and Consumer Protection Commission (FCCPC)"
+  },
+  "regulators_and_core_agencies": [
+    {
+      "key": "nhia_insurance_escalation",
+      "name": "National Health Insurance Authority (NHIA)",
+      "aliases": [
+        "National Health Insurance Authority (NHIA)",
+        "NHIA",
+        "NHIS",
+        "National Health Insurance",
+        "National Health Insurance Scheme",
+        "National Health Insurance Authority"
+      ],
+      "contact": {
+        "emails": [
+          "info@nhia.gov.ng"
+        ],
+        "address": "297 Shehu Yar'adua Way, Utako District, Abuja, Nigeria",
+        "website": "https://www.nhia.gov.ng/",
+        "contact_page": "https://www.nhia.gov.ng/contact-us/",
+        "enrollee_charter": "https://www.nhia.gov.ng/enrollee-charter/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.nhia.gov.ng/contact-us/",
+          "https://www.nhia.gov.ng/enrollee-charter/"
+        ]
+      }
+    },
+    {
+      "key": "mdcn_practitioner_complaint",
+      "name": "Medical and Dental Council of Nigeria (MDCN)",
+      "aliases": [
+        "Medical and Dental Council of Nigeria (MDCN)",
+        "MDCN",
+        "Medical and Dental Council",
+        "Medical and Dental Council of Nigeria",
+        "Doctors Licensing Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "info@mdcn.gov.ng"
+        ],
+        "address": "Plot 1102, Cadastral Zone B11, Off Oladipo Diya Road, Kaura District, Abuja, Nigeria",
+        "website": "https://mdcn.gov.ng/",
+        "complaint_portal": "https://mdcn.gov.ng/contact-us"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://mdcn.gov.ng/",
+          "https://mdcn.gov.ng/contact-us"
+        ]
+      }
+    },
+    {
+      "key": "nmcn_nursing_complaint",
+      "name": "Nursing and Midwifery Council of Nigeria (NMCN)",
+      "aliases": [
+        "Nursing and Midwifery Council of Nigeria (NMCN)",
+        "NMCN",
+        "Nursing and Midwifery Council",
+        "Nursing and Midwifery Council of Nigeria",
+        "Nurses Licensing Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "info@nmcn.gov.ng"
+        ],
+        "address": "Plot 713, Cadastral Zone, Life Camp, Gwarinpa, Abuja, Nigeria",
+        "website": "https://www.nmcn.gov.ng/",
+        "support_page": "https://myportal.nmcn.gov.ng/faq"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://myportal.nmcn.gov.ng/faq"
+        ]
+      }
+    },
+    {
+      "key": "pcn_pharmacy_complaint",
+      "name": "Pharmacy Council of Nigeria (PCN)",
+      "aliases": [
+        "Pharmacy Council of Nigeria (PCN)",
+        "PCN",
+        "Pharmacy Council",
+        "Pharmacy Council of Nigeria",
+        "Pharmacists Council of Nigeria",
+        "Pharmacists Licensing Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "connect@pcn.gov.ng"
+        ],
+        "address": "Plot 7/9 Industrial Layout, Idu, Abuja, Nigeria",
+        "website": "https://pcn.gov.ng/",
+        "contact_page": "https://pcn.gov.ng/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://pcn.gov.ng/contact/",
+          "https://pcn.gov.ng/about-pharmacy-council-nigeria/"
+        ]
+      }
+    },
+    {
+      "key": "mlscn_laboratory_complaint",
+      "name": "Medical Laboratory Science Council of Nigeria (MLSCN)",
+      "aliases": [
+        "Medical Laboratory Science Council of Nigeria (MLSCN)",
+        "MLSCN",
+        "Medical Laboratory Science Council",
+        "Medical Laboratory Science Council of Nigeria",
+        "Lab Licensing Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "info@mlscn.gov.ng"
+        ],
+        "address": "Plot 1166 Mohammed N Umar Lane, Durumi Phase 2, Abuja, Nigeria",
+        "website": "https://mlscn.gov.ng/",
+        "contact_page": "https://web.mlscn.gov.ng/index.php/contact-us/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://mlscn.gov.ng/",
+          "https://web.mlscn.gov.ng/index.php/contact-us/"
+        ]
+      }
+    },
+    {
+      "key": "nafdac_medical_product_report",
+      "name": "National Agency for Food and Drug Administration and Control (NAFDAC)",
+      "aliases": [
+        "National Agency for Food and Drug Administration and Control (NAFDAC)",
+        "NAFDAC",
+        "National Agency for Food and Drug Administration and Control",
+        "Food and Drug Administration Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "reforms@nafdac.gov.ng",
+          "sf.alert@nafdac.gov.ng",
+          "pharmacovigilance@nafdac.gov.ng"
+        ],
+        "address": "Plot 2032 Olusegun Obasanjo Way, Zone 7, Wuse, Abuja, Nigeria",
+        "website": "https://nafdac.gov.ng/",
+        "falsified_product_portal": "https://greenbook.nafdac.gov.ng/report/sf"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://nafdac.gov.ng/about-nafdac/nafdac-laws/",
+          "https://greenbook.nafdac.gov.ng/report/sf"
+        ]
+      }
+    }
+  ],
+  "watchdogs": [
+    {
+      "key": "health_rights_nhrc",
+      "name": "National Human Rights Commission (NHRC)",
+      "aliases": [
+        "National Human Rights Commission (NHRC)",
+        "NHRC",
+        "National Human Rights Commission",
+        "National Human Rights Commission Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "info@nhrc.gov.ng"
+        ],
+        "address": "No. 19 Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://www.nigeriarights.gov.ng/",
+        "complaint_portal": "https://www.nigeriarights.gov.ng/index.php/complaint-form"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.nigeriarights.gov.ng/index.php/complaint-form",
+          "https://www.nigeriarights.gov.ng/about/nhrc-mandate.html"
+        ]
+      }
+    },
+    {
+      "key": "health_consumer_escalation",
+      "name": "Federal Competition and Consumer Protection Commission (FCCPC)",
+      "aliases": [
+        "Federal Competition and Consumer Protection Commission (FCCPC)",
+        "FCCPC",
+        "Federal Competition and Consumer Protection Commission",
+        "Consumer Protection Commission"
+      ],
+      "contact": {
+        "emails": [
+          "contact@fccpc.gov.ng"
+        ],
+        "address": "23 Jimmy Carter Street, Asokoro, Abuja, Nigeria",
+        "website": "https://fccpc.gov.ng/",
+        "complaint_portal": "https://complaints.fccpc.gov.ng/home/login",
+        "complaint_guide": "https://fccpc.gov.ng/consumers/complaint-handling/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_direct_contact_and_complaint_process",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://fccpc.gov.ng/consumers/complaint-handling/",
+          "https://fccpc.gov.ng/about-us/contact/",
+          "https://complaints.fccpc.gov.ng/home/login"
+        ]
+      }
+    }
+  ],
+  "complaint_escalation_flow": {
+    "provider_first": "The responsible healthcare provider must ordinarily receive the first complaint.",
+    "insurance": "Escalate an unresolved HMO or health-insurance complaint to NHIA.",
+    "professional_misconduct": "Route professional misconduct to the regulator responsible for the practitioner.",
+    "medical_products": "Report counterfeit, falsified, expired or unsafe regulated medical products to NAFDAC.",
+    "human_rights": "Route serious denial-of-care, detention or abusive-treatment complaints to NHRC.",
+    "consumer_protection": "Route unresolved billing or healthcare-service consumer complaints to FCCPC."
+  },
+  "evidence_keywords": [
+    "hospital report",
+    "medical report",
+    "medical record",
+    "medical bill",
+    "prescription",
+    "laboratory result",
+    "diagnostic result",
+    "referral letter",
+    "referral authorization",
+    "referral authorisation",
+    "HMO complaint reference",
+    "NHIA enrolment record",
+    "insurance identification",
+    "payment receipt",
+    "treatment record",
+    "discharge summary",
+    "photograph",
+    "video evidence",
+    "witness statement",
+    "complaint acknowledgement",
+    "complaint reference"
+  ],
+  "security_rules": {
+    "official_sources_only": true,
+    "unverified_contacts_gated": true,
+    "provider_first_required": true,
+    "max_mailto_recipients": 12
+  }
+}

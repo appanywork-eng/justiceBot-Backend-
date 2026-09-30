@@ -1,0 +1,97 @@
+{
+  "type": "module",
+  "name": "petitiondesk-backend",
+  "version": "1.0.0",
+  "description": "PetitionDesk petition drafting and verified jurisdiction routing backend",
+  "main": "server.mjs",
+  "dependencies": {
+    "@google-cloud/firestore": "9.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "18.0.4",
+    "express": "4.22.3",
+    "firebase-admin": "14.5.0",
+    "node-fetch": "^3.3.2",
+    "pdfkit": "0.20.2"
+  },
+  "scripts": {
+    "test": "npm run test:all",
+    "start": "node server.mjs",
+    "deploy:promote": "bash scripts/promote-cloud-run.sh",
+    "check": "node --check server.mjs",
+    "test:release-integrity": "node scripts/test-release-integrity.mjs",
+    "test:runtime-config": "node scripts/test-runtime-config.mjs",
+    "test:routing-request-validation": "node scripts/test-routing-request-validation.mjs",
+    "audit:routing-sources": "node scripts/audit-routing-source-inventory.mjs",
+    "test:all-sector-routing": "node scripts/test-all-sector-routing-contract.mjs",
+    "test:all-sector-petitions": "node scripts/test-all-sector-petition-contract.mjs",
+    "test:payment-verification": "node scripts/test-payment-verification.mjs",
+    "test:petition-runtime-store": "node scripts/test-petition-runtime-store.mjs",
+    "test:readiness": "node scripts/test-readiness.mjs",
+    "test:deployment-contract": "node scripts/test-deployment-contract.mjs",
+    "test:safety": "node scripts/test-backend-safety.mjs",
+    "test:legal-safety": "node scripts/test-legal-draft-safety.mjs",
+    "test:power-routing": "node scripts/test-power-routing.mjs",
+    "test:power-nationwide": "node scripts/test-power-nationwide.mjs",
+    "test:complaint-stage": "node scripts/test-complaint-stage-consistency.mjs",
+    "test:national-sectors": "node scripts/test-national-sector-framework.mjs",
+    "test:additional-sectors": "node scripts/test-additional-sectors-nationwide.mjs",
+    "test:telecoms-nationwide": "node scripts/test-telecoms-nationwide.mjs",
+    "test:aviation-nationwide": "node scripts/test-aviation-nationwide.mjs",
+    "test:banking-nationwide": "node scripts/test-banking-nationwide.mjs",
+    "test:all": "npm run check && npm run test:release-integrity && npm run test:runtime-config && npm run test:routing-request-validation && npm run audit:routing-sources && npm run test:all-sector-routing && npm run test:all-sector-petitions && npm run test:payment-verification && npm run test:petition-runtime-store && npm run test:readiness && npm run test:deployment-contract && npm run test:forensic-routing-regressions && npm run test:forensic-domain-regressions && npm run test:complex-routing-safety && npm run test:petition-semantic-quality && npm run test:petition-semantic-recovery && npm run test:gemini-reliability && npm run test:gemini-retry-fallback && npm run test:petition-draft-quality && npm run test:production-security && npm run test:visitor-analytics && npm run test:national-sectors && npm run test:additional-sectors && npm run test:routing-contact-contract && npm run test:routing-delivery && npm run test:explicit-sector-handoff && npm run test:institution-sector-priority && npm run test:complaint-stage && npm run test:power-nationwide && npm run test:power-routing && npm run test:power-provider-delivery && npm run test:telecoms-nationwide && npm run test:telecoms-routing-quality && npm run test:aviation-nationwide && npm run test:aviation-routing-quality && npm run test:banking-nationwide && npm run test:banking-routing-quality && npm run test:banking-delivery-quality && npm run test:banking-all-provider-delivery && npm run test:health-nationwide && npm run test:health-routing-quality && npm run test:education-nationwide && npm run test:anti-corruption-nationwide && npm run test:diaspora-nationwide && npm run test:security-nationwide && npm run test:judiciary-nationwide && npm run test:international-escalation-nationwide && npm run test:election-violence-routing && npm run test:general-nationwide && npm run test:civil-disputes-nationwide && npm run test:legal-safety && npm run test:safety",
+    "test:health-nationwide": "node scripts/test-health-nationwide.mjs",
+    "test:education-nationwide": "node scripts/test-education-nationwide.mjs",
+    "test:anti-corruption-nationwide": "node scripts/test-anti-corruption-nationwide.mjs",
+    "test:diaspora-nationwide": "node scripts/test-diaspora-nationwide.mjs",
+    "test:security-nationwide": "node scripts/test-security-nationwide.mjs",
+    "test:judiciary-nationwide": "node scripts/test-judiciary-nationwide.mjs",
+    "test:international-escalation-nationwide": "node scripts/test-international-escalation-nationwide.mjs",
+    "test:general-nationwide": "node scripts/test-general-nationwide.mjs",
+    "test:civil-disputes-nationwide": "node scripts/test-civil-disputes-nationwide.mjs",
+    "test:routing-contact-contract": "node scripts/audit-routing-contact-contract.mjs",
+    "test:routing-delivery": "node scripts/test-routing-delivery.mjs",
+    "test:institution-sector-priority": "node scripts/test-institution-sector-priority.mjs",
+    "test:banking-routing-quality": "node scripts/test-banking-routing-quality.mjs",
+    "test:banking-delivery-quality": "node scripts/test-banking-delivery-quality.mjs",
+    "test:banking-all-provider-delivery": "node scripts/test-banking-all-provider-delivery.mjs",
+    "test:explicit-sector-handoff": "node scripts/test-explicit-sector-handoff.mjs",
+    "test:power-provider-delivery": "node scripts/test-power-provider-delivery.mjs",
+    "test:telecoms-routing-quality": "node scripts/test-telecoms-routing-quality.mjs",
+    "test:aviation-routing-quality": "node scripts/test-aviation-routing-quality.mjs",
+    "test:health-routing-quality": "node scripts/test-health-routing-quality.mjs",
+    "test:election-violence-routing": "node scripts/test-election-violence-routing.mjs",
+    "test:gemini-reliability": "node scripts/test-gemini-reliability.mjs",
+    "test:gemini-retry-fallback": "node scripts/test-gemini-retry-fallback.mjs",
+    "test:production-security": "node scripts/test-production-security.mjs",
+    "test:visitor-analytics": "node scripts/test-visitor-analytics.mjs",
+    "test:petition-draft-quality": "node scripts/test-petition-draft-quality.mjs",
+    "test:complex-routing-safety": "node scripts/test-complex-routing-safety.mjs",
+    "test:petition-semantic-quality": "node scripts/test-petition-semantic-quality.mjs",
+    "test:forensic-routing-regressions": "node scripts/test-forensic-routing-regressions.mjs",
+    "test:forensic-domain-regressions": "node scripts/test-forensic-domain-regressions.mjs",
+    "test:petition-semantic-recovery": "node scripts/test-petition-semantic-recovery.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appanywork-eng/justicebot-backend-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/appanywork-eng/justicebot-backend-/issues"
+  },
+  "homepage": "https://github.com/appanywork-eng/justicebot-backend-#readme",
+  "engines": {
+    "node": ">=22"
+  },
+  "overrides": {
+    "gaxios@6.7.1": {
+      "uuid": "11.1.1"
+    }
+  },
+  "devDependencies": {
+    "c8": "12.0.0",
+    "oxlint": "1.86.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "sector": "telecoms",
+  "to": "The Executive Vice Chairman/CEO, Nigerian Communications Commission (NCC)",
+  "through": "Consumer Affairs Bureau, NCC",
+  "cc": [
+    "Your Network Operator",
+    "FCCPC",
+    "Public Complaints Commission (PCC)"
+  ],
+  "tone": "SAN lawyer-grade, formal",
+  "must_include": [
+    "SIM/line info (masked)",
+    "Issue summary",
+    "Attempts to resolve with operator",
+    "Reliefs sought",
+    "Request for enforcement/consumer protection action"
+  ]
+}

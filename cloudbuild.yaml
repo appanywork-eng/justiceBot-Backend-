@@ -1,0 +1,104 @@
+substitutions:
+  _REGION: europe-west1
+  _REPOSITORY: petitiondesk
+  _IMAGE: petitiondesk-backend
+  _SERVICE: petitiondesk-backend
+  _GEMINI_MODEL: gemini-3.6-flash
+  _GEMINI_TIMEOUT_MS: '30000'
+  _GEMINI_TOTAL_TIMEOUT_MS: '45000'
+  _GEMINI_MAX_RETRIES: '1'
+  _PETITION_PRICE_NGN: '550'
+  _FREE_ACCESS_ENABLED: 'true'
+  _FREE_PETITION_LIMIT: '2'
+
+steps:
+  - id: verify-release
+    name: node:22-bookworm
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        npm ci --ignore-scripts
+        npm test
+        npm audit --omit=dev
+        npx --no-install oxlint server.mjs lib scripts
+
+  - id: build-container
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID'
+      - .
+
+  - id: push-container
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID'
+
+  - id: resolve-immutable-image
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        BASE_IMAGE='${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}'
+        DIGEST="$$(gcloud artifacts docker images describe "$$BASE_IMAGE:$BUILD_ID" --format='value(image_summary.digest)')"
+        case "$$DIGEST" in
+          sha256:*) ;;
+          *) echo 'Could not resolve immutable image digest' >&2; exit 1 ;;
+        esac
+        IMAGE_URI="$$BASE_IMAGE@$$DIGEST"
+        printf '%s' "$$IMAGE_URI" > /workspace/image-uri
+        printf '%s' "$$DIGEST" > /workspace/image-digest
+        grep -Eq '@sha256:[a-f0-9]{64}$$' /workspace/image-uri
+
+  - id: deploy-zero-traffic-candidate
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        IMAGE_URI="$$(cat /workspace/image-uri)"
+        gcloud run deploy '${_SERVICE}' \
+          --image="$$IMAGE_URI" \
+          --region='${_REGION}' \
+          --platform=managed \
+          --allow-unauthenticated \
+          --port=8080 \
+          --cpu=1 \
+          --memory=1Gi \
+          --concurrency=20 \
+          --timeout=300 \
+          --min-instances=0 \
+          --max-instances=3 \
+          --no-traffic \
+          --tag=candidate-$BUILD_ID \
+          --update-env-vars='FIRESTORE_ENABLED=true,FRONTEND_BASE_URL=https://petitiondesk.com,GEMINI_MODEL=${_GEMINI_MODEL},GEMINI_TIMEOUT_MS=${_GEMINI_TIMEOUT_MS},GEMINI_TOTAL_TIMEOUT_MS=${_GEMINI_TOTAL_TIMEOUT_MS},GEMINI_MAX_RETRIES=${_GEMINI_MAX_RETRIES},AI_SECTOR_CLASSIFY=false,PETITION_PRICE_NGN=${_PETITION_PRICE_NGN},FREE_ACCESS_ENABLED=${_FREE_ACCESS_ENABLED},FREE_PETITION_LIMIT=${_FREE_PETITION_LIMIT}'
+
+        REVISION="$$(gcloud run services describe '${_SERVICE}' --region='${_REGION}' --format='value(status.latestCreatedRevisionName)')"
+        CANDIDATE_URL="$$(gcloud run services describe '${_SERVICE}' --region='${_REGION}' --format="value(status.traffic[?tag='candidate-$BUILD_ID'].url)")"
+        test -n "$$REVISION"
+        test -n "$$CANDIDATE_URL"
+        printf '%s' "$$REVISION" > /workspace/candidate-revision
+        printf '%s' "$$CANDIDATE_URL" > /workspace/candidate-url
+
+  - id: smoke-candidate
+    name: node:22-bookworm
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        BASE_URL="$$(cat /workspace/candidate-url)" \
+        EXPECTED_REVISION="$$(cat /workspace/candidate-revision)" \
+          node scripts/smoke-release.mjs
+        echo "Candidate revision: $$(cat /workspace/candidate-revision)"
+        echo "Candidate URL: $$(cat /workspace/candidate-url)"
+        echo "Immutable image: $$(cat /workspace/image-uri)"
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

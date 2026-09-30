@@ -1,0 +1,50 @@
+{
+  "sector": "urban_planning",
+  "country": "Nigeria",
+  "version": "1.0.0",
+  "last_updated": "2026-08-06",
+  "verification_policy": { "official_sources_only": true, "block_unverified_direct_contacts": true },
+  "authorities": [
+    {
+      "key": "fct_development_control",
+      "name": "Department of Development Control, Abuja Metropolitan Management Council (AMMC)",
+      "aliases": ["Abuja Development Control", "FCT Development Control", "Department of Development Control", "AMMC Development Control"],
+      "contact": {
+        "emails": [],
+        "address": "Federal Capital Territory, Abuja, Nigeria",
+        "website": "https://dodc.fcta.gov.ng/",
+        "official_portal": "https://dodc.fcta.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-06",
+        "direct_email_verified": false,
+        "source_urls": ["https://dodc.fcta.gov.ng/", "https://fcta.gov.ng/"]
+      }
+    },
+    {
+      "key": "lagos_building_control",
+      "name": "Lagos State Building Control Agency (LASBCA)",
+      "aliases": ["LASBCA", "Lagos State Building Control Agency", "Lagos Building Control"],
+      "contact": {
+        "emails": ["lasbca@lagosstate.gov.ng"],
+        "address": "Oba Akinjobi Way, Old Secretariat, GRA, Ikeja, Lagos, Nigeria",
+        "website": "https://lasbca.lagosstate.gov.ng/",
+        "contact_form": "https://lasbca.lagosstate.gov.ng/contact/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-06",
+        "direct_email_verified": true,
+        "source_urls": ["https://lasbca.lagosstate.gov.ng/contact/", "https://lasbca.lagosstate.gov.ng/faq/"]
+      }
+    }
+  ],
+  "routing_keywords": [
+    "development control", "building control", "building approval", "building permit",
+    "development permit", "planning permission", "illegal structure", "illegal building",
+    "unauthorised structure", "unauthorized structure", "demolition notice", "building demolition",
+    "distressed building", "building collapse risk", "land use violation", "change of use",
+    "urban planning", "physical planning", "LASBCA", "LASPPPA", "AMMC"
+  ]
+}

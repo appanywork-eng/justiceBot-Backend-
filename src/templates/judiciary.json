@@ -1,0 +1,16 @@
+{
+  "sector": "judiciary",
+  "to": "The Chief Registrar, Relevant Court/Registry (as applicable)",
+  "through": "Head of Administration (as applicable)",
+  "cc": [
+    "National Judicial Council (NJC) (if appropriate)",
+    "Public Complaints Commission (PCC)"
+  ],
+  "tone": "SAN lawyer-grade, respectful, non-contemptuous",
+  "must_include": [
+    "Case/filing references if any",
+    "Registry/process complaint",
+    "Reliefs sought",
+    "Request for administrative review and written response"
+  ]
+}

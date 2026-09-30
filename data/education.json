@@ -1,0 +1,326 @@
+{
+  "sector": "education",
+  "country": "Nigeria",
+  "last_updated": "2026-08-02",
+  "version": "2.0.0",
+  "verification_policy": {
+    "official_sources_only": true,
+    "block_unverified_direct_contacts": true,
+    "direct_contact_requires_verification": true
+  },
+  "exam_bodies": [
+    {
+      "key": "jamb_support_ticket",
+      "name": "Joint Admissions and Matriculation Board (JAMB)",
+      "aliases": [
+        "Joint Admissions and Matriculation Board (JAMB)",
+        "JAMB",
+        "Joint Admissions and Matriculation Board",
+        "UTME",
+        "Unified Tertiary Matriculation Examination",
+        "JAMB CAPS",
+        "CAPS admission"
+      ],
+      "contact": {
+        "emails": [],
+        "address": "",
+        "website": "https://www.jamb.gov.ng/",
+        "candidate_support": "https://support.jamb.gov.ng/candidate-support/create-candidate-ticket",
+        "general_support": "https://support.jamb.gov.ng/candidate-support/create-general-ticket",
+        "ticket_tracking": "https://support.jamb.gov.ng/candidate-support/my-tickets"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_complaint_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://support.jamb.gov.ng/candidate-support/create-candidate-ticket",
+          "https://support.jamb.gov.ng/candidate-support/create-general-ticket",
+          "https://support.jamb.gov.ng/candidate-support/my-tickets"
+        ]
+      }
+    },
+    {
+      "key": "neco_complaint_portal",
+      "name": "National Examinations Council (NECO)",
+      "aliases": [
+        "National Examinations Council (NECO)",
+        "NECO",
+        "National Examinations Council",
+        "NECO Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "info@neco.gov.ng"
+        ],
+        "address": "",
+        "website": "https://www.neco.gov.ng/",
+        "complaint_portal": "https://complaints.neco.gov.ng/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_complaint_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://complaints.neco.gov.ng/"
+        ]
+      }
+    },
+    {
+      "key": "waec_candidate_channel",
+      "name": "West African Examinations Council (WAEC) Nigeria",
+      "aliases": [
+        "West African Examinations Council (WAEC) Nigeria",
+        "WAEC",
+        "WAEC Nigeria",
+        "West African Examinations Council",
+        "WASSCE",
+        "WAEC National Office"
+      ],
+      "contact": {
+        "emails": [
+          "cscyaba@waec.org.ng",
+          "hnowaecnigeria@waec.org.ng"
+        ],
+        "address": "21 Hussey Street, Yaba, Lagos State, Nigeria",
+        "website": "https://www.waecnigeria.org/",
+        "candidate_guidance": "https://www.waecnigeria.org/faq/",
+        "national_office": "https://www.waecnigeria.org/national-office",
+        "withheld_result_portal": "https://waecinternational.org/complaints"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_complaint_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.waecnigeria.org/faq/",
+          "https://www.waecnigeria.org/national-office",
+          "https://www.waecnigeria.org/article/complaint-portal-candidates-whose-results-were-withheldheld"
+        ]
+      }
+    }
+  ],
+  "regulators": [
+    {
+      "key": "nuc_grievance_escalation",
+      "name": "National Universities Commission (NUC)",
+      "aliases": [
+        "National Universities Commission (NUC)",
+        "NUC",
+        "National Universities Commission",
+        "NUC SERVICOM"
+      ],
+      "contact": {
+        "emails": [
+          "servicom@nuc.edu.ng"
+        ],
+        "address": "Aja Nwachukwu House, Plot 430, Aguiyi Ironsi Street, Maitama, Abuja, Nigeria",
+        "website": "https://www.nuc.edu.ng/",
+        "grievance_guide": "https://www.nuc.edu.ng/servicom/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_complaint_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://www.nuc.edu.ng/servicom/"
+        ]
+      }
+    },
+    {
+      "key": "nbte_complaint_escalation",
+      "name": "National Board for Technical Education (NBTE)",
+      "aliases": [
+        "National Board for Technical Education (NBTE)",
+        "NBTE",
+        "National Board for Technical Education",
+        "NBTE Inspectorate"
+      ],
+      "contact": {
+        "emails": [
+          "inspectorate@nbte.gov.ng",
+          "enquiries@nbte.gov.ng"
+        ],
+        "address": "Plot B, Bida Road, Kaduna, Nigeria",
+        "website": "https://www.nbte.gov.ng/",
+        "inspectorate": "https://web.nbte.gov.ng/inspectorate"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_complaint_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://web.nbte.gov.ng/inspectorate",
+          "https://web.nbte.gov.ng/node/122"
+        ]
+      }
+    },
+    {
+      "key": "ncce_complaint_escalation",
+      "name": "National Commission for Colleges of Education (NCCE)",
+      "aliases": [
+        "National Commission for Colleges of Education (NCCE)",
+        "NCCE",
+        "National Commission for Colleges of Education",
+        "NCCE SERVICOM"
+      ],
+      "contact": {
+        "emails": [
+          "servicom@ncce.gov.ng",
+          "info@ncce.gov.ng"
+        ],
+        "address": "Plot 829, Cadastral Zone A01, Ralph Shodeinde Street, Garki, Abuja, Nigeria",
+        "website": "https://ncce.gov.ng/",
+        "servicom": "https://ncce.gov.ng/Servicom"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_complaint_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://ncce.gov.ng/Servicom",
+          "https://ncce.gov.ng/"
+        ]
+      }
+    },
+    {
+      "key": "ubec_basic_education_channel",
+      "name": "Universal Basic Education Commission (UBEC)",
+      "aliases": [
+        "Universal Basic Education Commission (UBEC)",
+        "UBEC",
+        "Universal Basic Education Commission",
+        "Universal Basic Education",
+        "SUBEB",
+        "State Universal Basic Education Board"
+      ],
+      "contact": {
+        "emails": [],
+        "address": "No. 7 Gwani Street, Wuse Zone 4, Abuja, Nigeria",
+        "website": "https://ubec.gov.ng/",
+        "contact_page": "https://ubec.gov.ng/contact-us/",
+        "servicom": "https://ubec.gov.ng/servicom/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_complaint_channel",
+        "direct_email_verified": false,
+        "source_urls": [
+          "https://ubec.gov.ng/contact-us/",
+          "https://ubec.gov.ng/servicom/"
+        ]
+      }
+    }
+  ],
+  "routing_policy": {
+    "institution_first": true,
+    "admissions_and_utme": "Use the official JAMB support-ticket system.",
+    "neco_complaints": "Use the official NECO complaints portal.",
+    "waec_school_candidates": "Route the complaint through the school principal or examination officer.",
+    "waec_private_candidates": "Use WAEC Nigeria's verified candidate channels.",
+    "university_escalation": "Escalate unresolved university-system matters to NUC where appropriate.",
+    "technical_education": "Escalate unresolved polytechnic, technical and vocational matters to NBTE.",
+    "colleges_of_education": "Escalate unresolved college-of-education and NCE matters to NCCE.",
+    "basic_education": "Use the school and responsible SUBEB first, then UBEC where appropriate."
+  },
+  "keywords": [
+    "education",
+    "school",
+    "primary school",
+    "secondary school",
+    "university",
+    "polytechnic",
+    "monotechnic",
+    "technical college",
+    "college of education",
+    "teacher training college",
+    "student",
+    "pupil",
+    "candidate",
+    "admission",
+    "JAMB",
+    "UTME",
+    "post UTME",
+    "CAPS admission",
+    "WAEC",
+    "WASSCE",
+    "NECO",
+    "examination",
+    "exam result",
+    "result withheld",
+    "certificate withheld",
+    "certificate delay",
+    "transcript delay",
+    "school fees",
+    "illegal levy",
+    "accreditation",
+    "unapproved programme",
+    "illegal institution",
+    "satellite campus",
+    "certificate racketeering",
+    "lecturer misconduct",
+    "lecturer harassment",
+    "student affairs",
+    "registrar",
+    "vice chancellor",
+    "principal",
+    "proprietor",
+    "governing council",
+    "NYSC mobilisation",
+    "NYSC mobilization",
+    "Joint Admissions and Matriculation Board (JAMB)",
+    "Joint Admissions and Matriculation Board",
+    "Unified Tertiary Matriculation Examination",
+    "JAMB CAPS",
+    "National Examinations Council (NECO)",
+    "National Examinations Council",
+    "NECO Nigeria",
+    "West African Examinations Council (WAEC) Nigeria",
+    "WAEC Nigeria",
+    "West African Examinations Council",
+    "WAEC National Office",
+    "National Universities Commission (NUC)",
+    "NUC",
+    "National Universities Commission",
+    "NUC SERVICOM",
+    "National Board for Technical Education (NBTE)",
+    "NBTE",
+    "National Board for Technical Education",
+    "NBTE Inspectorate",
+    "National Commission for Colleges of Education (NCCE)",
+    "NCCE",
+    "National Commission for Colleges of Education",
+    "NCCE SERVICOM",
+    "Universal Basic Education Commission (UBEC)",
+    "UBEC",
+    "Universal Basic Education Commission",
+    "Universal Basic Education",
+    "SUBEB",
+    "State Universal Basic Education Board"
+  ],
+  "evidence_checklist": [
+    "Student or candidate full name",
+    "Registration, examination or student number",
+    "Institution or examination body",
+    "Complaint acknowledgement or ticket number",
+    "Admission or result record",
+    "Payment receipt",
+    "Transcript or certificate request",
+    "Portal screenshot",
+    "Letters or emails exchanged",
+    "Timeline of events"
+  ],
+  "security_rules": {
+    "official_sources_only": true,
+    "unverified_contacts_gated": true,
+    "institution_first_required": true,
+    "regulator_first_complaints_blocked": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "sector": "power",
+  "to": "The Chairman/CEO, Nigerian Electricity Regulatory Commission (NERC)",
+  "through": "Consumer Complaints Unit, NERC",
+  "cc": [
+    "Your Distribution Company (DISCO)",
+    "FCCPC",
+    "Public Complaints Commission (PCC)"
+  ],
+  "tone": "SAN lawyer-grade, formal, evidence-driven",
+  "must_include": [
+    "Meter/account number (masked)",
+    "Billing/complaint history",
+    "Regulatory breaches complained of",
+    "Reliefs sought",
+    "Request for written resolution timeline"
+  ]
+}

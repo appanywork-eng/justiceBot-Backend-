@@ -1,0 +1,19 @@
+{
+  "sector": "health",
+  "to": "The Honourable Minister, Federal Ministry of Health & Social Welfare",
+  "through": "Relevant Regulatory Department/Agency (as applicable)",
+  "cc": [
+    "NHIA (if insurance-related)",
+    "MDCN (if doctor misconduct-related)",
+    "PCN (if pharmacy-related)",
+    "Public Complaints Commission (PCC)"
+  ],
+  "tone": "SAN lawyer-grade, formal, evidence-based",
+  "must_include": [
+    "Facility/provider details",
+    "Incident timeline",
+    "Patient safety/rights concerns",
+    "Reliefs sought",
+    "Request for investigation and sanctions where appropriate"
+  ]
+}

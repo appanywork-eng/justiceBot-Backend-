@@ -1,0 +1,138 @@
+{
+  "sector": "telecoms",
+  "version": "1.0.0",
+  "country": "Nigeria",
+  "last_updated": "2025-12-25",
+  "oversight": {
+    "federal_ministry": {
+      "name": "Federal Ministry of Communications, Innovation and Digital Economy",
+      "oversight_powers": [
+        "Sector policy",
+        "Supervision of communications/ICT parastatals (as applicable)",
+        "Digital economy programs and coordination"
+      ],
+      "contact": {
+        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
+      },
+      "how_to_address_head": {
+        "head_title": "Honourable Minister, Federal Ministry of Communications, Innovation and Digital Economy",
+        "through_title": "Permanent Secretary, Federal Ministry of Communications, Innovation and Digital Economy",
+        "salutation": "Dear Honourable Minister"
+      }
+    }
+  },
+  "regulators_and_core_agencies": [
+    {
+      "name": "Nigerian Communications Commission (NCC)",
+      "type": "Regulator",
+      "mandate": [
+        "Licensing/oversight of telecoms operators",
+        "Consumer protection and quality of service enforcement",
+        "Spectrum/numbering regulation (as applicable)"
+      ],
+      "how_to_address_head": {
+        "head_title": "Executive Vice Chairman/Chief Executive Officer, Nigerian Communications Commission (NCC)",
+        "salutation": "Dear Executive Vice Chairman"
+      },
+      "contact": {
+        "emails": ["ncc@ncc.gov.ng", "consumer@ncc.gov.ng", "consumerportal@ncc.gov.ng"],
+        "phones": ["+234-209-461-7000", "622"],
+        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE",
+        "website_hint": "ncc.gov.ng"
+      },
+      "consumer_redress_channels": [
+        "Complain to service provider first and obtain ticket/reference",
+        "If unresolved, call NCC toll-free 622 or use NCC consumer portal/email channels"
+      ],
+      "authoritative_license_registry_hint": "NCC ‘List of Licensees’ page (class and individual licensees)"
+    },
+    {
+      "name": "National Information Technology Development Agency (NITDA)",
+      "type": "ICT/Digital Policy & Programs (regulatory overlap on IT/digital matters)",
+      "how_to_address_head": {
+        "head_title": "Director-General, National Information Technology Development Agency (NITDA)",
+        "salutation": "Dear Director-General"
+      },
+      "contact": {
+        "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"],
+        "address": "USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"
+      }
+    }
+  ],
+  "major_operators": {
+    "mobile_network_operators": [
+      {
+        "name": "MTN Nigeria",
+        "type": "MNO",
+        "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
+      },
+      {
+        "name": "Airtel Nigeria",
+        "type": "MNO",
+        "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
+      },
+      {
+        "name": "Globacom (Glo)",
+        "type": "MNO",
+        "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
+      },
+      {
+        "name": "9mobile",
+        "type": "MNO",
+        "contact": { "emails": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"], "phones": ["USE_DYNAMIC_LOOKUP_FROM_OFFICIAL_SITE"] }
+      }
+    ],
+    "other_licensees": {
+      "note": "Nigeria has many class/individual licensees (ISPs, infra companies, VAS, MVNOs, etc.). Pull the full current list from the NCC license registry.",
+      "authoritative_registry_hint": "NCC List of Licensees"
+    }
+  },
+  "how_to_address_and_route": {
+    "default_addressee_titles": [
+      "Chief Executive Officer/Managing Director (Operator)",
+      "Executive Vice Chairman/CEO (NCC)"
+    ],
+    "typical_through": [
+      "Customer Care Manager, [Operator]",
+      "Head, Customer Experience/Complaint Resolution (Operator)"
+    ],
+    "default_salutation": "Dear Sir/Ma"
+  },
+  "complaint_and_escalation_flow": {
+    "step_1": "Complain to the telecom operator first; obtain a ticket/reference number.",
+    "step_2": "If unresolved within the operator’s timeline, escalate to NCC using toll-free 622, NCC consumer email/portal, and attach ticket/reference and evidence.",
+    "step_3": "If fraud/crime is involved (SIM swap fraud, extortion), report to NPF and copy NCC."
+  },
+  "routing_keywords": [
+    "no service",
+    "network outage",
+    "call drop",
+    "data depletion",
+    "unauthorized deductions",
+    "airtime deduction",
+    "VAS subscription",
+    "SIM swap",
+    "porting",
+    "blocked line",
+    "NIN-SIM",
+    "harassment calls",
+    "poor coverage",
+    "fraudulent SMS",
+    "spam calls",
+    "tower issue",
+    "right of way",
+    "fiber cut"
+  ],
+  "evidence_checklist": [
+    "SIM number/MSISDN",
+    "IMEI (if SIM swap/device issue)",
+    "Ticket/reference number from operator",
+    "Screenshots of deductions/subscriptions",
+    "Call logs/SMS logs",
+    "Bank statement if charged via bank/card",
+    "Timeline of events"
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "sector": "anti_corruption",
+  "country": "Nigeria",
+  "version": "2.0.0",
+  "last_updated": "2026-08-02",
+  "purpose": [
+    "Route corruption allegations according to the specific conduct reported",
+    "Support evidence-based and non-defamatory petitions",
+    "Protect reporters from unsafe or indiscriminate recipient selection"
+  ],
+  "verification_policy": {
+    "official_sources_only": true,
+    "block_unverified_direct_contacts": true,
+    "direct_contact_requires_verification": true
+  },
+  "authorities": [
+    {
+      "key": "efcc_financial_crime_reporting",
+      "name": "Economic and Financial Crimes Commission (EFCC)",
+      "aliases": [
+        "Economic and Financial Crimes Commission (EFCC)",
+        "EFCC",
+        "Economic and Financial Crimes Commission",
+        "Economic and Financial Crime Commission",
+        "EFCC Nigeria",
+        "EFCC Eagle Eye"
+      ],
+      "contact": {
+        "emails": [
+          "info@efcc.gov.ng"
+        ],
+        "address": "Plot 301/302, Institution and Research Cadastral District, Jabi, Abuja, Nigeria",
+        "website": "https://efcc.gov.ng/",
+        "eagle_eye_report": "https://www.eagleeye.efcc.gov.ng/reportForm.html"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_petition_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://efcc.gov.ng/",
+          "https://www.eagleeye.efcc.gov.ng/reportForm.html"
+        ]
+      }
+    },
+    {
+      "key": "icpc_corruption_petition",
+      "name": "Independent Corrupt Practices and Other Related Offences Commission (ICPC)",
+      "aliases": [
+        "Independent Corrupt Practices and Other Related Offences Commission (ICPC)",
+        "ICPC",
+        "Independent Corrupt Practices Commission",
+        "Independent Corrupt Practices and Other Related Offences Commission",
+        "ICPC Nigeria"
+      ],
+      "contact": {
+        "emails": [
+          "info@icpc.gov.ng"
+        ],
+        "address": "Plot 802 Constitution Avenue, Zone A9, Central Business District, Abuja, Nigeria",
+        "website": "https://icpc.gov.ng/",
+        "petition_form": "https://icpc.gov.ng/petition/",
+        "petition_guidelines": "https://icpc.gov.ng/petition-guidelines/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_petition_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://icpc.gov.ng/petition/",
+          "https://icpc.gov.ng/petition-guidelines/"
+        ]
+      }
+    },
+    {
+      "key": "ccb_code_of_conduct_petition",
+      "name": "Code of Conduct Bureau (CCB)",
+      "aliases": [
+        "Code of Conduct Bureau (CCB)",
+        "CCB",
+        "Code of Conduct Bureau",
+        "Code of Conduct Bureau Nigeria",
+        "CCB Nigeria",
+        "asset declaration bureau"
+      ],
+      "contact": {
+        "emails": [
+          "info@ccb.gov.ng"
+        ],
+        "address": "5th Floor, Federal Secretariat Complex Annex III, Shehu Shagari Way, Maitama, Abuja, Nigeria",
+        "website": "https://ccb.gov.ng/",
+        "petition_guidelines": "https://ccb.gov.ng/?page_id=381"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_petition_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://ccb.gov.ng/",
+          "https://ccb.gov.ng/?page_id=381",
+          "https://ccb.gov.ng/?page_id=474"
+        ]
+      }
+    },
+    {
+      "key": "bpp_procurement_petition",
+      "name": "Bureau of Public Procurement (BPP)",
+      "aliases": [
+        "Bureau of Public Procurement (BPP)",
+        "BPP",
+        "Bureau of Public Procurement",
+        "Due Process Office",
+        "BPP Nigeria",
+        "public procurement bureau"
+      ],
+      "contact": {
+        "emails": [
+          "info@bpp.gov.ng"
+        ],
+        "address": "",
+        "website": "https://bpp.gov.ng/",
+        "petition_portal": "https://bpp.gov.ng/petitions/"
+      },
+      "verification": {
+        "status": "VERIFIED_OFFICIAL_SOURCE",
+        "verified_on": "2026-08-02",
+        "scope": "identity_and_official_petition_channel",
+        "direct_email_verified": true,
+        "source_urls": [
+          "https://bpp.gov.ng/",
+          "https://bpp.gov.ng/petitions/"
+        ]
+      }
+    }
+  ],
+  "routing_policy": {
+    "allegation_specific_routing": true,
+    "indiscriminate_mass_routing_prohibited": true,
+    "financial_crime": "Route suspected economic crime, money laundering, diversion, embezzlement and serious financial fraud to EFCC.",
+    "bribery_and_public_corruption": "Route alleged bribery, gratification, abuse of office and public-sector corrupt practices to ICPC.",
+    "code_of_conduct": "Route asset-declaration, conflict-of-interest and public-officer conduct matters to CCB.",
+    "procurement": "Route procurement-process and public-contract compliance petitions to BPP.",
+    "combined_allegations": "Select the authority with the principal jurisdiction and include another authority only where the facts independently engage its mandate.",
+    "maladministration": "PCC may be copied where an authority or public institution refuses to act, suppresses a complaint or commits administrative injustice.",
+    "retaliation": "NHRC may be included where whistleblower retaliation, threats or connected rights violations are alleged.",
+    "immediate_danger": "Ordinary petition generation must be blocked where the reporter describes an active emergency or immediate threat to life."
+  },
+  "routing_keywords": [
+    "corruption",
+    "corrupt practice",
+    "financial crime",
+    "economic crime",
+    "fraud",
+    "public fund fraud",
+    "bribe",
+    "bribery",
+    "kickback",
+    "gratification",
+    "extortion",
+    "abuse of office",
+    "abuse of power",
+    "official misconduct",
+    "diversion of funds",
+    "diversion of public funds",
+    "embezzlement",
+    "misappropriation",
+    "money laundering",
+    "proceeds of crime",
+    "suspicious transfer",
+    "fraudulent transfer",
+    "ghost worker",
+    "ghost workers",
+    "payroll fraud",
+    "pension fraud",
+    "contract fraud",
+    "procurement fraud",
+    "contract inflation",
+    "inflated contract",
+    "over invoicing",
+    "over-invoicing",
+    "bid rigging",
+    "contract splitting",
+    "double payment",
+    "project abandonment",
+    "fake contractor",
+    "shell company",
+    "forged payment document",
+    "conflict of interest",
+    "asset declaration",
+    "false asset declaration",
+    "undeclared assets",
+    "code of conduct breach",
+    "nepotism",
+    "favouritism",
+    "favoritism",
+    "whistleblower",
+    "whistleblower retaliation",
+    "audit query",
+    "public procurement",
+    "tender fraud",
+    "tender manipulation",
+    "certificate of no objection",
+    "Economic and Financial Crimes Commission (EFCC)",
+    "EFCC",
+    "Economic and Financial Crimes Commission",
+    "Economic and Financial Crime Commission",
+    "EFCC Nigeria",
+    "EFCC Eagle Eye",
+    "Independent Corrupt Practices and Other Related Offences Commission (ICPC)",
+    "ICPC",
+    "Independent Corrupt Practices Commission",
+    "Independent Corrupt Practices and Other Related Offences Commission",
+    "ICPC Nigeria",
+    "Code of Conduct Bureau (CCB)",
+    "CCB",
+    "Code of Conduct Bureau",
+    "Code of Conduct Bureau Nigeria",
+    "CCB Nigeria",
+    "asset declaration bureau",
+    "Bureau of Public Procurement (BPP)",
+    "BPP",
+    "Bureau of Public Procurement",
+    "Due Process Office",
+    "BPP Nigeria",
+    "public procurement bureau"
+  ],
+  "evidence_checklist": [
+    "Full names, roles or official positions of persons involved",
+    "Responsible ministry, department, agency or organisation",
+    "Factual chronology with dates and locations",
+    "Amounts and transaction references where relevant",
+    "Contract, tender or procurement details where relevant",
+    "Invoices, receipts, award letters, payment records or audit documents",
+    "Emails, messages, photographs or other supporting records",
+    "Witness information where safely available",
+    "Previous complaint acknowledgement or reference number",
+    "Details of threats or retaliation where applicable"
+  ],
+  "drafting_safety": {
+    "allegations_must_not_be_presented_as_proven_facts": true,
+    "defamatory_or_insulting_language_prohibited": true,
+    "unnecessary_personal_financial_data_prohibited": true,
+    "passwords_and_account_credentials_prohibited": true,
+    "alleged_subject_not_automatically_copied": true,
+    "reporter_safety_must_be_considered": true
+  },
+  "security_rules": {
+    "official_sources_only": true,
+    "unverified_contacts_gated": true,
+    "active_emergency_blocks_generation": true,
+    "preserve_evidence_only_when_safe": true
+  }
+}
