@@ -49,7 +49,9 @@ PREVIOUS_REVISION="$(
     --project="$PROJECT_ID" \
     --region="$REGION" \
     --platform=managed \
-    --format="value(status.traffic[percent=100].revisionName)"
+    --flatten='status.traffic[]' \
+    --format='value(status.traffic.percent,status.traffic.revisionName)' \
+    | bash scripts/select-cloud-run-traffic.sh percent 100
 )"
 
 if [[ -z "$PREVIOUS_REVISION" ]]; then
@@ -99,7 +101,9 @@ FINAL_TRAFFIC="$(
     --project="$PROJECT_ID" \
     --region="$REGION" \
     --platform=managed \
-    --format="value(status.traffic[percent=100].revisionName)"
+    --flatten='status.traffic[]' \
+    --format='value(status.traffic.percent,status.traffic.revisionName)' \
+    | bash scripts/select-cloud-run-traffic.sh percent 100
 )"
 
 if [[ "$FINAL_TRAFFIC" != "$CANDIDATE_REVISION" ]]; then

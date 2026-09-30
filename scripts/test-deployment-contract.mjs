@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 
 const cloudBuild = fs.readFileSync("cloudbuild.yaml", "utf8");
@@ -23,6 +23,39 @@ assert.ok(
 );
 assert.match(candidateTag, /^[a-z][a-z0-9-]*[a-z0-9]$/);
 
+const trafficFixture = [
+  "safety-staging\tpetitiondesk-backend-00014-yud\thttps://safety.example.run.app",
+  "candidate-1e3e00f9b54e\tpetitiondesk-backend-00058-qwv\thttps://candidate.example.run.app",
+].join("\n");
+const taggedRecord = spawnSync(
+  "bash",
+  [
+    "scripts/select-cloud-run-traffic.sh",
+    "tag",
+    "candidate-1e3e00f9b54e",
+  ],
+  { encoding: "utf8", input: trafficFixture }
+);
+assert.equal(taggedRecord.status, 0, taggedRecord.stderr);
+assert.equal(
+  taggedRecord.stdout.trim(),
+  "petitiondesk-backend-00058-qwv\thttps://candidate.example.run.app"
+);
+
+const percentRecord = spawnSync(
+  "bash",
+  ["scripts/select-cloud-run-traffic.sh", "percent", "100"],
+  {
+    encoding: "utf8",
+    input: [
+      "100\tpetitiondesk-backend-00014-yud",
+      "\tpetitiondesk-backend-00058-qwv",
+    ].join("\n"),
+  }
+);
+assert.equal(percentRecord.status, 0, percentRecord.stderr);
+assert.equal(percentRecord.stdout.trim(), "petitiondesk-backend-00014-yud");
+
 assert.match(cloudBuild, /node:22-bookworm/);
 assert.match(cloudBuild, /npm ci --ignore-scripts/);
 assert.match(cloudBuild, /npm test/);
@@ -32,7 +65,14 @@ assert.match(cloudBuild, /@sha256:/);
 assert.match(cloudBuild, /--no-traffic/);
 assert.match(cloudBuild, /cloud-run-candidate-tag\.sh/);
 assert.match(cloudBuild, /--tag="\$\$CANDIDATE_TAG"/);
-assert.match(cloudBuild, /latestCreatedRevisionName/);
+assert.match(cloudBuild, /--flatten='status\.traffic\[\]'/);
+assert.match(
+  cloudBuild,
+  /value\(status\.traffic\.tag,status\.traffic\.revisionName,status\.traffic\.url\)/
+);
+assert.match(cloudBuild, /select-cloud-run-traffic\.sh tag/);
+assert.doesNotMatch(cloudBuild, /status\.traffic\[\?tag=/);
+assert.doesNotMatch(cloudBuild, /latestCreatedRevisionName/);
 assert.match(cloudBuild, /candidate-url/);
 assert.match(cloudBuild, /EXPECTED_REVISION/);
 assert.match(cloudBuild, /scripts\/smoke-release\.mjs/);
@@ -62,7 +102,17 @@ for (const variable of [
 assert.match(promotion, /run revisions describe/);
 assert.match(promotion, /Ready/);
 assert.match(promotion, /PREVIOUS_REVISION/);
-assert.match(promotion, /status\.traffic\[percent=100\]\.revisionName/);
+assert.equal(
+  (promotion.match(/--flatten='status\.traffic\[\]'/g) || []).length,
+  2,
+  "Promotion must flatten traffic records for both rollback capture and final verification."
+);
+assert.equal(
+  (promotion.match(/select-cloud-run-traffic\.sh percent 100/g) || []).length,
+  2,
+  "Promotion must select the exact 100%-serving revision twice."
+);
+assert.doesNotMatch(promotion, /status\.traffic\[percent=100\]/);
 assert.match(promotion, /--to-revisions="\$\{CANDIDATE_REVISION\}=100"/);
 assert.match(promotion, /--to-revisions="\$\{PREVIOUS_REVISION\}=100"/);
 assert.match(promotion, /BASE_URL="\$CANDIDATE_URL" EXPECTED_REVISION="\$CANDIDATE_REVISION"/);
