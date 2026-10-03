@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 
 import { analyzeComplexComplaint } from "../lib/complexComplaintAnalysis.mjs";
 import { resolveJurisdictionRouting } from "../lib/jurisdictionEngine.mjs";
-import { inspectPetitionSemanticQuality } from "../lib/petitionSemanticQuality.mjs";
+import {
+  inspectPetitionSemanticQuality,
+  repairPetitionSemanticFacts,
+} from "../lib/petitionSemanticQuality.mjs";
 import {
   applyOversightRecipientPolicy,
   assessRoutingDecisionSafety,
@@ -102,6 +105,69 @@ for (const fixture of representativeCases) {
     missingMaterialFacts: [],
     routingErrors: [],
   }, fixture.name);
+
+  /*
+   * Simulate realistic Gemini prose across every production
+   * sector instead of requiring the model to repeat the
+   * deterministic internal purpose verbatim.
+   */
+  const naturalSubject =
+    "Concerns arising from " +
+    (
+      fixture.context.institutionName ||
+      fixture.sector.replace(
+        /_/g,
+        " "
+      )
+    );
+
+  const naturalPetitionText =
+    petitionText
+      .replace(
+        /^SUBJECT:.*$/m,
+        "SUBJECT: " +
+          naturalSubject
+      )
+      .replace(
+        "Investigate the complaint, preserve the records, correct any verified error and provide a reasoned written response.",
+        "Rectify any verified error, explain the outcome in writing, and compensate or restore the petitioner where the verified evidence supports it."
+      );
+
+  const naturalRepair =
+    repairPetitionSemanticFacts({
+      petitionText:
+        naturalPetitionText,
+
+      complaint:
+        fixture.context.complaint,
+
+      institutionName:
+        fixture.context.institutionName,
+
+      priorComplaintReference:
+        fixture.context.priorComplaintReference,
+
+      primaryInstitution:
+        route.primaryInstitution,
+
+      ccInstitutions:
+        route.ccInstitutions,
+
+      documentPurpose:
+        route.documentPurpose,
+
+      sector:
+        fixture.sector,
+    });
+
+  assert.equal(
+    naturalRepair
+      .assessment
+      .complete,
+    true,
+    fixture.name +
+      ": natural Gemini-style wording must survive the final quality gate"
+  );
 }
 
 const securityRights = ALL_SECTOR_ROUTING_CASES.find(
@@ -192,4 +258,5 @@ console.log("✅ ALL 16 SECTORS ENFORCE ONE TO AND APPROVED OVERSIGHT RECIPIENTS
 console.log("✅ ROUTE PURPOSE, ACTIONABLE REMEDY AND ALLEGATION-SAFE WORDING ARE ENFORCED");
 console.log("✅ UNAUTHORIZED RECIPIENTS AND UNRELATED SECTOR CONTENT ARE REJECTED");
 console.log("✅ EMERGENCY AND NON-PETITION ROUTES CANNOT GENERATE A PETITION");
+console.log("✅ NATURAL GEMINI-STYLE WORDING SURVIVES THE QUALITY GATE ACROSS ALL 16 SECTORS");
 console.log("✅ ALL-SECTOR PETITION CONTRACT PASSED");

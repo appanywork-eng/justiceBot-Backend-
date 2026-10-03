@@ -4172,11 +4172,7 @@ CRITICAL RULES:
     } catch (qualityError) {
       if (
         qualityError?.code !==
-          "PETITION_SEMANTIC_QUALITY_FAILED" ||
-        (
-          qualityError?.assessment
-            ?.routingErrors || []
-        ).length > 0
+          "PETITION_SEMANTIC_QUALITY_FAILED"
       ) {
         throw qualityError;
       }
@@ -4186,7 +4182,10 @@ CRITICAL RULES:
           semanticQualityInput
         );
 
-      if (!semanticRepair.repaired) {
+      if (
+        !semanticRepair.repaired ||
+        semanticRepair.assessment?.complete !== true
+      ) {
         throw qualityError;
       }
 
@@ -4200,12 +4199,15 @@ CRITICAL RULES:
         });
 
       console.warn(
-        "Recovered omitted petition material facts",
+        "Recovered petition quality issues",
         {
           requestId: req.requestId,
           sector,
           recoveredFacts:
             semanticRepair.recoveredFacts,
+
+          repairs:
+            semanticRepair.repairs || [],
         }
       );
     }

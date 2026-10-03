@@ -78,6 +78,128 @@ assert.match(
   "Recovered complaint facts must remain explicitly attributed to the petitioner"
 );
 
+
+const documentPurpose =
+  "Digital lending complaint investigation and consumer redress";
+
+const naturalReliefDraft =
+  draft.replace(
+    "1. Investigate and provide appropriate redress.",
+    "1. Rectify any verified error, compensate the petitioner for any established loss, and explain the outcome in writing."
+  );
+
+const naturalReliefAssessment =
+  inspectPetitionSemanticQuality({
+    petitionText:
+      naturalReliefDraft,
+
+    complaint,
+
+    institutionName:
+      "GIASUN TECHNOLOGY NIGERIA LIMITED",
+
+    primaryInstitution:
+      "GIASUN TECHNOLOGY NIGERIA LIMITED",
+
+    ccInstitutions:
+      [],
+
+    documentPurpose,
+  });
+
+assert.equal(
+  naturalReliefAssessment
+    .routingErrors
+    .includes(
+      "actionable_remedy_missing"
+    ),
+  false,
+  "Valid natural-language remedies must not be rejected solely because Gemini used different verbs"
+);
+
+const naturalSubjectDraft =
+  naturalReliefDraft.replace(
+    "SUBJECT: Digital lending complaint",
+    "SUBJECT: Unexpected salary deductions and harassment"
+  );
+
+const naturalSubjectBefore =
+  inspectPetitionSemanticQuality({
+    petitionText:
+      naturalSubjectDraft,
+
+    complaint,
+
+    institutionName:
+      "GIASUN TECHNOLOGY NIGERIA LIMITED",
+
+    priorComplaintReference,
+
+    primaryInstitution:
+      "GIASUN TECHNOLOGY NIGERIA LIMITED",
+
+    ccInstitutions:
+      [],
+
+    documentPurpose,
+  });
+
+assert.ok(
+  naturalSubjectBefore
+    .routingErrors
+    .includes(
+      "subject_purpose_mismatch"
+    ),
+  "The quality engine must still detect a mismatched AI subject"
+);
+
+const naturalSubjectRepair =
+  repairPetitionSemanticFacts({
+    petitionText:
+      naturalSubjectDraft,
+
+    complaint,
+
+    institutionName:
+      "GIASUN TECHNOLOGY NIGERIA LIMITED",
+
+    priorComplaintReference,
+
+    primaryInstitution:
+      "GIASUN TECHNOLOGY NIGERIA LIMITED",
+
+    ccInstitutions:
+      [],
+
+    documentPurpose,
+  });
+
+assert.equal(
+  naturalSubjectRepair.repaired,
+  true
+);
+
+assert.equal(
+  naturalSubjectRepair
+    .assessment
+    .complete,
+  true
+);
+
+assert.ok(
+  naturalSubjectRepair.text.includes(
+    "SUBJECT: " +
+    documentPurpose
+  ),
+  "The mismatched AI subject must be replaced with PetitionDesk's deterministic subject"
+);
+
+assert.ok(
+  naturalSubjectRepair.repairs.includes(
+    "subject_purpose_repaired"
+  )
+);
+
 const badRoute = draft.replace(
   "TO: GIASUN TECHNOLOGY NIGERIA LIMITED",
   "TO: Nigerian Civil Aviation Authority"
